@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Repositories", "Nursing-Service-Platform.Repository\Nursing-Service-Platform.Repositories.csproj", "{9152B774-60AA-40A4-A152-73759E014ACE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Models", "Nursing-Service-Platform.Models\Nursing-Service-Platform.Models.csproj", "{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Services", "Nursing-Service-Platform.Services\Nursing-Service-Platform.Services.csproj", "{0D8A5576-D9AD-4F4B-A609-A36366013790}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Commons", "Nursing-Service-Platform.Commons\Nursing-Service-Platform.Commons.csproj", "{4A66098C-5110-48DD-8C8F-0DE5D2DF29D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.RazorPages", "Nursing-Service-Platform.RazorPages\Nursing-Service-Platform.RazorPages.csproj", "{E4A4AF60-DEA6-45FC-9BD0-920C673D4270}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.API", "Nursing-Service-Platform.API\Nursing-Service-Platform.API.csproj", "{3C689CA9-A87D-4ADB-A925-57A8E78E4B94}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9152B774-60AA-40A4-A152-73759E014ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9152B774-60AA-40A4-A152-73759E014ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9152B774-60AA-40A4-A152-73759E014ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9152B774-60AA-40A4-A152-73759E014ACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D8A5576-D9AD-4F4B-A609-A36366013790}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D8A5576-D9AD-4F4B-A609-A36366013790}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D8A5576-D9AD-4F4B-A609-A36366013790}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D8A5576-D9AD-4F4B-A609-A36366013790}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A66098C-5110-48DD-8C8F-0DE5D2DF29D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A66098C-5110-48DD-8C8F-0DE5D2DF29D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A66098C-5110-48DD-8C8F-0DE5D2DF29D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A66098C-5110-48DD-8C8F-0DE5D2DF29D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4A4AF60-DEA6-45FC-9BD0-920C673D4270}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4A4AF60-DEA6-45FC-9BD0-920C673D4270}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4A4AF60-DEA6-45FC-9BD0-920C673D4270}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4A4AF60-DEA6-45FC-9BD0-920C673D4270}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C689CA9-A87D-4ADB-A925-57A8E78E4B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C689CA9-A87D-4ADB-A925-57A8E78E4B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C689CA9-A87D-4ADB-A925-57A8E78E4B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C689CA9-A87D-4ADB-A925-57A8E78E4B94}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {956159B9-A570-4E2C-8B5C-3CD87032B6A0}
+	EndGlobalSection
+EndGlobal
