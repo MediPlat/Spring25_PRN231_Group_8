@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Repositories", "Nursing-Service-Platform.Repository\Nursing-Service-Platform.Repositories.csproj", "{9152B774-60AA-40A4-A152-73759E014ACE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Models", "Nursing-Service-Platform.Models\Nursing-Service-Platform.Models.csproj", "{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.BusinessObjects", "Nursing-Service-Platform.Models\Nursing-Service-Platform.BusinessObjects.csproj", "{4B3F8D8C-06FF-4FAA-8D34-DA9459C3BF7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nursing-Service-Platform.Services", "Nursing-Service-Platform.Services\Nursing-Service-Platform.Services.csproj", "{0D8A5576-D9AD-4F4B-A609-A36366013790}"
 EndProject
