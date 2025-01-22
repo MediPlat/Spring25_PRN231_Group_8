@@ -1,0 +1,148 @@
+-- Nursing Platform Database Script for Microsoft SQL Server
+CREATE DATABASE MediPlat
+GO
+USE MediPlat
+-- Table: Patient
+CREATE TABLE Patient (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    UserName NVARCHAR(255) NULL,
+    FullName NVARCHAR(255) NULL,
+    Email NVARCHAR(255) NULL,
+    [Password] NVARCHAR(255) NULL,
+    PhoneNumber NVARCHAR(20),
+    Balance DECIMAL(12, 2) DEFAULT 0,
+    JoinDate DATETIME NULL DEFAULT GETDATE(),
+    Sex NVARCHAR(50),
+    Address NVARCHAR(MAX),
+    Status NVARCHAR(50)
+)
+;-- Table: Specialty
+CREATE TABLE Specialty (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    Name NVARCHAR(255) NULL,
+    Description NVARCHAR(MAX)
+);
+-- Table: Experience
+CREATE TABLE Experience (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+	SpecialtyID UNIQUEIDENTIFIER,
+    Title NVARCHAR(255) NULL,
+    Description NVARCHAR(MAX),
+    Certificate NVARCHAR(MAX),
+	FOREIGN KEY (SpecialtyID) REFERENCES Specialty(ID),
+);
+-- Table: Doctor
+CREATE TABLE Doctor (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    UserName NVARCHAR(255) NULL,
+    FullName NVARCHAR(255) NULL,
+    Email NVARCHAR(255) NULL,
+    Password NVARCHAR(255) NULL,
+    AvatarUrl NVARCHAR(MAX),
+    Balance DECIMAL(12, 2) DEFAULT 0,
+    ExperienceID UNIQUEIDENTIFIER,
+    SpecialtyID UNIQUEIDENTIFIER,
+    FeePerSession DECIMAL(12, 2),
+    Degree NVARCHAR(255),
+    AcademicTitle NVARCHAR(255),
+    JoinDate DATETIME NULL DEFAULT GETDATE(),
+	PhoneNumber NVARCHAR(50),
+    Status NVARCHAR(50),
+    FOREIGN KEY (ExperienceID) REFERENCES Experience(ID),
+    FOREIGN KEY (SpecialtyID) REFERENCES Specialty(ID)
+);
+-- Table: Subscription
+CREATE TABLE Subscription (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    Name NVARCHAR(255) NULL,
+    Price DECIMAL(18, 2) NULL,
+    EnableSlot TINYINT,
+    Description NVARCHAR(MAX),
+    CreatedDate DATETIME NULL DEFAULT GETDATE(),
+    UpdateDate DATETIME NULL
+);
+-- Table: DoctorSubcription
+CREATE TABLE DoctorSubcription (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    SubscriptionID UNIQUEIDENTIFIER NULL,
+	EnableSlot TINYINT,
+    Description NVARCHAR(MAX),
+    DoctorID UNIQUEIDENTIFIER NULL,
+    FOREIGN KEY (SubscriptionID) REFERENCES Subscription(ID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(ID)
+);
+-- Table: DoctorSpecialty
+CREATE TABLE DoctorSpecialty (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    SpecialtyID UNIQUEIDENTIFIER NULL,
+    DoctorID UNIQUEIDENTIFIER NULL,
+    FOREIGN KEY (SpecialtyID) REFERENCES Specialty(ID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(ID)
+);
+
+-- Table: Services
+CREATE TABLE Services (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    SpecialtyID UNIQUEIDENTIFIER NULL,
+    Title NVARCHAR(255) NULL,
+    Description NVARCHAR(MAX),
+    FOREIGN KEY (SpecialtyID) REFERENCES Specialty(ID)
+);
+
+-- Table: Slot
+CREATE TABLE Slot (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    DoctorID UNIQUEIDENTIFIER NULL,
+    ServiceID UNIQUEIDENTIFIER NULL,
+    SpecialtyID UNIQUEIDENTIFIER NULL,
+    Title NVARCHAR(255) NULL,
+    Description NVARCHAR(MAX),
+    StartTime DATETIME NULL,
+    EndTime DATETIME NULL,
+    Date DATETIME NULL,
+	SessionFee DECIMAL(12, 2) NULL,
+    Status NVARCHAR(50) NULL,
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(ID),
+    FOREIGN KEY (ServiceID) REFERENCES Services(ID),
+    FOREIGN KEY (SpecialtyID) REFERENCES Specialty(ID)
+);
+
+-- Table: AppointmentSlot
+CREATE TABLE AppointmentSlot (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    SlotID UNIQUEIDENTIFIER NULL,
+    PatientID UNIQUEIDENTIFIER NULL,
+    Status NVARCHAR(50),
+    FOREIGN KEY (SlotID) REFERENCES Slot(ID),
+    FOREIGN KEY (PatientID) REFERENCES Patient(ID)
+);
+
+-- Table: Transaction
+CREATE TABLE [Transaction] (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    PatientID UNIQUEIDENTIFIER,
+	DoctorID UNIQUEIDENTIFIER,
+	SubID UNIQUEIDENTIFIER,
+	AppointmentSlotID UNIQUEIDENTIFIER,
+    TransactionInfo NVARCHAR(MAX),
+    Amount DECIMAL(18, 2) NULL,
+    CreatedDate DATETIME NULL DEFAULT GETDATE(),
+    Status NVARCHAR(50),
+	FOREIGN KEY (AppointmentSlotID) REFERENCES AppointmentSlot(ID),
+	FOREIGN KEY (SubID) REFERENCES Subscription(ID),
+    FOREIGN KEY (PatientID) REFERENCES Patient(ID),
+	FOREIGN KEY (DoctorID) REFERENCES Doctor(ID),
+);
+
+-- Table: Review
+CREATE TABLE Review (
+    ID UNIQUEIDENTIFIER PRIMARY KEY,
+    Rating INT NULL,
+    Message NVARCHAR(MAX),
+    PatientID UNIQUEIDENTIFIER NULL,
+    DoctorID UNIQUEIDENTIFIER NULL,
+    SlotID UNIQUEIDENTIFIER NULL,
+    FOREIGN KEY (PatientID) REFERENCES Patient(ID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(ID),
+    FOREIGN KEY (SlotID) REFERENCES Slot(ID)
+);
