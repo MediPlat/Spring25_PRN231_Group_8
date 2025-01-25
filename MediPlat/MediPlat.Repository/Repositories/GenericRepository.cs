@@ -1,4 +1,5 @@
-﻿using MediPlat.Repository.Entities;
+﻿using MediPlat.Model;
+using MediPlat.Repository.Entities;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,8 +13,8 @@ namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatDBContext _mediPlatDBContext;
-        public GenericRepository(MediPlatDBContext mediPlatDBContext) 
+        private MediPlatContext _mediPlatDBContext;
+        public GenericRepository(MediPlatContext mediPlatDBContext) 
         {
             _mediPlatDBContext = mediPlatDBContext;
         }
