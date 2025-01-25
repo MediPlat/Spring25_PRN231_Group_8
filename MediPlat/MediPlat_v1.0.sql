@@ -1,3 +1,8 @@
+Create database MediPlat
+go
+
+use MediPlat
+
 CREATE TABLE [Patient] (
   [ID] UNIQUEIDENTIFIER PRIMARY KEY,
   [UserName] NVARCHAR(255),
