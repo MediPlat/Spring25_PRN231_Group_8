@@ -1,4 +1,4 @@
-﻿using MediPlat.Repository.Entities;
+﻿using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,90 +12,90 @@ namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatDBContext _mediPlatDBContext;
-        public GenericRepository(MediPlatDBContext mediPlatDBContext) 
+        private MediPlatContext _mediPlatContext;
+        public GenericRepository(MediPlatContext mediPlatContext) 
         {
-            _mediPlatDBContext = mediPlatDBContext;
+            _mediPlatContext = mediPlatContext;
         }
 
 
         public void Add(T model)
         {
-            _mediPlatDBContext.Set<T>().Add(model);
-            _mediPlatDBContext.SaveChanges();
+            _mediPlatContext.Set<T>().Add(model);
+            _mediPlatContext.SaveChanges();
         }
 
         public void AddRange(IEnumerable<T> model)
         {
-            _mediPlatDBContext.Set<T>().AddRange(model);
-            _mediPlatDBContext.SaveChanges();
+            _mediPlatContext.Set<T>().AddRange(model);
+            _mediPlatContext.SaveChanges();
         }
 
         public T? GetId(int id)
         {
-            return _mediPlatDBContext.Set<T>().Find(id);
+            return _mediPlatContext.Set<T>().Find(id);
         }
 
         public async Task<T?> GetIdAsync(int id)
         {
-            return await _mediPlatDBContext.Set<T>().FindAsync(id);
+            return await _mediPlatContext.Set<T>().FindAsync(id);
         }
 
         public T? Get(Expression<Func<T, bool>> predicate)
         {
-            return _mediPlatDBContext.Set<T>().FirstOrDefault(predicate);
+            return _mediPlatContext.Set<T>().FirstOrDefault(predicate);
         }
 
         public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _mediPlatDBContext.Set<T>().FirstOrDefaultAsync(predicate);
+            return await _mediPlatContext.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
         public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate)
         {
-            return _mediPlatDBContext.Set<T>().Where<T>(predicate).ToList();
+            return _mediPlatContext.Set<T>().Where<T>(predicate).ToList();
         }
 
         public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate)
         {
-            return await Task.Run(() => _mediPlatDBContext.Set<T>().Where<T>(predicate));
+            return await Task.Run(() => _mediPlatContext.Set<T>().Where<T>(predicate));
         }
 
         public IEnumerable<T> GetAll()
         {
-            return _mediPlatDBContext.Set<T>().ToList();
+            return _mediPlatContext.Set<T>().ToList();
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await Task.Run(() => _mediPlatDBContext.Set<T>());
+            return await Task.Run(() => _mediPlatContext.Set<T>());
         }
 
         public int Count()
         {
-            return _mediPlatDBContext.Set<T>().Count();
+            return _mediPlatContext.Set<T>().Count();
         }
 
         public async Task<int> CountAsync()
         {
-            return await _mediPlatDBContext.Set<T>().CountAsync();
+            return await _mediPlatContext.Set<T>().CountAsync();
         }
 
         public void Update(T objModel)
         {
-            _mediPlatDBContext.Entry(objModel).State = EntityState.Modified;
-            _mediPlatDBContext.SaveChanges();
+            _mediPlatContext.Entry(objModel).State = EntityState.Modified;
+            _mediPlatContext.SaveChanges();
         }
 
         public void Remove(T objModel)
         {
-            _mediPlatDBContext.Set<T>().Remove(objModel);
-            _mediPlatDBContext.SaveChanges();
+            _mediPlatContext.Set<T>().Remove(objModel);
+            _mediPlatContext.SaveChanges();
         }
 
         public void Dispose()
         {
-            _mediPlatDBContext.Dispose();
+            _mediPlatContext.Dispose();
         }
     }
 }
