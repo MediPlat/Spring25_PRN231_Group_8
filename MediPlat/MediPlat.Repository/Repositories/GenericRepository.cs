@@ -32,12 +32,12 @@ namespace MediPlat.Repository.Repositories
             _mediPlatDBContext.SaveChanges();
         }
 
-        public T? GetId(int id)
+        public T? GetId(Guid id)
         {
             return _mediPlatDBContext.Set<T>().Find(id);
         }
 
-        public async Task<T?> GetIdAsync(int id)
+        public async Task<T?> GetIdAsync(Guid id)
         {
             return await _mediPlatDBContext.Set<T>().FindAsync(id);
         }

@@ -1,11 +1,18 @@
 using MediPlat.Model;
+using MediPlat.Repository.IRepositories;
+using MediPlat.Repository.Repositories;
+using MediPlat.Service.IServices;
+using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
+builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Patient>>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
 // Add services to the container.
 builder.Services.AddControllers();
 
