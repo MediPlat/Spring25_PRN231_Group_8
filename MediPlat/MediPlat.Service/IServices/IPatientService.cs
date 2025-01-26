@@ -1,13 +1,6 @@
-﻿using MediPlat..ResponseObject.Patient;
-using MediPlat.Model;
-using MediPlat.Model.RequestObject.Patient;
+﻿using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject.Patient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediPlat.Service.IServices
 {
