@@ -1,3 +1,10 @@
+using MediPlat.Model;
+using MediPlat.Repository.IRepositories;
+using MediPlat.Repository.Repositories;
+using MediPlat.Service.IServices;
+using MediPlat.Service.Services;
+using Microsoft.Extensions.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +13,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<MediPlatContext>();
+
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
+builder.Services.AddScoped<IPatientService, PatientService>();
 
 var app = builder.Build();
 
