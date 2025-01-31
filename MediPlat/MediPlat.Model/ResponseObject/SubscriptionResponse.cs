@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MediPlat.Model.ResponseObject
 {
@@ -10,20 +10,27 @@ namespace MediPlat.Model.ResponseObject
     {
         public Guid Id { get; set; }
 
-        public string? Name { get; set; }
+        [Required]
+        [MaxLength(255)]
+        public string Name { get; set; }
 
-        public decimal? Price { get; set; }
+        [Required]
+        [Range(0, double.MaxValue)]
+        public decimal Price { get; set; }
 
         public byte? EnableSlot { get; set; }
 
+        [MaxLength(1000)]
         public string? Description { get; set; }
 
         public DateTime? CreatedDate { get; set; }
 
         public DateTime? UpdateDate { get; set; }
 
-        public virtual ICollection<DoctorSubscription> DoctorSubcriptions { get; set; } = new List<DoctorSubscription>();
+        [JsonIgnore] // Prevent circular reference
+        public virtual ICollection<DoctorSubscription> DoctorSubscriptions { get; set; } = new List<DoctorSubscription>();
 
+        [JsonIgnore]
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     }
 }

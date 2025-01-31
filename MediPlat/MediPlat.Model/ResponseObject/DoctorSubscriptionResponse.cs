@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MediPlat.Model.ResponseObject
 {
@@ -14,12 +13,15 @@ namespace MediPlat.Model.ResponseObject
 
         public byte? EnableSlot { get; set; }
 
+        [MaxLength(500)]
         public string? Description { get; set; }
 
         public Guid? DoctorId { get; set; }
 
+        [JsonIgnore]  // Avoid circular reference issues when serializing
         public virtual Doctor? Doctor { get; set; }
 
+        [JsonIgnore]  // Avoid circular reference issues
         public virtual Subscription? Subscription { get; set; }
     }
 }

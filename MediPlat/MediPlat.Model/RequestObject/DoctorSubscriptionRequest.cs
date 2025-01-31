@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace MediPlat.Model.RequestObject
 {
     public class DoctorSubscriptionRequest
     {
-        public Guid? SubscriptionId { get; set; }
+        [Required]
+        public Guid SubscriptionId { get; set; }
 
-        public byte? EnableSlot { get; set; }
+        [Required]
+        public byte EnableSlot { get; set; }
 
-        public string? Description { get; set; }
+        [MaxLength(1000)]
+        public string Description { get; set; }
 
-        public Guid? DoctorId { get; set; }
+        [Required]
+        public Guid DoctorId { get; set; }
     }
 }

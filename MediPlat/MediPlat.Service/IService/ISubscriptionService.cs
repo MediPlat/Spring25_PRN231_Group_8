@@ -1,18 +1,17 @@
-﻿using MediPlat.Model;
+﻿using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MediPlat.Service.IService
 {
     public interface ISubscriptionService
     {
-        Task<IEnumerable<Subscription>> GetAllSubscriptionsAsync();
-        Task<Subscription> GetSubscriptionByIdAsync(Guid id);
-        Task AddSubscriptionAsync(Subscription subscription);
-        Task UpdateSubscriptionAsync(Subscription subscription);
+        Task<IEnumerable<SubscriptionResponse>> GetAllSubscriptionsAsync();
+        Task<SubscriptionResponse> GetSubscriptionByIdAsync(Guid id);
+        Task<SubscriptionResponse> AddSubscriptionAsync(SubscriptionRequest request);
+        Task<SubscriptionResponse> UpdateSubscriptionAsync(Guid id, SubscriptionRequest request);
         Task DeleteSubscriptionAsync(Guid id);
     }
 }

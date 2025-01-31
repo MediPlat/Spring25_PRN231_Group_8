@@ -113,7 +113,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             entity.HasKey(e => e.Id).HasName("PK__DoctorSu__3214EC276B4AE3FE");
 
-            entity.ToTable("DoctorSubcription");
+            entity.ToTable("DoctorSubscription");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()

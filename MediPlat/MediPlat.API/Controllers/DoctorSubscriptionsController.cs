@@ -1,4 +1,5 @@
-﻿using MediPlat.Model;
+﻿using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IService;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,13 +20,14 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DoctorSubscription>>> GetDoctorSubscriptions()
+        public async Task<ActionResult<IEnumerable<DoctorSubscriptionResponse>>> GetDoctorSubscriptions()
         {
-            return Ok(await _doctorSubscriptionService.GetAllDoctorSubscriptionsAsync());
+            var doctorSubscriptions = await _doctorSubscriptionService.GetAllDoctorSubscriptionsAsync();
+            return Ok(doctorSubscriptions);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<DoctorSubscription>> GetDoctorSubscription(Guid id)
+        public async Task<ActionResult<DoctorSubscriptionResponse>> GetDoctorSubscription(Guid id)
         {
             var doctorSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id);
             if (doctorSubscription == null)
@@ -36,7 +38,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<DoctorSubscription>> CreateDoctorSubscription(DoctorSubscription doctorSubscription)
+        public async Task<ActionResult<DoctorSubscriptionResponse>> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -45,23 +47,18 @@ namespace MediPlat.API.Controllers
 
             try
             {
-                await _doctorSubscriptionService.AddDoctorSubscriptionAsync(doctorSubscription);
-                return CreatedAtAction(nameof(GetDoctorSubscription), new { id = doctorSubscription.Id }, doctorSubscription);
+                var response = await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request);
+                return CreatedAtAction(nameof(GetDoctorSubscription), new { id = response.Id }, response);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while creating the doctor subscription.");
+                return StatusCode(500, $"An error occurred while creating the doctor subscription: {ex.Message}");
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDoctorSubscription(Guid id, DoctorSubscription doctorSubscription)
+        public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
         {
-            if (id != doctorSubscription.Id)
-            {
-                return BadRequest();
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -69,12 +66,16 @@ namespace MediPlat.API.Controllers
 
             try
             {
-                await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(doctorSubscription);
-                return NoContent();
+                var response = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while updating the doctor subscription.");
+                return StatusCode(500, $"An error occurred while updating the doctor subscription: {ex.Message}");
             }
         }
 
@@ -86,9 +87,13 @@ namespace MediPlat.API.Controllers
                 await _doctorSubscriptionService.DeleteDoctorSubscriptionAsync(id);
                 return NoContent();
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while deleting the doctor subscription.");
+                return StatusCode(500, $"An error occurred while deleting the doctor subscription: {ex.Message}");
             }
         }
     }
