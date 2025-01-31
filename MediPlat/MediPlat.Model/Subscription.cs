@@ -19,7 +19,7 @@ public partial class Subscription
 
     public DateTime? UpdateDate { get; set; }
 
-    public virtual ICollection<DoctorSubcription> DoctorSubcriptions { get; set; } = new List<DoctorSubcription>();
+    public virtual ICollection<DoctorSubscription> DoctorSubcriptions { get; set; } = new List<DoctorSubscription>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }

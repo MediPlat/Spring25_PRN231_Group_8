@@ -1,4 +1,4 @@
-﻿using MediPlat.Repository.Entities;
+﻿using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,8 +12,8 @@ namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatDBContext _mediPlatDBContext;
-        public GenericRepository(MediPlatDBContext mediPlatDBContext) 
+        private MediPlatContext _mediPlatDBContext;
+        public GenericRepository(MediPlatContext mediPlatDBContext) 
         {
             _mediPlatDBContext = mediPlatDBContext;
         }
@@ -31,12 +31,12 @@ namespace MediPlat.Repository.Repositories
             _mediPlatDBContext.SaveChanges();
         }
 
-        public T? GetId(int id)
+        public T? GetId(Guid id)
         {
             return _mediPlatDBContext.Set<T>().Find(id);
         }
 
-        public async Task<T?> GetIdAsync(int id)
+        public async Task<T?> GetIdAsync(Guid id)
         {
             return await _mediPlatDBContext.Set<T>().FindAsync(id);
         }

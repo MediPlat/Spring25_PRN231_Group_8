@@ -1,0 +1,61 @@
+@page
+@model MediPlat.RazorPage.Pages_DoctorSubcriptions.CreateModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Create</title>
+</head>
+<body>
+
+<h4>DoctorSubcription</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="DoctorSubcription.Id" class="control-label"></label>
+                <input asp-for="DoctorSubcription.Id" class="form-control" />
+                <span asp-validation-for="DoctorSubcription.Id" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoctorSubcription.SubscriptionId" class="control-label"></label>
+                <select asp-for="DoctorSubcription.SubscriptionId" class ="form-control" asp-items="ViewBag.SubscriptionId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoctorSubcription.EnableSlot" class="control-label"></label>
+                <input asp-for="DoctorSubcription.EnableSlot" class="form-control" />
+                <span asp-validation-for="DoctorSubcription.EnableSlot" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoctorSubcription.Description" class="control-label"></label>
+                <input asp-for="DoctorSubcription.Description" class="form-control" />
+                <span asp-validation-for="DoctorSubcription.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoctorSubcription.DoctorId" class="control-label"></label>
+                <select asp-for="DoctorSubcription.DoctorId" class ="form-control" asp-items="ViewBag.DoctorId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+</body>
+</html>

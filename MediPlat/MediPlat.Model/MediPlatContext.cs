@@ -20,7 +20,7 @@ public partial class MediPlatContext : DbContext
 
     public virtual DbSet<Doctor> Doctors { get; set; }
 
-    public virtual DbSet<DoctorSubcription> DoctorSubcriptions { get; set; }
+    public virtual DbSet<DoctorSubscription> DoctorSubscriptions { get; set; }
 
     public virtual DbSet<Experience> Experiences { get; set; }
 
@@ -40,14 +40,26 @@ public partial class MediPlatContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        IConfigurationRoot config = builder.Build();
-        optionsBuilder.UseSqlServer(config.GetConnectionString("DB"));
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Retrieve the connection string from appsettings.json
+            var connectionString = GetConnectionString();
+            optionsBuilder.UseSqlServer(connectionString);
+        }
     }
 
-        
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    private string GetConnectionString()
+    {
+        // Build the configuration to read from appsettings.json
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+        IConfigurationRoot configuration = builder.Build();
+        return configuration.GetConnectionString("DB");
+    }
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppointmentSlot>(entity =>
         {
@@ -97,7 +109,7 @@ public partial class MediPlatContext : DbContext
             entity.Property(e => e.UserName).HasMaxLength(255);
         });
 
-        modelBuilder.Entity<DoctorSubcription>(entity =>
+        modelBuilder.Entity<DoctorSubscription>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__DoctorSu__3214EC276B4AE3FE");
 
