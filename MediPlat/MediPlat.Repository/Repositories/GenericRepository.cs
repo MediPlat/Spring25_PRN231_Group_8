@@ -12,8 +12,8 @@ namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatContext _mediPlatDBContext;
-        public GenericRepository(MediPlatContext mediPlatDBContext) 
+        private MediPlatContext _mediPlatContext;
+        public GenericRepository(MediPlatContext mediPlatContext) 
         {
             _mediPlatContext = mediPlatContext;
         }
