@@ -12,8 +12,8 @@ namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatContext _mediPlatContext;
-        public GenericRepository(MediPlatContext mediPlatContext) 
+        private MediPlatContext _mediPlatDBContext;
+        public GenericRepository(MediPlatContext mediPlatDBContext) 
         {
             _mediPlatContext = mediPlatContext;
         }
@@ -31,12 +31,12 @@ namespace MediPlat.Repository.Repositories
             _mediPlatContext.SaveChanges();
         }
 
-        public T? GetId(int id)
+        public T? GetId(Guid id)
         {
             return _mediPlatContext.Set<T>().Find(id);
         }
 
-        public async Task<T?> GetIdAsync(int id)
+        public async Task<T?> GetIdAsync(Guid id)
         {
             return await _mediPlatContext.Set<T>().FindAsync(id);
         }

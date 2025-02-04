@@ -31,7 +31,7 @@ public partial class Doctor
 
     public string? Status { get; set; }
 
-    public virtual ICollection<DoctorSubcription> DoctorSubcriptions { get; set; } = new List<DoctorSubcription>();
+    public virtual ICollection<DoctorSubscription> DoctorSubcriptions { get; set; } = new List<DoctorSubscription>();
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 

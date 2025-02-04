@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediPlat.Model;
 
-public partial class DoctorSubcription
+public partial class DoctorSubscription
 {
     public Guid Id { get; set; }
 

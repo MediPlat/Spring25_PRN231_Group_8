@@ -11,8 +11,8 @@ namespace MediPlat.Repository.IRepositories
     {
         void Add(T objModel);
         void AddRange(IEnumerable<T> objModel);
-        T? GetId(int id);
-        Task<T?> GetIdAsync(int id);
+        T? GetId(Guid id);
+        Task<T?> GetIdAsync(Guid id);
         T? Get(Expression<Func<T, bool>> predicate);
         Task<T?> GetAsync(Expression<Func<T, bool>> predicate);
         IEnumerable<T> GetList(Expression<Func<T, bool>> predicate);
