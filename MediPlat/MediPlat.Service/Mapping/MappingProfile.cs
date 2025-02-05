@@ -16,6 +16,7 @@ namespace MediPlat.Service.Mapping
             CreateMap<SubscriptionRequest, Subscription>();
 
             CreateMap<Subscription, SubscriptionResponse>();
+
         }
     }
 }

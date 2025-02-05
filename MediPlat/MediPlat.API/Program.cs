@@ -12,6 +12,8 @@ using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.Model;
 using MediPlat.Service.Mapping;
+using MediPlat.Service.Services;
+using MediPlat.Service.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +30,15 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 // Register repositories
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IDoctorSubscriptionRepository, DoctorSubscriptionRepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 
 // Register services
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+
+// Register DBContext
+builder.Services.AddDbContext<MediPlatContext>();
 
 static IEdmModel GetEdmModel()
 {
