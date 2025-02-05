@@ -1,4 +1,5 @@
 ﻿using MediPlat.Model;
+using MediPlat.Repository.Entities;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,8 +13,8 @@ namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatContext _mediPlatContext;
-        public GenericRepository(MediPlatContext mediPlatContext) 
+        private MediPlatContext _mediPlatDBContext;
+        public GenericRepository(MediPlatContext mediPlatDBContext) 
         {
             _mediPlatContext = mediPlatContext;
         }
@@ -51,25 +52,55 @@ namespace MediPlat.Repository.Repositories
             return await _mediPlatContext.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
-        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate)
+        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
-            return _mediPlatContext.Set<T>().Where<T>(predicate).ToList();
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.Where(predicate).ToList();
         }
 
-        public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate)
+        public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
-            return await Task.Run(() => _mediPlatContext.Set<T>().Where<T>(predicate));
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.Where(predicate).ToListAsync();
         }
 
-        public IEnumerable<T> GetAll()
+
+        public IEnumerable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)
         {
-            return _mediPlatContext.Set<T>().ToList();
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.ToList();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
         {
-            return await Task.Run(() => _mediPlatContext.Set<T>());
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.ToListAsync();
         }
+
 
         public int Count()
         {
@@ -81,11 +112,23 @@ namespace MediPlat.Repository.Repositories
             return await _mediPlatContext.Set<T>().CountAsync();
         }
 
-        public void Update(T objModel)
+        public void Update(T objModel, params Expression<Func<T, object>>[] includeProperties)
         {
-            _mediPlatContext.Entry(objModel).State = EntityState.Modified;
-            _mediPlatContext.SaveChanges();
+            var entry = _mediPlatDBContext.Entry(objModel);
+            entry.State = EntityState.Modified;
+
+            foreach (var includeProperty in includeProperties)
+            {
+                var property = entry.Property(includeProperty);
+                if (!property.IsModified)
+                {
+                    property.IsModified = true;
+                }
+            }
+
+            _mediPlatDBContext.SaveChanges();
         }
+
 
         public void Remove(T objModel)
         {

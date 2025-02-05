@@ -1,4 +1,4 @@
-﻿using MediPlat.Model.Authen_Athor;
+﻿using MediPlat.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace MediPlat.Service.IServices
 {
-    public interface IAuthService
+    public interface IDoctorSupcriptionService
     {
-        public AuthResult Login(LoginModel loginModel);
+      public Task<List<DoctorSubcription>> GetDoctorSubcriptions(Guid id);
     }
 }

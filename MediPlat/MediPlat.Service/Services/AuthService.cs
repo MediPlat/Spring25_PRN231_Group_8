@@ -1,86 +1,97 @@
-﻿using MediPlat.Model;
-using MediPlat.Model.RequestObject.Auth;
-using MediPlat.Model.ResponseObject.Auth;
-using MediPlat.Repository.IRepositories;
+﻿using MediPlat.Model.Authen_Athor;
 using MediPlat.Service.IServices;
-using Microsoft.Identity.Client;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using MediPlat.Model.Authen_Athor;
+using MediPlat.Repository.Entities;
+using Microsoft.AspNetCore.Mvc;
+using MediPlat.Model;
+using Microsoft.Extensions.Configuration;
+using MediPlat.Repository.IRepositories;
 
 namespace MediPlat.Service.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ITokenService _tokenService;
-        private readonly IEmailService _emailService;
-        private readonly IOTPService _oTPService;
-        private readonly IPatientRepository _patientRepository;
-
-        public AuthService(ITokenService tokenService, IEmailService emailService, IOTPService oTPService, IPatientRepository patientRepository)
+        private readonly IConfiguration _configuration;
+        private readonly IGenericRepository<Doctor> _doctor_repository;
+        private readonly IGenericRepository<Patient> _patient_repository;
+        public AuthService(IConfiguration configuration, IGenericRepository<Doctor> doctor_repository, IGenericRepository<Patient> patient_repository)
         {
-            _tokenService = tokenService;
-            _emailService = emailService;
-            _oTPService = oTPService;
-            _patientRepository = patientRepository;
+            _configuration = configuration;
+            _doctor_repository = doctor_repository;
+            _patient_repository = patient_repository;
         }
 
-        public async Task<AuthTokensResponse?> Login(LoginRequest request)
+        public AuthResult Login(LoginModel loginModel)
         {
-            var patient = await _patientRepository.GetAsync(a => a.Email == request.Email
-            && a.Password == HashPassword(request.Password));
+            AuthResult result = new AuthResult();
+            var patient = _patient_repository.Get(c => c.Email == loginModel.Email);
 
-            if (patient is null)
+            if (patient != null)
             {
-                throw new UnauthorizedAccessException("Wrong email or password");
+                // So sánh mật khẩu plain text
+                if (patient.Password == loginModel.Password)
+                {
+                    var token = GenerateJwtToken(patient.Id, "Patient");
+                    result = new AuthResult
+                    {
+                        Token = "Bearer " + token,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                    };
+                    return result;
+                }
             }
 
-            string accessToken = _tokenService.GenerateAccessToken(patient.Id.ToString(), "Patient", await _oTPService.SendOTPByMail(patient.Email));
+            var doctor = _doctor_repository.Get(d => d.Email == loginModel.Email);
 
-            return new AuthTokensResponse
+            if (doctor != null)
             {
-                AccessToken = accessToken,
-                Role = "Patient"
-            };
-        }
-
-        private string HashPassword(string password)
-        {
-            using var sha256 = SHA256.Create();
-            // Convert the password string to bytes
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-
-            // Compute the hash
-            byte[] hashBytes = sha256.ComputeHash(passwordBytes);
-
-            // Convert the hash to a hexadecimal string
-            string hashedPassword = string.Concat(hashBytes.Select(b => $"{b:x2}"));
-
+                // So sánh mật khẩu plain text
+                if (doctor.Password == loginModel.Password)
+                {
+                    var token = GenerateJwtToken(doctor.Id, "Doctor");
+                    result = new AuthResult
+                    {
+                        Token ="Bearer " + token,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                    };
+                    return result;
+                }
+            }
+            
+            return result;
+           
             return hashedPassword;
         }
 
-        public async Task RegisterAccount(RegisterRequest request)
+        private string GenerateJwtToken(Guid userId, string role)
         {
-            var account = await _patientRepository.GetAsync(a => a.Email == request.Email);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            if (account is not null)
+            var claims = new List<Claim>
             {
-                throw new Exception("Account with this email already exists");
-            }
-
-            var Id = new Guid();
-
-            var newAccount = new Patient
-            {
-                Id = Id,
-                Email = request.Email,
-                Password = HashPassword(request.Password),
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Role, role)
             };
-            _patientRepository.Add(newAccount);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"])),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
