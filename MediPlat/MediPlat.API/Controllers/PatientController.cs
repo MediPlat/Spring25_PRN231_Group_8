@@ -5,11 +5,12 @@ using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace MediPlat.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/patient")]
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _patientService;
@@ -52,6 +53,14 @@ namespace MediPlat.API.Controllers
         public async Task<ActionResult<PatientResponse>> Delete(string id)
         {
             return await _patientService.DeleteById(id);
+        }
+        
+        [Authorize]
+        [HttpGet("odata")]
+        [EnableQuery]
+        public async Task<IQueryable<PatientResponse>> GetPatientsOData()
+        {
+            return (await _patientService.GetAll(HttpContext.User)).AsQueryable();
         }
     }
 }

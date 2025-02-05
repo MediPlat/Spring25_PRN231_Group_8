@@ -19,10 +19,15 @@ builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Pati
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 
 // Add services to the container.
-builder.Services.AddControllers().AddOData(options =>
-{
-    options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
-});
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    })
+    .AddOData(options =>
+    {
+        options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
+    });
 
 // Add DbContext 
 //builder.Services.AddDbContext<MediPlatContext>(options =>
