@@ -27,6 +27,22 @@ namespace MediPlat.Service.Services
             return true;
         }
 
+        public async Task<bool> ChangePassword(ChangePassword change, Guid id)
+        {
+            var doctor = await _doctor_repository.GetIdAsync(id);
+            if (doctor.Password.Equals(change.Old_Password))
+            {
+                if (change.New_Password.Equals(change.Comfirm_Password))
+                {
+                    doctor.Password = change.New_Password;
+                    _doctor_repository.Update(doctor);
+                    return true;
+                }
+            }
+            return false;
+
+        }
+
         public async Task<Doctor> GetByID(Guid id)
         {
            var doctor = await _doctor_repository.GetIdAsync(id);

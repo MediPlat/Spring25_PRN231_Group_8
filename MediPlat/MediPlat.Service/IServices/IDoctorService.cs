@@ -13,5 +13,6 @@ namespace MediPlat.Service.IServices
         public Task<Doctor> GetByID(Guid id);
         public Task<bool> Banned(Guid id);
         public Doctor Update(DoctorSchema doctor, string id);
+        public Task<bool> ChangePassword(ChangePassword change, Guid id);
     }
 }

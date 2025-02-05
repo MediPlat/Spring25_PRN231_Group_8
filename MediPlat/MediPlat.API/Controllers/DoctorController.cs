@@ -35,7 +35,7 @@ namespace MediPlat.API.Controllers
 
         [HttpPatch("profile/update")]
         [Authorize(Policy = "DoctorPolicy")]
-        public IActionResult UpadateProfile(DoctorSchema doctor)
+        public IActionResult UpadateProfile([FromBody]DoctorSchema doctor)
         {
             var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
       
@@ -48,8 +48,42 @@ namespace MediPlat.API.Controllers
             return Ok(doc);
 
         }
-    
 
+        [HttpPatch("banned")]
+        [Authorize(Policy = "DoctorPolicy")]
+
+        public async Task<IActionResult> BanDoctor(string id)
+        {
+            if (id == null)
+            {
+                return BadRequest();
+            }
+
+            bool check = await _service.Banned(Guid.Parse(id));
+            if (check)
+            {
+                return Ok();
+            }
+            return BadRequest();
+        }
+
+        [HttpPatch("profile/changing_password")]
+        [Authorize(Policy = "DoctorPolicy")]
+
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePassword change)
+        {
+            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            if (change == null)
+            {
+                return BadRequest();
+            }
+            bool check = await _service.ChangePassword(change, Guid.Parse(doctorId));
+            if (check)
+            {
+                return Ok();
+            }
+            return BadRequest();
+        }
 
     }
 }
