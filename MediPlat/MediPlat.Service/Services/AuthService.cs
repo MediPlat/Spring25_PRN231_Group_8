@@ -1,18 +1,9 @@
 ﻿using MediPlat.Model.Authen_Athor;
 using MediPlat.Service.IServices;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using MediPlat.Model.Authen_Athor;
-using MediPlat.Repository.Entities;
-using Microsoft.AspNetCore.Mvc;
 using MediPlat.Model;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
@@ -68,9 +59,7 @@ namespace MediPlat.Service.Services
                 }
             }
             
-            return result;
-           
-            return hashedPassword;
+            return result;           
         }
 
         private string GenerateJwtToken(Guid userId, string role)

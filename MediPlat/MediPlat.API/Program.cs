@@ -7,21 +7,30 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.OData;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+
 builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
 builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Patient>>();
-builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDoctorSupcriptionService, DoctorSupcriptionService>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddOData(options =>
+{
+    options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
+});
 
 // Add DbContext 
-builder.Services.AddDbContext<MediPlatContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
-});
+//builder.Services.AddDbContext<MediPlatContext>(options =>
+//{
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
+//});
+builder.Services.AddDbContext<MediPlatContext>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -107,6 +116,8 @@ var app = builder.Build();
 // Configure CORS
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
+app.UseRouting();
+
 // Middleware
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -119,13 +130,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-
-app.UseHttpsRedirection();
-
-// Ensure the correct order of middlewares
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 

@@ -1,13 +1,7 @@
 ﻿using MediPlat.Model;
-using MediPlat.Repository.Entities;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediPlat.Repository.Repositories
 {
@@ -16,40 +10,40 @@ namespace MediPlat.Repository.Repositories
         private MediPlatContext _mediPlatDBContext;
         public GenericRepository(MediPlatContext mediPlatDBContext) 
         {
-            _mediPlatContext = mediPlatContext;
+            _mediPlatDBContext = mediPlatDBContext;
         }
 
 
         public void Add(T model)
         {
-            _mediPlatContext.Set<T>().Add(model);
-            _mediPlatContext.SaveChanges();
+            _mediPlatDBContext.Set<T>().Add(model);
+            _mediPlatDBContext.SaveChanges();
         }
 
         public void AddRange(IEnumerable<T> model)
         {
-            _mediPlatContext.Set<T>().AddRange(model);
-            _mediPlatContext.SaveChanges();
+            _mediPlatDBContext.Set<T>().AddRange(model);
+            _mediPlatDBContext.SaveChanges();
         }
 
         public T? GetId(Guid id)
         {
-            return _mediPlatContext.Set<T>().Find(id);
+            return _mediPlatDBContext.Set<T>().Find(id);
         }
 
         public async Task<T?> GetIdAsync(Guid id)
         {
-            return await _mediPlatContext.Set<T>().FindAsync(id);
+            return await _mediPlatDBContext.Set<T>().FindAsync(id);
         }
 
         public T? Get(Expression<Func<T, bool>> predicate)
         {
-            return _mediPlatContext.Set<T>().FirstOrDefault(predicate);
+            return _mediPlatDBContext.Set<T>().FirstOrDefault(predicate);
         }
 
         public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _mediPlatContext.Set<T>().FirstOrDefaultAsync(predicate);
+            return await _mediPlatDBContext.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
         public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
@@ -104,12 +98,12 @@ namespace MediPlat.Repository.Repositories
 
         public int Count()
         {
-            return _mediPlatContext.Set<T>().Count();
+            return _mediPlatDBContext.Set<T>().Count();
         }
 
         public async Task<int> CountAsync()
         {
-            return await _mediPlatContext.Set<T>().CountAsync();
+            return await _mediPlatDBContext.Set<T>().CountAsync();
         }
 
         public void Update(T objModel, params Expression<Func<T, object>>[] includeProperties)
@@ -132,13 +126,13 @@ namespace MediPlat.Repository.Repositories
 
         public void Remove(T objModel)
         {
-            _mediPlatContext.Set<T>().Remove(objModel);
-            _mediPlatContext.SaveChanges();
+            _mediPlatDBContext.Set<T>().Remove(objModel);
+            _mediPlatDBContext.SaveChanges();
         }
 
         public void Dispose()
         {
-            _mediPlatContext.Dispose();
+            _mediPlatDBContext.Dispose();
         }
     }
 }

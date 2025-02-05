@@ -39,7 +39,8 @@ namespace MediPlat.Service.Services
                     Address = patientModel.Address,
                     Sex = patientModel.Sex,
                     Status = patientModel.Status,
-                    JoinDate = patientModel.JoinDate
+                    JoinDate = patientModel.JoinDate,
+                    Password = patientModel.Password,
                 });
 
                 return new PatientResponse

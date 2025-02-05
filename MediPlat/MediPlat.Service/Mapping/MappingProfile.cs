@@ -9,13 +9,6 @@ namespace MediPlat.Service.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<DoctorSubscriptionRequest, DoctorSubscription>();
-
-            CreateMap<DoctorSubscription, DoctorSubscriptionResponse>();
-
-            CreateMap<SubscriptionRequest, Subscription>();
-
-            CreateMap<Subscription, SubscriptionResponse>();
 
         }
     }
