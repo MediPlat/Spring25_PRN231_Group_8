@@ -13,6 +13,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
 builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Patient>>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IDoctorSupcriptionService, DoctorSupcriptionService>();
 // Add services to the container.
 builder.Services.AddControllers();
 
