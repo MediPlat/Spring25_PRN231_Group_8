@@ -33,7 +33,15 @@ namespace MediPlat.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<PatientResponse>> GetById(string id)
         {
-            return await _patientService.GetById(id);
+            try
+            {
+                var result = await _patientService.GetById(id);
+                return result == null ? BadRequest($"Can not find patient with id: {id}") : Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [Authorize]
@@ -41,7 +49,14 @@ namespace MediPlat.API.Controllers
         [HttpPost]
         public async Task<ActionResult<PatientResponse>> Create([FromForm] PatientRequest patientModel)
         {
-            return await _patientService.Create(patientModel, HttpContext.User);
+            try
+            {
+                return Ok(await _patientService.Create(patientModel, HttpContext.User));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [Authorize]
@@ -49,7 +64,15 @@ namespace MediPlat.API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<PatientResponse>> Update(string id, [FromBody] PatientRequest patientModel)
         {
-            return await _patientService.Update(id, patientModel, HttpContext.User);
+            try
+            {
+                var result = await _patientService.Update(id, patientModel, HttpContext.User);
+                return result == null ? BadRequest($"Can not find patient with id: {id}") : Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [Authorize]
@@ -57,7 +80,15 @@ namespace MediPlat.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<PatientResponse>> Delete(string id)
         {
-            return await _patientService.DeleteById(id);
+            try
+            {
+                var result = await _patientService.DeleteById(id);
+                return result == null ? BadRequest($"Can not find patient with id: {id}") : Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

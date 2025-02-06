@@ -59,7 +59,7 @@ namespace MediPlat.Service.Services
             }
             catch (Exception ex)
             {
-                return null;
+                throw new Exception(ex.Message);
             }
         }
 
@@ -92,7 +92,7 @@ namespace MediPlat.Service.Services
             }
             catch (Exception ex)
             {
-                return null;
+                throw new Exception(ex.Message);
             }
         }
 
@@ -121,26 +121,33 @@ namespace MediPlat.Service.Services
 
         public async Task<PatientResponse?> GetById(string code)
         {
-            guid = new Guid(code);
-            var patient = await _patientRepository.GetAsync(p => p.Id == guid);
+            try
+            {
+                guid = new Guid(code);
+                var patient = await _patientRepository.GetAsync(p => p.Id == guid);
 
-            if (patient == null) 
-            {
-                return null;
+                if (patient == null)
+                {
+                    return null;
+                }
+                return new PatientResponse
+                {
+                    Id = patient.Id,
+                    UserName = patient.UserName,
+                    FullName = patient.FullName,
+                    Email = patient.Email,
+                    PhoneNumber = patient.PhoneNumber,
+                    Balance = patient.Balance,
+                    JoinDate = patient.JoinDate,
+                    Sex = patient.Sex,
+                    Address = patient.Address,
+                    Status = patient.Status
+                };
             }
-            return new PatientResponse
+            catch (Exception ex)
             {
-                Id = patient.Id,
-                UserName = patient.UserName,
-                FullName = patient.FullName,
-                Email = patient.Email,
-                PhoneNumber = patient.PhoneNumber,
-                Balance = patient.Balance,
-                JoinDate = patient.JoinDate,
-                Sex = patient.Sex,
-                Address = patient.Address,
-                Status = patient.Status
-            };
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<PatientResponse?> Update(string id, PatientRequest patientModel, ClaimsPrincipal claims)
@@ -182,7 +189,7 @@ namespace MediPlat.Service.Services
             }
             catch (Exception ex)
             {
-                return null;
+                throw new Exception(ex.Message);
             }
         }
     }
