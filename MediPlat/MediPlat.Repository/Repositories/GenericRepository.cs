@@ -56,55 +56,59 @@ namespace MediPlat.Repository.Repositories
             return await _dbSet.Where(predicate).ToListAsync();
         }
 
-        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate)
+        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
-            return _dbSet.Where(predicate).ToList();
-        }
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
 
-        public async Task AddAsync(T entity)
-        {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-        }
-
-        public void Add(T entity)
-        {
-            _dbSet.Add(entity);
-            _context.SaveChanges();
-        }
-
-        public async Task AddRangeAsync(IEnumerable<T> entities)
-        {
-            await _dbSet.AddRangeAsync(entities);
-            await _context.SaveChangesAsync();
-        }
-
-        public void AddRange(IEnumerable<T> entities)
-        {
-            _dbSet.AddRange(entities);
-            _context.SaveChanges();
-        }
-
-        public async Task UpdateAsync(T entity)
-        {
-            _dbSet.Update(entity);
-            await _context.SaveChangesAsync();
-        }
-
-        public void Update(T entity)
-        {
-            _dbSet.Update(entity);
-            _context.SaveChanges();
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity != null)
+            foreach (var includeProperty in includeProperties)
             {
-                _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
+                query = query.Include(includeProperty);
             }
+
+            return query.Where(predicate).ToList();
+        }
+
+        public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        {
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.Where(predicate).ToListAsync();
+        }
+
+
+        public IEnumerable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)
+        {
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return query.ToList();
+        }
+
+        public async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
+        {
+            IQueryable<T> query = _mediPlatDBContext.Set<T>();
+
+            foreach (var includeProperty in includeProperties)
+            {
+                query = query.Include(includeProperty);
+            }
+
+            return await query.ToListAsync();
+        }
+
+
+        public int Count()
+        {
+            return _mediPlatDBContext.Set<T>().Count();
         }
 
         public void Remove(T entity)
@@ -113,12 +117,25 @@ namespace MediPlat.Repository.Repositories
             _context.SaveChanges();
         }
 
-        public int Count()
+        public void Update(T objModel, params Expression<Func<T, object>>[] includeProperties)
         {
-            return _dbSet.Count();
+            var entry = _mediPlatDBContext.Entry(objModel);
+            entry.State = EntityState.Modified;
+
+            foreach (var includeProperty in includeProperties)
+            {
+                var property = entry.Property(includeProperty);
+                if (!property.IsModified)
+                {
+                    property.IsModified = true;
+                }
+            }
+
+            _mediPlatDBContext.SaveChanges();
         }
 
-        public async Task<int> CountAsync()
+
+        public void Remove(T objModel)
         {
             return await _dbSet.CountAsync();
         }

@@ -1,98 +1,127 @@
+using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
-using MediPlat.Service.IService;
-using MediPlat.Service.Service;
+using MediPlat.Service.IServices;
+using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.AspNetCore.OData;
-using Microsoft.OData.Edm;
-using Microsoft.OData.ModelBuilder;
-using MediPlat.Model.Model;
-using MediPlat.Service.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+
+builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
+builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Patient>>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    })
+    .AddOData(options =>
+    {
+        options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
+    });
+
+// Add DbContext 
+//builder.Services.AddDbContext<MediPlatContext>(options =>
+//{
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
+//});
+builder.Services.AddDbContext<MediPlatContext>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Register AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile));
-
-// Register repositories
-builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
-builder.Services.AddScoped<IDoctorSubscriptionRepository, DoctorSubscriptionRepository>();
-
-// Register services
-builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
-builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
-
-//Register Razor Page
-builder.Services.AddRazorPages();
-
-static IEdmModel GetEdmModel()
+builder.Services.AddSwaggerGen(c =>
 {
-    ODataConventionModelBuilder builder = new();
-    builder.EntitySet<DoctorSubscription>("DoctorSubscription");
-    builder.EntitySet<Subscription>("Subscription");
-    return builder.GetEdmModel();
-}
-builder.Services.AddControllers().AddOData(opt => opt.Select().Filter().Count().OrderBy().Expand().SetMaxTop(100).AddRouteComponents("odata", GetEdmModel()));
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-        builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing in configuration.")))
-        };
-    });
-
-builder.Services.AddSwaggerGen(option =>
-{
-    option.DescribeAllParametersInCamelCase();
-    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Please enter token",
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         BearerFormat = "JWT",
         Scheme = "Bearer"
     });
-    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
+
+
+// Configure Authentication and Authorization
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?úng schema
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?úng schema cho role
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            var claims = context.Principal?.Claims;
+            foreach (var claim in claims)
+            {
+                Console.WriteLine($"{claim.Type}: {claim.Value}");
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
+});
+
 
 // Build the app
 var app = builder.Build();
 
 // Configure CORS
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+app.UseRouting();
 
 // Middleware
 app.UseRouting();
@@ -103,11 +132,11 @@ app.UseAuthorization();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage(); // Hi?n th? l?i chi ti?t
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Map routes
 app.MapControllers();
 app.MapRazorPages();
 
