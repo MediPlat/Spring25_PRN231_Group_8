@@ -14,12 +14,9 @@ namespace MediPlat.Model.RequestObject
 
         [Required]
         public Guid DoctorId { get; set; }
+        public DateTime? StartDate { get; set; } = DateTime.Now;
 
-        [Required]
-        public DateTime StartDate { get; set; } = DateTime.UtcNow;
-
-        [Required]
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         public DateTime? UpdateDate { get; set; }
     }

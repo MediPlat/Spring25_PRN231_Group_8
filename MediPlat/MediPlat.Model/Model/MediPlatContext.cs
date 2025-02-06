@@ -42,17 +42,19 @@ public partial class MediPlatContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-            optionsBuilder.UseSqlServer(this.GetConnectionString());
+            // Retrieve the connection string from appsettings.json
+            var connectionString = GetConnectionString();
+            optionsBuilder.UseSqlServer(connectionString);
         }
     }
-
     private string GetConnectionString()
     {
-        IConfiguration config = new ConfigurationBuilder()
-                                    .SetBasePath(Directory.GetCurrentDirectory())
-                                    .AddJsonFile("appsettings.json", true, true).Build();
-        return config["ConnectionStrings:DB"];
+        // Build the configuration to read from appsettings.json
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        IConfigurationRoot configuration = builder.Build();
+        return configuration.GetConnectionString("DB");
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

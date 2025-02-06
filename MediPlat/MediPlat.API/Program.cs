@@ -1,22 +1,35 @@
-using MediPlat.Model;
+﻿using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
 using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.OData;
+using MediPlat.Model.Model;
+using MediPlat.Service.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+//Register Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
+//Register Repository
+builder.Services.AddScoped<IDoctorSubscriptionRepository, DoctorSubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
-builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Patient>>();
+builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
+builder.Services.AddRazorPages();
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -84,8 +97,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?�ng schema
-        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?�ng schema cho role
+        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?úng schema
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?úng schema cho role
     };
 
     options.Events = new JwtBearerEvents
@@ -120,8 +133,6 @@ var app = builder.Build();
 
 // Configure CORS
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
-app.UseRouting();
 
 // Middleware
 app.UseRouting();

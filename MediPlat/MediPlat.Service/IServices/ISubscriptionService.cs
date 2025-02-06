@@ -1,7 +1,7 @@
 ﻿using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 
-namespace MediPlat.Service.IService
+namespace MediPlat.Service.IServices
 {
     public interface ISubscriptionService
     {

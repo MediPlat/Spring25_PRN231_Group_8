@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
 
@@ -70,7 +70,8 @@ namespace MediPlat.Service.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Role, role),
+                new Claim("DoctorId", userId.ToString())
             };
 
             var token = new JwtSecurityToken(

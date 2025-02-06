@@ -1,4 +1,4 @@
-﻿using MediPlat.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Repository.IRepositories;
 using System;
 using System.Collections.Generic;

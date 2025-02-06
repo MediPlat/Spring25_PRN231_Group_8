@@ -8,41 +8,9 @@ namespace MediPlat.Repository.Repositories
     {
         private readonly MediPlatContext _context;
 
-        public SubscriptionRepository() : base(new MediPlatContext())
+        public SubscriptionRepository(MediPlatContext context) : base(context)
         {
-            _context = new MediPlatContext();
-        }
-
-        public IQueryable<Subscription> GetAllSubscriptions()
-        {
-            return _context.Subscriptions.AsQueryable();
-        }
-
-        public async Task<Subscription?> GetSubscriptionByIdAsync(Guid id)
-        {
-            return await _context.Subscriptions.FindAsync(id);
-        }
-
-        public async Task AddSubscriptionAsync(Subscription subscription)
-        {
-            _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateSubscriptionAsync(Subscription subscription)
-        {
-            _context.Entry(subscription).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteSubscriptionAsync(Guid id)
-        {
-            var subscription = await _context.Subscriptions.FindAsync(id);
-            if (subscription != null)
-            {
-                _context.Subscriptions.Remove(subscription);
-                await _context.SaveChangesAsync();
-            }
+            _context = context;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
-using MediPlat.Service.IService;
+using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
@@ -23,7 +23,7 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Roles = "1,2")]
+        [Authorize(Roles = "Admin,Doctor")]
         public IActionResult GetSubscriptions()
         {
             try
@@ -39,7 +39,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "1,2")]
+        [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> GetSubscription(Guid id)
         {
             try
@@ -60,7 +60,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "1")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateSubscription([FromBody] SubscriptionRequest request)
         {
             if (!ModelState.IsValid)
@@ -80,7 +80,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "1")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateSubscription(Guid id, [FromBody] SubscriptionRequest request)
         {
             if (!ModelState.IsValid)
@@ -105,7 +105,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "1")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteSubscription(Guid id)
         {
             try

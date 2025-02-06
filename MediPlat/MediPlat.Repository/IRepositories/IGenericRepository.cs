@@ -1,13 +1,16 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace MediPlat.Repository.IRepositories
 {
     public interface IGenericRepository<T> where T : class
     {
         void Add(T objModel);
-        Task AddAsync(T objModel);
         void AddRange(IEnumerable<T> objModel);
-        Task AddRangeAsync(IEnumerable<T> objModel);
         T? GetId(Guid id);
         Task<T?> GetIdAsync(Guid id);
         T? Get(Expression<Func<T, bool>> predicate);
@@ -20,7 +23,6 @@ namespace MediPlat.Repository.IRepositories
         Task<int> CountAsync();
         void Update(T objModel, params Expression<Func<T, object>>[] includeProperties);
         void Remove(T objModel);
-        Task DeleteAsync(Guid id);
         void Dispose();
     }
 }
