@@ -1,14 +1,19 @@
-﻿using MediPlat.Model;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
 using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OData.Edm;
+using Microsoft.AspNetCore.OData.Extensions;
 using System.Text;
 using Microsoft.AspNetCore.OData;
 using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
+using Microsoft.OData.ModelBuilder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,7 +84,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
 // Configure Authentication and Authorization
 builder.Services.AddAuthentication(options =>
 {
@@ -120,13 +124,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
     options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
-
 
 // Build the app
 var app = builder.Build();
@@ -143,12 +145,30 @@ app.UseAuthorization();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); // Hi?n th? l?i chi ti?t
+    app.UseDeveloperExceptionPage(); // Hiển thị lỗi chi tiết
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
+// Ensure the correct order of middlewares
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
 
 app.Run();
+
+static IEdmModel GetEdmModel()
+{
+    var builder = new ODataConventionModelBuilder();
+
+    // Định nghĩa các thực thể và tập thực thể
+    builder.EntitySet<DoctorSubscription>("DoctorSubscriptions");
+
+    // Định nghĩa các mối quan hệ nếu cần thiết
+    // builder.EntitySet<EntityName>("EntitySetName");
+
+    return builder.GetEdmModel();
+}

@@ -17,17 +17,14 @@ namespace MediPlat.API.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel loginModel)
         {
-            AuthResult login = new AuthResult();
             if (loginModel == null)
             {
                 throw new ArgumentNullException(nameof(loginModel));
             }
 
-            login = _authService.Login(loginModel);
-            if (login == null)
+            var login = _authService.Login(loginModel);
+            if (string.IsNullOrEmpty(login.Token))
             {
-                // Log thêm chi tiết nếu cần thiết.
-                Console.WriteLine("Login response is null");
                 return Unauthorized(new { Message = "Invalid credentials" });
             }
 
