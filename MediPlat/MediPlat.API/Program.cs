@@ -22,7 +22,7 @@ builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     })
     .AddOData(options =>
     {
@@ -131,7 +131,7 @@ app.UseAuthorization();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); // Hi?n th? l?i chi ti?t
+    app.UseDeveloperExceptionPage(); 
     app.UseSwagger();
     app.UseSwaggerUI();
 }

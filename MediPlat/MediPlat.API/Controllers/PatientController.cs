@@ -58,9 +58,9 @@ namespace MediPlat.API.Controllers
         [Authorize]
         [HttpGet("odata")]
         [EnableQuery]
-        public async Task<IQueryable<PatientResponse>> GetPatientsOData()
+        public async Task<List<PatientResponse>> GetPatientsOData()
         {
-            return (await _patientService.GetAll(HttpContext.User)).AsQueryable();
+            return await _patientService.GetAll(HttpContext.User);
         }
     }
 }
