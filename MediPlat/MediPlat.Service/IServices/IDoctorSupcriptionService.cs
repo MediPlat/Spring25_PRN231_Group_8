@@ -9,6 +9,6 @@ namespace MediPlat.Service.IServices
 {
     public interface IDoctorSupcriptionService
     {
-      public Task<List<DoctorSubcription>> GetDoctorSubcriptions(Guid id);
+      public Task<List<DoctorSubscription>> GetDoctorSubcriptions(Guid id);
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MediPlat.Model;
 
-public partial class DoctorSubcription
+public partial class DoctorSubscription
 {
     public Guid Id { get; set; }
 
@@ -11,7 +11,11 @@ public partial class DoctorSubcription
 
     public byte? EnableSlot { get; set; }
 
-    public string? Description { get; set; }
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
+    public DateTime? UpdateDate { get; set; }
 
     public Guid? DoctorId { get; set; }
 

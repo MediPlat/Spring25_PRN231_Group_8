@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace MediPlat.Model;
 
@@ -20,7 +19,7 @@ public partial class MediPlatContext : DbContext
 
     public virtual DbSet<Doctor> Doctors { get; set; }
 
-    public virtual DbSet<DoctorSubcription> DoctorSubcriptions { get; set; }
+    public virtual DbSet<DoctorSubscription> DoctorSubscriptions { get; set; }
 
     public virtual DbSet<Experience> Experiences { get; set; }
 
@@ -39,19 +38,14 @@ public partial class MediPlatContext : DbContext
     public virtual DbSet<Transaction> Transactions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        IConfigurationRoot config = builder.Build();
-        optionsBuilder.UseSqlServer(config.GetConnectionString("DB"));
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=(local);Uid=sa;Pwd=123456;Database=MediPlat; TrustServerCertificate=True");
 
-        
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppointmentSlot>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC27B59A61FA");
+            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC27456285F7");
 
             entity.ToTable("AppointmentSlot");
 
@@ -73,7 +67,7 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Doctor>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Doctor__3214EC2711D34082");
+            entity.HasKey(e => e.Id).HasName("PK__Doctor__3214EC275379655F");
 
             entity.ToTable("Doctor");
 
@@ -97,30 +91,35 @@ public partial class MediPlatContext : DbContext
             entity.Property(e => e.UserName).HasMaxLength(255);
         });
 
-        modelBuilder.Entity<DoctorSubcription>(entity =>
+        modelBuilder.Entity<DoctorSubscription>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__DoctorSu__3214EC276B4AE3FE");
+            entity.HasKey(e => e.Id).HasName("PK__DoctorSu__3214EC2783F3045C");
 
-            entity.ToTable("DoctorSubcription");
+            entity.ToTable("DoctorSubscription");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("ID");
             entity.Property(e => e.DoctorId).HasColumnName("DoctorID");
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.StartDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.SubscriptionId).HasColumnName("SubscriptionID");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Doctor).WithMany(p => p.DoctorSubcriptions)
+            entity.HasOne(d => d.Doctor).WithMany(p => p.DoctorSubscriptions)
                 .HasForeignKey(d => d.DoctorId)
                 .HasConstraintName("FK__DoctorSub__Docto__534D60F1");
 
-            entity.HasOne(d => d.Subscription).WithMany(p => p.DoctorSubcriptions)
+            entity.HasOne(d => d.Subscription).WithMany(p => p.DoctorSubscriptions)
                 .HasForeignKey(d => d.SubscriptionId)
                 .HasConstraintName("FK__DoctorSub__Subsc__52593CB8");
         });
 
         modelBuilder.Entity<Experience>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Experien__3214EC275D2F28F8");
+            entity.HasKey(e => e.Id).HasName("PK__Experien__3214EC279A6C4B16");
 
             entity.ToTable("Experience");
 
@@ -131,6 +130,10 @@ public partial class MediPlatContext : DbContext
             entity.Property(e => e.SpecialtyId).HasColumnName("SpecialtyID");
             entity.Property(e => e.Title).HasMaxLength(255);
 
+            entity.HasOne(d => d.Doctor).WithMany(p => p.Experiences)
+                .HasForeignKey(d => d.DoctorId)
+                .HasConstraintName("FK__Experienc__Docto__5165187F");
+
             entity.HasOne(d => d.Specialty).WithMany(p => p.Experiences)
                 .HasForeignKey(d => d.SpecialtyId)
                 .HasConstraintName("FK__Experienc__Speci__5070F446");
@@ -138,7 +141,7 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Patient>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Patient__3214EC279043DD46");
+            entity.HasKey(e => e.Id).HasName("PK__Patient__3214EC273C7831E2");
 
             entity.ToTable("Patient");
 
@@ -162,7 +165,7 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Review__3214EC27B1F4900A");
+            entity.HasKey(e => e.Id).HasName("PK__Review__3214EC27D9D395F6");
 
             entity.ToTable("Review");
 
@@ -188,7 +191,7 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Services__3214EC2721C0CD1E");
+            entity.HasKey(e => e.Id).HasName("PK__Services__3214EC27A9A4611E");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
@@ -203,7 +206,7 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Slot>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Slot__3214EC27E82AB31A");
+            entity.HasKey(e => e.Id).HasName("PK__Slot__3214EC277926FC3B");
 
             entity.ToTable("Slot");
 
@@ -235,7 +238,7 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Specialty>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Specialt__3214EC27B4C6CB84");
+            entity.HasKey(e => e.Id).HasName("PK__Specialt__3214EC2702E195FD");
 
             entity.ToTable("Specialty");
 
@@ -247,24 +250,22 @@ public partial class MediPlatContext : DbContext
 
         modelBuilder.Entity<Subscription>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Subscrip__3214EC271196BF24");
+            entity.HasKey(e => e.Id).HasName("PK__Subscrip__3214EC276B3E33CA");
 
             entity.ToTable("Subscription");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("ID");
-            entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC2736EC664E");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27C8B91882");
 
             entity.ToTable("Transaction");
 

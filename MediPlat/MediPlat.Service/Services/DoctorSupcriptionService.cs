@@ -11,17 +11,19 @@ namespace MediPlat.Service.Services
 {
     public class DoctorSupcriptionService : IDoctorSupcriptionService
     {
-        private readonly IGenericRepository<DoctorSubcription> _repository;
-        public DoctorSupcriptionService(IGenericRepository<DoctorSubcription> repository)
+        private readonly IGenericRepository<DoctorSubscription> _repository;
+        public DoctorSupcriptionService(IGenericRepository<DoctorSubscription> repository)
         {
             _repository = repository;
         }
 
-        public async Task<List<DoctorSubcription>> GetDoctorSubcriptions(Guid id)
+        public async Task<List<DoctorSubscription>> GetDoctorSubcriptions(Guid id)
         {
-            List<DoctorSubcription> doctorSubcriptions = new List<DoctorSubcription>();
-            doctorSubcriptions = _repository.GetList(s => s.DoctorId == id, s => s.Subscription).ToList();
-            return doctorSubcriptions;
+            List<DoctorSubscription> doctorSubscriptions = new List<DoctorSubscription>();
+            doctorSubscriptions =  _repository.GetList(s => s.DoctorId == id, s => s.Subscription!).ToList();
+            return doctorSubscriptions;
         }
+
+
     }
 }
