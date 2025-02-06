@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.OData;
 using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
+using MediPlat.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +29,7 @@ builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 //Register Repository
-builder.Services.AddScoped<IDoctorSubscriptionRepository, DoctorSubscriptionRepository>();
-builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
 builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
@@ -139,6 +139,7 @@ app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(
 // Middleware
 app.UseRouting();
 app.UseHttpsRedirection();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

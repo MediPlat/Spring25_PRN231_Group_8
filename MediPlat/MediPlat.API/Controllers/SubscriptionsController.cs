@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/subscription")]
     [ApiController]
     public class SubscriptionsController : ODataController
     {
@@ -24,11 +24,13 @@ namespace MediPlat.API.Controllers
         [HttpGet]
         [EnableQuery]
         [Authorize(Roles = "Admin,Doctor")]
-        public IActionResult GetSubscriptions()
+        public IActionResult GetSubscriptions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var subscriptions = _subscriptionService.GetAllSubscriptions();
+                var subscriptions = _subscriptionService.GetAllSubscriptions()
+                             .Skip((page - 1) * pageSize)
+                             .Take(pageSize);
                 return Ok(subscriptions);
             }
             catch (Exception ex)
@@ -42,21 +44,8 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Admin,Doctor")]
         public async Task<IActionResult> GetSubscription(Guid id)
         {
-            try
-            {
-                var subscription = await _subscriptionService.GetSubscriptionByIdAsync(id);
-                return Ok(subscription);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Subscription not found: {Id}", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching subscription: {Id}", id);
-                return StatusCode(500, "Internal server error");
-            }
+            var subscription = await _subscriptionService.GetSubscriptionByIdAsync(id);
+            return Ok(subscription);
         }
 
         [HttpPost]

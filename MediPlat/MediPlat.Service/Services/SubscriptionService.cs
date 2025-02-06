@@ -10,24 +10,24 @@ namespace MediPlat.Service.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private readonly ISubscriptionRepository _subscriptionRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public SubscriptionService(ISubscriptionRepository subscriptionRepository, IMapper mapper)
+        public SubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _subscriptionRepository = subscriptionRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public IQueryable<SubscriptionResponse> GetAllSubscriptions()
         {
-            var subscriptions = _subscriptionRepository.GetAll();
+            var subscriptions = _unitOfWork.Subscriptions.GetAll();
             return subscriptions.Select(sub => _mapper.Map<SubscriptionResponse>(sub)).AsQueryable();
         }
 
         public async Task<SubscriptionResponse> GetSubscriptionByIdAsync(Guid id)
         {
-            var subscription = await _subscriptionRepository.GetIdAsync(id);
+            var subscription = await _unitOfWork.Subscriptions.GetIdAsync(id);
             if (subscription == null)
                 throw new KeyNotFoundException("Subscription not found.");
             
@@ -38,32 +38,37 @@ namespace MediPlat.Service.Services
         {
             var subscription = _mapper.Map<Subscription>(request);
             subscription.Id = Guid.NewGuid();
-            subscription.UpdateDate = DateTime.UtcNow;
+            subscription.UpdateDate = DateTime.Now;
 
-            _subscriptionRepository.Add(subscription);
+            _unitOfWork.Subscriptions.Add(subscription);
+            await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<SubscriptionResponse>(subscription);
         }
 
         public async Task<SubscriptionResponse> UpdateSubscriptionAsync(Guid id, SubscriptionRequest request)
         {
-            var subscription = await _subscriptionRepository.GetIdAsync(id);
+            var subscription = await _unitOfWork.Subscriptions.GetIdAsync(id);
             if (subscription == null)
                 throw new KeyNotFoundException("Subscription not found.");
 
             _mapper.Map(request, subscription);
-            subscription.UpdateDate = DateTime.UtcNow;
+            subscription.UpdateDate = DateTime.Now;
 
-            _subscriptionRepository.Update(subscription);
+            _unitOfWork.Subscriptions.Update(subscription);
+            await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<SubscriptionResponse>(subscription);
         }
 
         public async Task DeleteSubscriptionAsync(Guid id)
         {
-            var subscription = await _subscriptionRepository.GetIdAsync(id);
+            var subscription = await _unitOfWork.Subscriptions.GetIdAsync(id);
             if (subscription == null)
                 throw new KeyNotFoundException("Subscription not found.");
-
-            _subscriptionRepository.Remove(subscription);
+            bool hasDoctorSubscriptions = _unitOfWork.DoctorSubscriptions.GetList(ds => ds.SubscriptionId == id).Any();
+            if (hasDoctorSubscriptions)
+                throw new InvalidOperationException("Cannot delete this subscription as it is referenced by doctor subscriptions.");
+            _unitOfWork.Subscriptions.Remove(subscription);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

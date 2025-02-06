@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace MediPlat.Model.Model;
 
@@ -51,7 +52,7 @@ public partial class MediPlatContext : DbContext
         // Build the configuration to read from appsettings.json
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         IConfigurationRoot configuration = builder.Build();
         return configuration.GetConnectionString("DB");
     }

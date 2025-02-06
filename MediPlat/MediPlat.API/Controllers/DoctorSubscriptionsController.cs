@@ -1,8 +1,6 @@
 ﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
-using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
-using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
@@ -27,18 +25,19 @@ namespace MediPlat.API.Controllers
         [HttpGet]
         [EnableQuery]
         [Authorize(Roles = "Doctor")]
-        public IActionResult GetDoctorSubscriptions()
+        public IActionResult GetDoctorSubscriptions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == "DoctorId");
+                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
                 if (doctorIdClaim == null)
                 {
                     return Unauthorized("DoctorId claim is missing.");
                 }
                 var doctorId = Guid.Parse(doctorIdClaim.Value);
 
-                var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
+                var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId).Skip((page - 1) * pageSize)
+                             .Take(pageSize);
 
                 return Ok(doctorSubscriptions);
             }
@@ -54,29 +53,27 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetDoctorSubscriptions(Guid id)
         {
-            try
+            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value))
             {
-                var doctorId = Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "DoctorId").Value);
-                var doctorSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+                return Unauthorized("Doctor ID is missing.");
+            }
 
-                if (doctorSubscription == null)
-                {
-                    return NotFound($"Doctor subscription with ID {id} not found.");
-                }
+            if (!Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
+            {
+                return Unauthorized("Invalid Doctor ID format.");
+            }
 
-                return Ok(doctorSubscription);
-            }
-            catch (KeyNotFoundException ex)
+            var doctorSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+
+            if (doctorSubscription == null)
             {
-                _logger.LogWarning(ex, "Doctor subscription not found: {Id}", id);
-                return NotFound();
+                return NotFound($"Doctor subscription with ID {id} not found.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching doctor subscription with ID {Id}", id);
-                return StatusCode(500, "Internal server error");
-            }
+
+            return Ok(doctorSubscription);
         }
+
 
         [HttpPost]
         [Authorize(Roles = "Doctor")]
@@ -88,7 +85,11 @@ namespace MediPlat.API.Controllers
             }
             try
             {
-                var doctorId = Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "DoctorId").Value);
+                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
+                {
+                    return Unauthorized("Doctor ID is missing or invalid.");
+                }
 
                 var existingSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
                 if (existingSubscriptions.Any(ds => ds.SubscriptionId == request.SubscriptionId))
@@ -97,17 +98,16 @@ namespace MediPlat.API.Controllers
                 }
 
                 var startDate = request.StartDate ?? DateTime.Now;
-                var endDate = request.EndDate.HasValue ? request.EndDate.Value : startDate.AddMonths(1);
+                var endDate = request.EndDate ?? startDate.AddMonths(1);
 
-                var doctorSubscription = new DoctorSubscription
+                var doctorSubscription = new DoctorSubscriptionRequest
                 {
-                    Id = Guid.NewGuid(),
                     SubscriptionId = request.SubscriptionId,
                     EnableSlot = request.EnableSlot,
                     DoctorId = doctorId,
                     StartDate = startDate,
                     EndDate = endDate,
-                    UpdateDate = request.UpdateDate ?? (DateTime?)null
+                    UpdateDate = request.UpdateDate
                 };
 
                 await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId);
@@ -120,6 +120,7 @@ namespace MediPlat.API.Controllers
             }
         }
 
+
         [HttpPut("{id}")]
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
@@ -130,23 +131,29 @@ namespace MediPlat.API.Controllers
             }
             try
             {
-                var doctorId = Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "DoctorId").Value);
-                var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
+                {
+                    return Unauthorized("Doctor ID is missing or invalid.");
+                }
 
+                var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
                 if (existingSubscription == null)
                 {
                     return NotFound($"Doctor subscription with ID {id} not found.");
                 }
+
                 var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-                var updatedSubscription = new DoctorSubscription
+                var updatedSubscription = new DoctorSubscriptionRequest
                 {
-                    Id = existingSubscription.Id,
                     SubscriptionId = existingSubscription.SubscriptionId,
                     EnableSlot = request.EnableSlot,
                     DoctorId = existingSubscription.DoctorId,
                     StartDate = existingSubscription.StartDate,
-                    EndDate = existingSubscription.EndDate == DateTime.MinValue ? existingSubscription.StartDate.AddMonths(1) : existingSubscription.EndDate, // ✅ Fix lỗi EndDate null
-                    UpdateDate = TimeZoneInfo.ConvertTime(DateTime.UtcNow, localTimeZone)
+                    EndDate = existingSubscription.EndDate == DateTime.MinValue
+                              ? existingSubscription.StartDate.AddMonths(1)
+                              : existingSubscription.EndDate,
+                    UpdateDate = TimeZoneInfo.ConvertTime(DateTime.Now, localTimeZone)
                 };
 
                 var response = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, updatedSubscription, doctorId);
@@ -165,7 +172,11 @@ namespace MediPlat.API.Controllers
         {
             try
             {
-                var doctorId = Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "DoctorId").Value);
+                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
+                {
+                    return Unauthorized("Doctor ID is missing or invalid.");
+                }
 
                 var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
                 if (existingSubscription == null)
@@ -182,5 +193,6 @@ namespace MediPlat.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
     }
 }

@@ -18,13 +18,11 @@ namespace MediPlat.Repository.Repositories
         public void Add(T model)
         {
             _mediPlatDBContext.Set<T>().Add(model);
-            _mediPlatDBContext.SaveChanges();
         }
 
         public void AddRange(IEnumerable<T> model)
         {
             _mediPlatDBContext.Set<T>().AddRange(model);
-            _mediPlatDBContext.SaveChanges();
         }
 
         public T? GetId(Guid id)
@@ -120,15 +118,12 @@ namespace MediPlat.Repository.Repositories
                     property.IsModified = true;
                 }
             }
-
-            _mediPlatDBContext.SaveChanges();
         }
 
 
         public void Remove(T objModel)
         {
             _mediPlatDBContext.Set<T>().Remove(objModel);
-            _mediPlatDBContext.SaveChanges();
         }
 
         public void Dispose()
