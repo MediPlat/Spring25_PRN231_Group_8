@@ -21,6 +21,7 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize]
+        [EnableQuery]
         [HttpGet]
         public async Task<ActionResult<List<PatientResponse>>> GetAll()
         {
@@ -28,6 +29,7 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize]
+        [EnableQuery]
         [HttpGet("{id}")]
         public async Task<ActionResult<PatientResponse>> GetById(string id)
         {
@@ -35,6 +37,7 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize]
+        [EnableQuery]
         [HttpPost]
         public async Task<ActionResult<PatientResponse>> Create([FromForm] PatientRequest patientModel)
         {
@@ -42,6 +45,7 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize]
+        [EnableQuery]
         [HttpPut("{id}")]
         public async Task<ActionResult<PatientResponse>> Update(string id, [FromBody] PatientRequest patientModel)
         {
@@ -49,18 +53,11 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize]
+        [EnableQuery]
         [HttpDelete("{id}")]
         public async Task<ActionResult<PatientResponse>> Delete(string id)
         {
             return await _patientService.DeleteById(id);
-        }
-        
-        [Authorize]
-        [HttpGet("odata")]
-        [EnableQuery]
-        public async Task<List<PatientResponse>> GetPatientsOData()
-        {
-            return await _patientService.GetAll(HttpContext.User);
         }
     }
 }
