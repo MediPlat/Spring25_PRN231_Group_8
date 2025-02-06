@@ -1,18 +1,11 @@
-@page
-@model MediPlat.RazorPage.Pages_Subscriptions.EditModel
+﻿@page
+@model MediPlat.RazorPage.Pages.Subscription.EditModel
 
 @{
-    Layout = null;
+    ViewData["Title"] = "Edit";
 }
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Edit</title>
-</head>
-<body>
+<h1>Edit</h1>
 
 <h4>Subscription</h4>
 <hr />
@@ -21,6 +14,11 @@
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Subscription.Id" />
+            <div class="form-group">
+                <label asp-for="Subscription.Title" class="control-label"></label>
+                <input asp-for="Subscription.Title" class="form-control" />
+                <span asp-validation-for="Subscription.Title" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="Subscription.Name" class="control-label"></label>
                 <input asp-for="Subscription.Name" class="form-control" />
@@ -42,11 +40,6 @@
                 <span asp-validation-for="Subscription.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Subscription.CreatedDate" class="control-label"></label>
-                <input asp-for="Subscription.CreatedDate" class="form-control" />
-                <span asp-validation-for="Subscription.CreatedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="Subscription.UpdateDate" class="control-label"></label>
                 <input asp-for="Subscription.UpdateDate" class="form-control" />
                 <span asp-validation-for="Subscription.UpdateDate" class="text-danger"></span>
@@ -65,5 +58,3 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
-</body>
-</html>

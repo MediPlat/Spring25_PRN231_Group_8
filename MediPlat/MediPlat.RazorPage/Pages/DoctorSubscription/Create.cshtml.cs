@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
+namespace MediPlat.RazorPage.Pages.DoctorSubscription
 {
     public class CreateModel : PageModel
     {
-        private readonly MediPlat.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public CreateModel(MediPlat.Model.MediPlatContext context)
+        public CreateModel(MediPlatContext context)
         {
             _context = context;
         }
@@ -26,7 +26,7 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
         }
 
         [BindProperty]
-        public DoctorSubscription DoctorSubcription { get; set; } = default!;
+        public Model.Model.DoctorSubscription DoctorSubscription { get; set; } = default!;
 
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
@@ -36,7 +36,7 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
                 return Page();
             }
 
-            _context.DoctorSubcriptions.Add(DoctorSubcription);
+            _context.DoctorSubscriptions.Add(DoctorSubscription);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");

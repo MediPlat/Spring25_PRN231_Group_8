@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IService;
@@ -10,7 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +32,9 @@ builder.Services.AddScoped<IDoctorSubscriptionRepository, DoctorSubscriptionRepo
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 
+//Register Razor Page
+builder.Services.AddRazorPages();
+
 static IEdmModel GetEdmModel()
 {
     ODataConventionModelBuilder builder = new();
@@ -40,7 +42,7 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<Subscription>("Subscription");
     return builder.GetEdmModel();
 }
-builder.Services.AddControllers().AddOData(opt => opt.Select().Filter().Count().OrderBy().Expand().SetMaxTop(null).AddRouteComponents("odata", GetEdmModel()));
+builder.Services.AddControllers().AddOData(opt => opt.Select().Filter().Count().OrderBy().Expand().SetMaxTop(100).AddRouteComponents("odata", GetEdmModel()));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -53,7 +55,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+        builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing in configuration.")))
         };
     });
 
@@ -92,6 +95,7 @@ var app = builder.Build();
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 // Middleware
+app.UseRouting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -105,5 +109,6 @@ if (app.Environment.IsDevelopment())
 
 // Map routes
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

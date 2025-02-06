@@ -1,11 +1,6 @@
-﻿using MediPlat.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediPlat.Repository.Repositories
 {
@@ -18,12 +13,12 @@ namespace MediPlat.Repository.Repositories
             _context = new MediPlatContext();
         }
 
-        public async Task<IEnumerable<Subscription>> GetAllSubscriptionsAsync()
+        public IQueryable<Subscription> GetAllSubscriptions()
         {
-            return await _context.Subscriptions.ToListAsync();
+            return _context.Subscriptions.AsQueryable();
         }
 
-        public async Task<Subscription> GetSubscriptionByIdAsync(Guid id)
+        public async Task<Subscription?> GetSubscriptionByIdAsync(Guid id)
         {
             return await _context.Subscriptions.FindAsync(id);
         }

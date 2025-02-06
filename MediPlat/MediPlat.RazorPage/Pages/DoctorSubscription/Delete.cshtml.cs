@@ -1,25 +1,25 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
+namespace MediPlat.RazorPage.Pages.DoctorSubscription
 {
     public class DeleteModel : PageModel
     {
-        private readonly MediPlat.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public DeleteModel(MediPlat.Model.MediPlatContext context)
+        public DeleteModel(MediPlatContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public DoctorSubscription DoctorSubcription { get; set; } = default!;
+        public Model.Model.DoctorSubscription DoctorSubscription { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -28,15 +28,15 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
                 return NotFound();
             }
 
-            var doctorsubcription = await _context.DoctorSubcriptions.FirstOrDefaultAsync(m => m.Id == id);
+            var doctorsubscription = await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
 
-            if (doctorsubcription == null)
+            if (doctorsubscription == null)
             {
                 return NotFound();
             }
             else
             {
-                DoctorSubcription = doctorsubcription;
+                DoctorSubscription = doctorsubscription;
             }
             return Page();
         }
@@ -48,11 +48,11 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
                 return NotFound();
             }
 
-            var doctorsubcription = await _context.DoctorSubcriptions.FindAsync(id);
-            if (doctorsubcription != null)
+            var doctorsubscription = await _context.DoctorSubscriptions.FindAsync(id);
+            if (doctorsubscription != null)
             {
-                DoctorSubcription = doctorsubcription;
-                _context.DoctorSubcriptions.Remove(DoctorSubcription);
+                DoctorSubscription = doctorsubscription;
+                _context.DoctorSubscriptions.Remove(DoctorSubscription);
                 await _context.SaveChangesAsync();
             }
 

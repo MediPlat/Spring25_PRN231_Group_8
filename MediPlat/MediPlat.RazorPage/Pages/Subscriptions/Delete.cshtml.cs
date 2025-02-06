@@ -1,25 +1,25 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages_Subscriptions
+namespace MediPlat.RazorPage.Pages.Subscription
 {
     public class DeleteModel : PageModel
     {
-        private readonly MediPlat.Model.MediPlatContext _context;
+        private readonly MediPlat.Model.Model.MediPlatContext _context;
 
-        public DeleteModel(MediPlat.Model.MediPlatContext context)
+        public DeleteModel(MediPlat.Model.Model.MediPlatContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public Subscription Subscription { get; set; } = default!;
+        public MediPlat.Model.Model.Subscription Subscription { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {

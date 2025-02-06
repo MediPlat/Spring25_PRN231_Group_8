@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -9,19 +8,19 @@ namespace MediPlat.Model.ResponseObject
     {
         public Guid Id { get; set; }
 
-        public Guid? SubscriptionId { get; set; }
+        public Guid SubscriptionId { get; set; }
 
-        public byte? EnableSlot { get; set; }
+        public byte EnableSlot { get; set; }
 
-        [MaxLength(500)]
-        public string? Description { get; set; }
+        public DateTime StartDate { get; set; }
 
-        public Guid? DoctorId { get; set; }
+        public DateTime EndDate { get; set; }
 
-        [JsonIgnore]  // Avoid circular reference issues when serializing
-        public virtual Doctor? Doctor { get; set; }
+        public DateTime? UpdateDate { get; set; }
 
-        [JsonIgnore]  // Avoid circular reference issues
-        public virtual Subscription? Subscription { get; set; }
+        public Guid DoctorId { get; set; }
+
+        [JsonIgnore]
+        public virtual SubscriptionResponse? Subscription { get; set; }
     }
 }

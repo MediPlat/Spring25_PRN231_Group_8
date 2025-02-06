@@ -1,101 +1,131 @@
-﻿using MediPlat.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatContext _mediPlatDBContext;
-        public GenericRepository(MediPlatContext mediPlatDBContext) 
+        protected readonly MediPlatContext _context;
+        private readonly DbSet<T> _dbSet;
+
+        public GenericRepository(MediPlatContext context)
         {
-            _mediPlatDBContext = mediPlatDBContext;
+            _context = context;
+            _dbSet = _context.Set<T>();
         }
 
-
-        public void Add(T model)
+        public IQueryable<T> GetAllAsQueryable()
         {
-            _mediPlatDBContext.Set<T>().Add(model);
-            _mediPlatDBContext.SaveChanges();
-        }
-
-        public void AddRange(IEnumerable<T> model)
-        {
-            _mediPlatDBContext.Set<T>().AddRange(model);
-            _mediPlatDBContext.SaveChanges();
-        }
-
-        public T? GetId(Guid id)
-        {
-            return _mediPlatDBContext.Set<T>().Find(id);
+            return _dbSet.AsQueryable();
         }
 
         public async Task<T?> GetIdAsync(Guid id)
         {
-            return await _mediPlatDBContext.Set<T>().FindAsync(id);
+            return await _dbSet.FindAsync(id);
         }
 
-        public T? Get(Expression<Func<T, bool>> predicate)
+        public T? GetId(Guid id)
         {
-            return _mediPlatDBContext.Set<T>().FirstOrDefault(predicate);
+            return _dbSet.Find(id);
         }
 
         public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _mediPlatDBContext.Set<T>().FirstOrDefaultAsync(predicate);
+            return await _dbSet.FirstOrDefaultAsync(predicate);
         }
 
-        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate)
+        public T? Get(Expression<Func<T, bool>> predicate)
         {
-            return _mediPlatDBContext.Set<T>().Where<T>(predicate).ToList();
-        }
-
-        public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate)
-        {
-            return await Task.Run(() => _mediPlatDBContext.Set<T>().Where<T>(predicate));
-        }
-
-        public IEnumerable<T> GetAll()
-        {
-            return _mediPlatDBContext.Set<T>().ToList();
+            return _dbSet.FirstOrDefault(predicate);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await Task.Run(() => _mediPlatDBContext.Set<T>());
+            return await _dbSet.ToListAsync();
+        }
+
+        public IEnumerable<T> GetAll()
+        {
+            return _dbSet.ToList();
+        }
+
+        public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
+        }
+
+        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate)
+        {
+            return _dbSet.Where(predicate).ToList();
+        }
+
+        public async Task AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public void Add(T entity)
+        {
+            _dbSet.Add(entity);
+            _context.SaveChanges();
+        }
+
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
+        }
+
+        public void AddRange(IEnumerable<T> entities)
+        {
+            _dbSet.AddRange(entities);
+            _context.SaveChanges();
+        }
+
+        public async Task UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public void Update(T entity)
+        {
+            _dbSet.Update(entity);
+            _context.SaveChanges();
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
+            _context.SaveChanges();
         }
 
         public int Count()
         {
-            return _mediPlatDBContext.Set<T>().Count();
+            return _dbSet.Count();
         }
 
         public async Task<int> CountAsync()
         {
-            return await _mediPlatDBContext.Set<T>().CountAsync();
-        }
-
-        public void Update(T objModel)
-        {
-            _mediPlatDBContext.Entry(objModel).State = EntityState.Modified;
-            _mediPlatDBContext.SaveChanges();
-        }
-
-        public void Remove(T objModel)
-        {
-            _mediPlatDBContext.Set<T>().Remove(objModel);
-            _mediPlatDBContext.SaveChanges();
+            return await _dbSet.CountAsync();
         }
 
         public void Dispose()
         {
-            _mediPlatDBContext.Dispose();
+            _context.Dispose();
         }
     }
 }

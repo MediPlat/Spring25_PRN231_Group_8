@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,21 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
+namespace MediPlat.RazorPage.Pages.DoctorSubscription
 {
     public class EditModel : PageModel
     {
-        private readonly MediPlat.Model.MediPlatContext _context;
+        private readonly Model.Model.MediPlatContext _context;
 
-        public EditModel(MediPlat.Model.MediPlatContext context)
+        public EditModel(Model.Model.MediPlatContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public DoctorSubscription DoctorSubcription { get; set; } = default!;
+        public Model.Model.DoctorSubscription DoctorSubscription { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -29,12 +29,12 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
                 return NotFound();
             }
 
-            var doctorsubcription =  await _context.DoctorSubcriptions.FirstOrDefaultAsync(m => m.Id == id);
-            if (doctorsubcription == null)
+            var doctorsubscription =  await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
+            if (doctorsubscription == null)
             {
                 return NotFound();
             }
-            DoctorSubcription = doctorsubcription;
+            DoctorSubscription = doctorsubscription;
            ViewData["DoctorId"] = new SelectList(_context.Doctors, "Id", "Id");
            ViewData["SubscriptionId"] = new SelectList(_context.Subscriptions, "Id", "Id");
             return Page();
@@ -49,7 +49,7 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
                 return Page();
             }
 
-            _context.Attach(DoctorSubcription).State = EntityState.Modified;
+            _context.Attach(DoctorSubscription).State = EntityState.Modified;
 
             try
             {
@@ -57,7 +57,7 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DoctorSubcriptionExists(DoctorSubcription.Id))
+                if (!DoctorSubscriptionExists(DoctorSubscription.Id))
                 {
                     return NotFound();
                 }
@@ -70,9 +70,9 @@ namespace MediPlat.RazorPage.Pages_DoctorSubcriptions
             return RedirectToPage("./Index");
         }
 
-        private bool DoctorSubcriptionExists(Guid id)
+        private bool DoctorSubscriptionExists(Guid id)
         {
-            return _context.DoctorSubcriptions.Any(e => e.Id == id);
+            return _context.DoctorSubscriptions.Any(e => e.Id == id);
         }
     }
 }

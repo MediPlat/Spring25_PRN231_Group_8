@@ -1,24 +1,24 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages_Subscriptions
+namespace MediPlat.RazorPage.Pages.Subscriptions
 {
     public class IndexModel : PageModel
     {
-        private readonly MediPlat.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public IndexModel(MediPlat.Model.MediPlatContext context)
+        public IndexModel(MediPlatContext context)
         {
             _context = context;
         }
 
-        public IList<Subscription> Subscription { get;set; } = default!;
+        public IList<MediPlat.Model.Model.Subscription> Subscription { get;set; } = default!;
 
         public async Task OnGetAsync()
         {

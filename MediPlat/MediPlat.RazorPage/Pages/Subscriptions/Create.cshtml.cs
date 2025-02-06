@@ -1,19 +1,19 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages_Subscriptions
+namespace MediPlat.RazorPage.Pages.Subscription
 {
     public class CreateModel : PageModel
     {
-        private readonly MediPlat.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public CreateModel(MediPlat.Model.MediPlatContext context)
+        public CreateModel(MediPlatContext context)
         {
             _context = context;
         }
@@ -24,7 +24,7 @@ namespace MediPlat.RazorPage.Pages_Subscriptions
         }
 
         [BindProperty]
-        public Subscription Subscription { get; set; } = default!;
+        public MediPlat.Model.Model.Subscription Subscription { get; set; } = default!;
 
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()

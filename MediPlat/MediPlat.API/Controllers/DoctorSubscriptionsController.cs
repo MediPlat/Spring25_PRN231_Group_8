@@ -1,99 +1,129 @@
 ﻿using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IService;
+using MediPlat.Service.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DoctorSubscriptionsController : ControllerBase
+    public class DoctorSubscriptionsController : ODataController
     {
         private readonly IDoctorSubscriptionService _doctorSubscriptionService;
+        private readonly ILogger<DoctorSubscriptionsController> _logger;
 
-        public DoctorSubscriptionsController(IDoctorSubscriptionService doctorSubscriptionService)
+        public DoctorSubscriptionsController(IDoctorSubscriptionService doctorSubscriptionService, ILogger<DoctorSubscriptionsController> logger)
         {
             _doctorSubscriptionService = doctorSubscriptionService;
+            _logger = logger;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DoctorSubscriptionResponse>>> GetDoctorSubscriptions()
+        [EnableQuery]
+        [Authorize(Roles = "2")]
+        public IActionResult GetSubscriptions()
         {
-            var doctorSubscriptions = await _doctorSubscriptionService.GetAllDoctorSubscriptionsAsync();
-            return Ok(doctorSubscriptions);
+            try
+            {
+                var doctorId = Guid.Parse(User.Claims.First(c => c.Type == "DoctorId").Value);
+                var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
+                return Ok(doctorSubscriptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching doctorSubscriptions");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<DoctorSubscriptionResponse>> GetDoctorSubscription(Guid id)
+        [HttpGet]
+        [EnableQuery]
+        [Authorize(Roles = "2")]
+        public IActionResult GetDoctorSubscriptions()
         {
-            var doctorSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id);
-            if (doctorSubscription == null)
+            try
             {
-                return NotFound();
+                var doctorId = Guid.Parse(User.Claims.First(c => c.Type == "DoctorId").Value);
+                var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
+                return Ok(doctorSubscriptions);
             }
-            return Ok(doctorSubscription);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching doctorSubscriptions");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<DoctorSubscriptionResponse>> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
-                var response = await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request);
-                return CreatedAtAction(nameof(GetDoctorSubscription), new { id = response.Id }, response);
+                var doctorId = Guid.Parse(User.Claims.First(c => c.Type == "DoctorId").Value);
+                var response = await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId);
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while creating the doctor subscription: {ex.Message}");
+                _logger.LogError(ex, "Error creating doctor subscription");
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
-                var response = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request);
+                var doctorId = Guid.Parse(User.Claims.First(c => c.Type == "DoctorId").Value);
+                var response = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId);
                 return Ok(response);
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning(ex, "Doctor subscription not found: {Id}", id);
                 return NotFound();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while updating the doctor subscription: {ex.Message}");
+                _logger.LogError(ex, "Error updating doctor subscription: {Id}", id);
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> DeleteDoctorSubscription(Guid id)
         {
             try
             {
-                await _doctorSubscriptionService.DeleteDoctorSubscriptionAsync(id);
+                var doctorId = Guid.Parse(User.Claims.First(c => c.Type == "DoctorId").Value);
+                await _doctorSubscriptionService.DeleteDoctorSubscriptionAsync(id, doctorId);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning(ex, "Doctor subscription not found: {Id}", id);
                 return NotFound();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while deleting the doctor subscription: {ex.Message}");
+                _logger.LogError(ex, "Error deleting doctor subscription: {Id}", id);
+                return StatusCode(500, "Internal server error");
             }
         }
     }

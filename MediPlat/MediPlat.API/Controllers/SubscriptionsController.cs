@@ -1,50 +1,72 @@
 ﻿using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SubscriptionsController : ControllerBase
+    public class SubscriptionsController : ODataController
     {
         private readonly ISubscriptionService _subscriptionService;
+        private readonly ILogger<SubscriptionsController> _logger;
 
-        public SubscriptionsController(ISubscriptionService subscriptionService)
+        public SubscriptionsController(ISubscriptionService subscriptionService, ILogger<SubscriptionsController> logger)
         {
             _subscriptionService = subscriptionService;
+            _logger = logger;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SubscriptionResponse>>> GetSubscriptions()
+        [EnableQuery]
+        [Authorize(Roles = "1,2")]
+        public IActionResult GetSubscriptions()
         {
-            var subscriptions = await _subscriptionService.GetAllSubscriptionsAsync();
-            return Ok(subscriptions);
+            try
+            {
+                var subscriptions = _subscriptionService.GetAllSubscriptions();
+                return Ok(subscriptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching subscriptions");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<SubscriptionResponse>> GetSubscription(Guid id)
+        [Authorize(Roles = "1,2")]
+        public async Task<IActionResult> GetSubscription(Guid id)
         {
-            var subscription = await _subscriptionService.GetSubscriptionByIdAsync(id);
-            if (subscription == null)
+            try
             {
+                var subscription = await _subscriptionService.GetSubscriptionByIdAsync(id);
+                return Ok(subscription);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Subscription not found: {Id}", id);
                 return NotFound();
             }
-            return Ok(subscription);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching subscription: {Id}", id);
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<SubscriptionResponse>> CreateSubscription([FromBody] SubscriptionRequest request)
+        [Authorize(Roles = "1")]
+        public async Task<IActionResult> CreateSubscription([FromBody] SubscriptionRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
                 var response = await _subscriptionService.AddSubscriptionAsync(request);
@@ -52,34 +74,38 @@ namespace MediPlat.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while creating the subscription: {ex.Message}");
+                _logger.LogError(ex, "Error creating subscription");
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "1")]
         public async Task<IActionResult> UpdateSubscription(Guid id, [FromBody] SubscriptionRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
                 var response = await _subscriptionService.UpdateSubscriptionAsync(id, request);
                 return Ok(response);
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning(ex, "Subscription not found: {Id}", id);
                 return NotFound();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while updating the subscription: {ex.Message}");
+                _logger.LogError(ex, "Error updating subscription: {Id}", id);
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "1")]
         public async Task<IActionResult> DeleteSubscription(Guid id)
         {
             try
@@ -87,13 +113,15 @@ namespace MediPlat.API.Controllers
                 await _subscriptionService.DeleteSubscriptionAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning(ex, "Subscription not found: {Id}", id);
                 return NotFound();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while deleting the subscription: {ex.Message}");
+                _logger.LogError(ex, "Error deleting subscription: {Id}", id);
+                return StatusCode(500, "Internal server error");
             }
         }
     }

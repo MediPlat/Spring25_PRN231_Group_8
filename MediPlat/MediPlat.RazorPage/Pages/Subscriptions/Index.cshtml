@@ -1,24 +1,21 @@
-@page
-@model MediPlat.RazorPage.Pages_Subscriptions.IndexModel
+﻿@page
+@model MediPlat.RazorPage.Pages.Subscription.IndexModel
 
 @{
-    Layout = null;
+    ViewData["Title"] = "Index";
 }
 
-<!DOCTYPE html>
+<h1>Index</h1>
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Index</title>
-</head>
-<body>
 <p>
     <a asp-page="Create">Create New</a>
 </p>
 <table class="table">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Subscription[0].Title)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Subscription[0].Name)
             </th>
@@ -32,9 +29,6 @@
                 @Html.DisplayNameFor(model => model.Subscription[0].Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].CreatedDate)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Subscription[0].UpdateDate)
             </th>
             <th></th>
@@ -43,6 +37,9 @@
     <tbody>
 @foreach (var item in Model.Subscription) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
@@ -56,9 +53,6 @@
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.UpdateDate)
             </td>
             <td>
@@ -70,5 +64,3 @@
 }
     </tbody>
 </table>
-</body>
-</html>

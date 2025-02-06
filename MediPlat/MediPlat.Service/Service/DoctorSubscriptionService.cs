@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IService;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediPlat.Service.Service
 {
@@ -21,47 +18,49 @@ namespace MediPlat.Service.Service
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<DoctorSubscriptionResponse>> GetAllDoctorSubscriptionsAsync()
+        public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId)
         {
-            var doctorSubscriptions = await _doctorSubscriptionRepository.GetAllDoctorSubscriptionsAsync();
-            return _mapper.Map<IEnumerable<DoctorSubscriptionResponse>>(doctorSubscriptions);
+            return _mapper.ProjectTo<DoctorSubscriptionResponse>(_doctorSubscriptionRepository.GetAllDoctorSubscriptions(doctorId));
         }
 
-        public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id)
+
+        public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
         {
-            var doctorSubscription = await _doctorSubscriptionRepository.GetDoctorSubscriptionByIdAsync(id);
-            if (doctorSubscription == null)
-                throw new KeyNotFoundException($"DoctorSubscription with ID {id} not found.");
+            var doctorSubscription = await _doctorSubscriptionRepository.GetIdAsync(id);
+            if (doctorSubscription == null || doctorSubscription.DoctorId != doctorId)
+                throw new KeyNotFoundException("DoctorSubscription not found or unauthorized.");
 
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
 
-        public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request)
+        public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
             var doctorSubscription = _mapper.Map<DoctorSubscription>(request);
-            await _doctorSubscriptionRepository.AddDoctorSubscriptionAsync(doctorSubscription);
+            doctorSubscription.DoctorId = doctorId;
+            await _doctorSubscriptionRepository.AddAsync(doctorSubscription);
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
 
-        public async Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request)
+        public async Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId)
         {
-            var existingSubscription = await _doctorSubscriptionRepository.GetDoctorSubscriptionByIdAsync(id);
-            if (existingSubscription == null)
-                throw new KeyNotFoundException($"DoctorSubscription with ID {id} not found.");
+            var existingDoctorSubscription = await _doctorSubscriptionRepository.GetIdAsync(id);
+            if (existingDoctorSubscription == null || existingDoctorSubscription.DoctorId != doctorId)
+                throw new KeyNotFoundException("DoctorSubscription not found or unauthorized.");
 
-            _mapper.Map(request, existingSubscription);
-            await _doctorSubscriptionRepository.UpdateDoctorSubscriptionAsync(existingSubscription);
+            _mapper.Map(request, existingDoctorSubscription);
+            await _doctorSubscriptionRepository.UpdateAsync(existingDoctorSubscription);
 
-            return _mapper.Map<DoctorSubscriptionResponse>(existingSubscription);
+            return _mapper.Map<DoctorSubscriptionResponse>(existingDoctorSubscription);
         }
 
-        public async Task DeleteDoctorSubscriptionAsync(Guid id)
+        public async Task DeleteDoctorSubscriptionAsync(Guid id, Guid doctorId)
         {
-            var existingSubscription = await _doctorSubscriptionRepository.GetDoctorSubscriptionByIdAsync(id);
-            if (existingSubscription == null)
-                throw new KeyNotFoundException($"DoctorSubscription with ID {id} not found.");
+            var doctorSubscription = await _doctorSubscriptionRepository.GetIdAsync(id);
+            if (doctorSubscription == null || doctorSubscription.DoctorId != doctorId)
+                throw new KeyNotFoundException("DoctorSubscription not found or unauthorized.");
 
-            await _doctorSubscriptionRepository.DeleteDoctorSubscriptionAsync(id);
+            await _doctorSubscriptionRepository.DeleteAsync(id);
         }
     }
 }
+

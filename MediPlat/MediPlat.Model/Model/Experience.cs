@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MediPlat.Model;
+namespace MediPlat.Model.Model;
 
 public partial class Experience
 {
@@ -16,6 +16,8 @@ public partial class Experience
     public string? Certificate { get; set; }
 
     public Guid? DoctorId { get; set; }
+
+    public virtual Doctor? Doctor { get; set; }
 
     public virtual Specialty? Specialty { get; set; }
 }
