@@ -11,5 +11,6 @@ namespace MediPlat.Service.IServices
         Task<PatientResponse?> Create(PatientRequest ProductModel, ClaimsPrincipal claims);
         Task<PatientResponse?> Update(string id, PatientRequest ProductModel, ClaimsPrincipal claims);
         Task<PatientResponse?> DeleteById(string id);
+        Task<PatientResponse?> ChangePassword(ClaimsPrincipal claims, string newPassword);
     }
 }

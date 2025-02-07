@@ -14,13 +14,13 @@ namespace MediPlat.API.Controllers
     public class PatientController : ControllerBase
     {
         private readonly IPatientService _patientService;
-
+        static Guid temp;
         public PatientController(IPatientService patientService)
         {
             _patientService = patientService;
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [EnableQuery]
         [HttpGet]
         public async Task<ActionResult<List<PatientResponse>>> GetAll()
@@ -35,8 +35,13 @@ namespace MediPlat.API.Controllers
         {
             try
             {
+                bool isValid = Guid.TryParse(id, out temp);
+                if (!isValid) 
+                {
+                    return BadRequest("Incorrect GUID format.");
+                }
                 var result = await _patientService.GetById(id);
-                return result == null ? BadRequest($"Can not find patient with id: {id}") : Ok(result);
+                return result == null ? NotFound($"Can not find patient with id: {id}") : Ok(result);
             }
             catch (Exception ex)
             {
@@ -44,7 +49,7 @@ namespace MediPlat.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [EnableQuery]
         [HttpPost]
         public async Task<ActionResult<PatientResponse>> Create([FromForm] PatientRequest patientModel)
@@ -59,15 +64,20 @@ namespace MediPlat.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Patient")]
         [EnableQuery]
         [HttpPut("{id}")]
         public async Task<ActionResult<PatientResponse>> Update(string id, [FromBody] PatientRequest patientModel)
         {
             try
             {
+                bool isValid = Guid.TryParse(id, out temp);
+                if (!isValid)
+                {
+                    return BadRequest("Incorrect GUID format.");
+                }
                 var result = await _patientService.Update(id, patientModel, HttpContext.User);
-                return result == null ? BadRequest($"Can not find patient with id: {id}") : Ok(result);
+                return result == null ? NotFound($"Can not find patient with id: {id}") : Ok(result);
             }
             catch (Exception ex)
             {
@@ -75,15 +85,20 @@ namespace MediPlat.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin, Patient")]
         [EnableQuery]
         [HttpDelete("{id}")]
         public async Task<ActionResult<PatientResponse>> Delete(string id)
         {
             try
             {
+                bool isValid = Guid.TryParse(id, out temp);
+                if (!isValid)
+                {
+                    return BadRequest("Incorrect GUID format.");
+                }
                 var result = await _patientService.DeleteById(id);
-                return result == null ? BadRequest($"Can not find patient with id: {id}") : Ok(result);
+                return result == null ? NotFound($"Can not find patient with id: {id}") : Ok(result);
             }
             catch (Exception ex)
             {

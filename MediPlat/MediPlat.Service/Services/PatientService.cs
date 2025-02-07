@@ -23,6 +23,12 @@ namespace MediPlat.Service.Services
         {
             _patientRepository = patientRepository;
         }
+
+        public Task<PatientResponse?> ChangePassword(ClaimsPrincipal claims, string newPassword)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<PatientResponse?> Create(PatientRequest patientModel, ClaimsPrincipal claims)
         {
             try
@@ -165,7 +171,7 @@ namespace MediPlat.Service.Services
                 patient.FullName = patientModel.FullName.IsNullOrEmpty() ? patient.FullName : patientModel.FullName;
                 patient.Email = patientModel.Email.IsNullOrEmpty() ? patient.Email : patientModel.Email;
                 patient.PhoneNumber = patientModel.PhoneNumber.IsNullOrEmpty() ? patient.PhoneNumber : patientModel.PhoneNumber;
-                patient.Balance = patientModel.Balance == 0 ? patient.Balance : patientModel.Balance;
+                patient.Balance = patientModel.Balance == null || patientModel.Balance <= 0 ? patient.Balance : patientModel.Balance;
                 patient.Address = patientModel.Address.IsNullOrEmpty() ? patient.Address : patientModel.Address;
                 patient.Status = patientModel.Status.IsNullOrEmpty() ? patient.Status : patientModel.Status;
                 patient.JoinDate = patientModel.JoinDate is null ? patient.JoinDate : patientModel.JoinDate;
