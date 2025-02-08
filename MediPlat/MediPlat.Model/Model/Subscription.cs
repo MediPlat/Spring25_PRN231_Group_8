@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MediPlat.Model;
+namespace MediPlat.Model.Model;
 
 public partial class Subscription
 {
     public Guid Id { get; set; }
+
+    public string? Title { get; set; }
 
     public string? Name { get; set; }
 
@@ -15,11 +17,9 @@ public partial class Subscription
 
     public string? Description { get; set; }
 
-    public DateTime? CreatedDate { get; set; }
-
     public DateTime? UpdateDate { get; set; }
 
-    public virtual ICollection<DoctorSubscription> DoctorSubcriptions { get; set; } = new List<DoctorSubscription>();
+    public virtual ICollection<DoctorSubscription> DoctorSubscriptions { get; set; } = new List<DoctorSubscription>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }

@@ -1,22 +1,40 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
 using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OData.Edm;
+using Microsoft.AspNetCore.OData.Extensions;
 using System.Text;
 using Microsoft.AspNetCore.OData;
+using MediPlat.Model.Model;
+using MediPlat.Service.Mapping;
+using Microsoft.OData.ModelBuilder;
+using MediPlat.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+//Register Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
+//Register Repository
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
-builder.Services.AddScoped < IGenericRepository<Patient>, GenericRepository<Patient>>();
+builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
+builder.Services.AddRazorPages();
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -66,7 +84,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
 // Configure Authentication and Authorization
 builder.Services.AddAuthentication(options =>
 {
@@ -84,8 +101,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?�ng schema
-        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?�ng schema cho role
+        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?úng schema
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?úng schema cho role
     };
 
     options.Events = new JwtBearerEvents
@@ -107,7 +124,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
@@ -115,28 +131,46 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
 });
 
-
 // Build the app
 var app = builder.Build();
 
 // Configure CORS
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
-app.UseRouting();
-
 // Middleware
+app.UseRouting();
 app.UseHttpsRedirection();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); 
+    app.UseDeveloperExceptionPage(); // Hiển thị lỗi chi tiết
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
+// Ensure the correct order of middlewares
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
+
+static IEdmModel GetEdmModel()
+{
+    var builder = new ODataConventionModelBuilder();
+
+    // Định nghĩa các thực thể và tập thực thể
+    builder.EntitySet<DoctorSubscription>("DoctorSubscriptions");
+
+    // Định nghĩa các mối quan hệ nếu cần thiết
+    // builder.EntitySet<EntityName>("EntitySetName");
+
+    return builder.GetEdmModel();
+}

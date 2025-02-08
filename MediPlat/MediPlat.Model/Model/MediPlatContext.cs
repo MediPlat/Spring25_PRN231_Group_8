@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace MediPlat.Model;
+namespace MediPlat.Model.Model;
 
 public partial class MediPlatContext : DbContext
 {
@@ -47,23 +47,20 @@ public partial class MediPlatContext : DbContext
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
-
     private string GetConnectionString()
     {
         // Build the configuration to read from appsettings.json
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
+.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         IConfigurationRoot configuration = builder.Build();
         return configuration.GetConnectionString("DB");
     }
-
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppointmentSlot>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC27B59A61FA");
+            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC27D51AF932");
 
             entity.ToTable("AppointmentSlot");
 
@@ -85,7 +82,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Doctor>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Doctor__3214EC2711D34082");
+            entity.HasKey(e => e.Id).HasName("PK__Doctor__3214EC27000B49D1");
 
             entity.ToTable("Doctor");
 
@@ -111,7 +108,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<DoctorSubscription>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__DoctorSu__3214EC276B4AE3FE");
+            entity.HasKey(e => e.Id).HasName("PK__DoctorSu__3214EC27B9A6B96F");
 
             entity.ToTable("DoctorSubscription");
 
@@ -119,20 +116,25 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
                 .ValueGeneratedNever()
                 .HasColumnName("ID");
             entity.Property(e => e.DoctorId).HasColumnName("DoctorID");
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.StartDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.SubscriptionId).HasColumnName("SubscriptionID");
+            entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Doctor).WithMany(p => p.DoctorSubcriptions)
+            entity.HasOne(d => d.Doctor).WithMany(p => p.DoctorSubscriptions)
                 .HasForeignKey(d => d.DoctorId)
                 .HasConstraintName("FK__DoctorSub__Docto__534D60F1");
 
-            entity.HasOne(d => d.Subscription).WithMany(p => p.DoctorSubcriptions)
+            entity.HasOne(d => d.Subscription).WithMany(p => p.DoctorSubscriptions)
                 .HasForeignKey(d => d.SubscriptionId)
                 .HasConstraintName("FK__DoctorSub__Subsc__52593CB8");
         });
 
         modelBuilder.Entity<Experience>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Experien__3214EC275D2F28F8");
+            entity.HasKey(e => e.Id).HasName("PK__Experien__3214EC27A8D4954F");
 
             entity.ToTable("Experience");
 
@@ -143,6 +145,10 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
             entity.Property(e => e.SpecialtyId).HasColumnName("SpecialtyID");
             entity.Property(e => e.Title).HasMaxLength(255);
 
+            entity.HasOne(d => d.Doctor).WithMany(p => p.Experiences)
+                .HasForeignKey(d => d.DoctorId)
+                .HasConstraintName("FK__Experienc__Docto__5165187F");
+
             entity.HasOne(d => d.Specialty).WithMany(p => p.Experiences)
                 .HasForeignKey(d => d.SpecialtyId)
                 .HasConstraintName("FK__Experienc__Speci__5070F446");
@@ -150,7 +156,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Patient>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Patient__3214EC279043DD46");
+            entity.HasKey(e => e.Id).HasName("PK__Patient__3214EC27B64BFED8");
 
             entity.ToTable("Patient");
 
@@ -174,7 +180,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Review__3214EC27B1F4900A");
+            entity.HasKey(e => e.Id).HasName("PK__Review__3214EC2750A74F3D");
 
             entity.ToTable("Review");
 
@@ -200,7 +206,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Services__3214EC2721C0CD1E");
+            entity.HasKey(e => e.Id).HasName("PK__Services__3214EC27CED17CE7");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
@@ -215,7 +221,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Slot>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Slot__3214EC27E82AB31A");
+            entity.HasKey(e => e.Id).HasName("PK__Slot__3214EC27E52C2244");
 
             entity.ToTable("Slot");
 
@@ -247,7 +253,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Specialty>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Specialt__3214EC27B4C6CB84");
+            entity.HasKey(e => e.Id).HasName("PK__Specialt__3214EC27CB966DD5");
 
             entity.ToTable("Specialty");
 
@@ -259,24 +265,22 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
         modelBuilder.Entity<Subscription>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Subscrip__3214EC271196BF24");
+            entity.HasKey(e => e.Id).HasName("PK__Subscrip__3214EC2786A73C04");
 
             entity.ToTable("Subscription");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedNever()
                 .HasColumnName("ID");
-            entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC2736EC664E");
+            entity.HasKey(e => e.Id).HasName("PK__Transact__3214EC27B3D2DB9F");
 
             entity.ToTable("Transaction");
 

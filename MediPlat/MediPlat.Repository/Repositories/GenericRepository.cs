@@ -1,4 +1,5 @@
 ﻿using MediPlat.Model;
+using MediPlat.Model.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -8,7 +9,7 @@ namespace MediPlat.Repository.Repositories
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         private MediPlatContext _mediPlatDBContext;
-        public GenericRepository(MediPlatContext mediPlatDBContext) 
+        public GenericRepository(MediPlatContext mediPlatDBContext)
         {
             _mediPlatDBContext = mediPlatDBContext;
         }
@@ -17,13 +18,11 @@ namespace MediPlat.Repository.Repositories
         public void Add(T model)
         {
             _mediPlatDBContext.Set<T>().Add(model);
-            _mediPlatDBContext.SaveChanges();
         }
 
         public void AddRange(IEnumerable<T> model)
         {
             _mediPlatDBContext.Set<T>().AddRange(model);
-            _mediPlatDBContext.SaveChanges();
         }
 
         public T? GetId(Guid id)
@@ -119,15 +118,12 @@ namespace MediPlat.Repository.Repositories
                     property.IsModified = true;
                 }
             }
-
-            _mediPlatDBContext.SaveChanges();
         }
 
 
         public void Remove(T objModel)
         {
             _mediPlatDBContext.Set<T>().Remove(objModel);
-            _mediPlatDBContext.SaveChanges();
         }
 
         public void Dispose()

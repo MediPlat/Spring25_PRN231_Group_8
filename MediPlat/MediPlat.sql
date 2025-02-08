@@ -1,7 +1,7 @@
-Create database MediPlat
-go
-
-use MediPlat
+CREATE DATABASE MediPlat
+GO
+USE MediPlat
+GO
 
 CREATE TABLE [Patient] (
   [ID] UNIQUEIDENTIFIER PRIMARY KEY,
@@ -54,20 +54,22 @@ GO
 
 CREATE TABLE [Subscription] (
   [ID] UNIQUEIDENTIFIER PRIMARY KEY,
+  [Title] NVARCHAR(255),
   [Name] NVARCHAR(255),
   [Price] DECIMAL(18,2),
   [EnableSlot] TINYINT,
   [Description] NVARCHAR(MAX),
-  [CreatedDate] DATETIME DEFAULT (GETDATE()),
-  [UpdateDate] DATETIME
+  [UpdateDate] DATETIME null
 )
 GO
 
-CREATE TABLE [DoctorSubcription] (
+CREATE TABLE [DoctorSubscription] (
   [ID] UNIQUEIDENTIFIER PRIMARY KEY,
   [SubscriptionID] UNIQUEIDENTIFIER,
   [EnableSlot] TINYINT,
-  [Description] NVARCHAR(MAX),
+  [StartDate] DATETIME DEFAULT (GETDATE()),
+  [EndDate] DATETIME,
+  [UpdateDate] DATETIME null,
   [DoctorID] UNIQUEIDENTIFIER
 )
 GO
@@ -129,13 +131,13 @@ GO
 ALTER TABLE [Experience] ADD FOREIGN KEY ([SpecialtyID]) REFERENCES [Specialty] ([ID])
 GO
 
-ALTER TABLE [Doctor] ADD FOREIGN KEY ([ID]) REFERENCES [Experience] ([DoctorID])
+ALTER TABLE [Experience] ADD FOREIGN KEY ([DoctorID]) REFERENCES [Doctor] ([ID])
 GO
 
-ALTER TABLE [DoctorSubcription] ADD FOREIGN KEY ([SubscriptionID]) REFERENCES [Subscription] ([ID])
+ALTER TABLE [DoctorSubscription] ADD FOREIGN KEY ([SubscriptionID]) REFERENCES [Subscription] ([ID])
 GO
 
-ALTER TABLE [DoctorSubcription] ADD FOREIGN KEY ([DoctorID]) REFERENCES [Doctor] ([ID])
+ALTER TABLE [DoctorSubscription] ADD FOREIGN KEY ([DoctorID]) REFERENCES [Doctor] ([ID])
 GO
 
 ALTER TABLE [Services] ADD FOREIGN KEY ([SpecialtyID]) REFERENCES [Specialty] ([ID])
