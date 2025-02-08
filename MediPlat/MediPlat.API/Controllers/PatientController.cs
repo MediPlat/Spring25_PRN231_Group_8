@@ -20,7 +20,7 @@ namespace MediPlat.API.Controllers
             _patientService = patientService;
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [EnableQuery]
         [HttpGet]
         public async Task<ActionResult<List<PatientResponse>>> GetAll()

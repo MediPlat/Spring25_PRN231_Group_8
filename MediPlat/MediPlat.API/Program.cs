@@ -32,7 +32,6 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
 builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
-builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 
 builder.Services.AddRazorPages();
 

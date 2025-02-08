@@ -18,10 +18,10 @@ namespace MediPlat.Service.Services
     public class PatientService : IPatientService
     {
         static Guid guid;
-        private readonly IPatientRepository _patientRepository;
-        public PatientService(IPatientRepository patientRepository) 
+        private readonly IUnitOfWork _unitOfWork;
+        public PatientService(IUnitOfWork unitOfWork) 
         {
-            _patientRepository = patientRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public Task<PatientResponse?> ChangePassword(ClaimsPrincipal claims, string newPassword)
@@ -34,7 +34,7 @@ namespace MediPlat.Service.Services
             try
             {
                 Guid guid = Guid.NewGuid(); 
-                _patientRepository.Add(new Patient
+                _unitOfWork.Patients.Add(new Patient
                 {
                     Id = guid,
                     UserName = patientModel.UserName,
@@ -72,7 +72,7 @@ namespace MediPlat.Service.Services
         public async Task<PatientResponse?> DeleteById(string id)
         {
             guid = new Guid(id);
-            var patient = await _patientRepository.GetAsync(p => p.Id == guid);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
 
             if (patient == null)
             {
@@ -80,7 +80,7 @@ namespace MediPlat.Service.Services
             }
             try
             {
-                _patientRepository.Remove(patient);
+                _unitOfWork.Patients.Remove(patient);
 
                 return new PatientResponse
                 {
@@ -104,7 +104,7 @@ namespace MediPlat.Service.Services
 
         public async Task<List<PatientResponse>> GetAll(ClaimsPrincipal claims)
         {
-            var patients = await _patientRepository.GetAllAsync();
+            var patients = await _unitOfWork.Patients.GetAllAsync();
             List<PatientResponse> result = new List<PatientResponse>();
             foreach (var item in patients)
             {
@@ -130,7 +130,7 @@ namespace MediPlat.Service.Services
             try
             {
                 guid = new Guid(code);
-                var patient = await _patientRepository.GetAsync(p => p.Id == guid);
+                var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
 
                 if (patient == null)
                 {
@@ -159,7 +159,7 @@ namespace MediPlat.Service.Services
         public async Task<PatientResponse?> Update(string id, PatientRequest patientModel, ClaimsPrincipal claims)
         {
             guid = new Guid(id);
-            var patient = await _patientRepository.GetAsync(p => p.Id == guid);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
 
             if (patient == null)
             {
@@ -177,7 +177,7 @@ namespace MediPlat.Service.Services
                 patient.JoinDate = patientModel.JoinDate is null ? patient.JoinDate : patientModel.JoinDate;
                 patient.Sex = patientModel.Sex.IsNullOrEmpty() ? patient.Sex : patientModel.Sex;
 
-                _patientRepository.Update(patient);
+                _unitOfWork.Patients.Update(patient);
 
                 return new PatientResponse
                 {

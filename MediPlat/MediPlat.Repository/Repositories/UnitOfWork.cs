@@ -10,12 +10,15 @@ namespace MediPlat.Repository.Repositories
         private readonly MediPlatContext _context;
         public IGenericRepository<DoctorSubscription> DoctorSubscriptions { get; }
         public IGenericRepository<Subscription> Subscriptions { get; }
+        public IGenericRepository<Patient> Patients { get; }
+
 
         public UnitOfWork(MediPlatContext context)
         {
             _context = context;
             DoctorSubscriptions = new GenericRepository<DoctorSubscription>(context);
             Subscriptions = new GenericRepository<Subscription>(context);
+            Patients = new GenericRepository<Patient>(context);
         }
 
         public async Task<int> SaveChangesAsync()
