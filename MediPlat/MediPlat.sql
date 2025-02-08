@@ -54,7 +54,6 @@ GO
 
 CREATE TABLE [Subscription] (
   [ID] UNIQUEIDENTIFIER PRIMARY KEY,
-  [Title] NVARCHAR(255),
   [Name] NVARCHAR(255),
   [Price] DECIMAL(18,2),
   [EnableSlot] TINYINT,
@@ -178,3 +177,4 @@ GO
 
 ALTER TABLE [Review] ADD FOREIGN KEY ([SlotID]) REFERENCES [Slot] ([ID])
 GO
+

@@ -22,6 +22,9 @@ namespace MediPlat.Repository.IRepositories
         int Count();
         Task<int> CountAsync();
         void Update(T objModel, params Expression<Func<T, object>>[] includeProperties);
+        Task UpdateAsync(T objModel, params Expression<Func<T, object>>[] includeProperties);
+        void UpdatePartial(T objModel, params Expression<Func<T, object>>[] updatedProperties);
+        Task UpdatePartialAsync(T objModel, params Expression<Func<T, object>>[] updatedProperties);
         void Remove(T objModel);
         void Dispose();
     }

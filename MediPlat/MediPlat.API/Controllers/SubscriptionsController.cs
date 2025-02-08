@@ -26,18 +26,11 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Admin,Doctor")]
         public IActionResult GetSubscriptions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            try
-            {
-                var subscriptions = _subscriptionService.GetAllSubscriptions()
-                             .Skip((page - 1) * pageSize)
-                             .Take(pageSize);
-                return Ok(subscriptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching subscriptions");
-                return StatusCode(500, "Internal server error");
-            }
+            var subscriptions = _subscriptionService.GetAllSubscriptions()
+                         .Skip((page - 1) * pageSize)
+                         .Take(pageSize);
+            return Ok(subscriptions);
+
         }
 
         [HttpGet("{id}")]
@@ -56,16 +49,8 @@ namespace MediPlat.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
-            {
-                var response = await _subscriptionService.AddSubscriptionAsync(request);
-                return CreatedAtAction(nameof(GetSubscription), new { id = response.Id }, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating subscription");
-                return StatusCode(500, "Internal server error");
-            }
+            var response = await _subscriptionService.AddSubscriptionAsync(request);
+            return CreatedAtAction(nameof(GetSubscription), new { id = response.Id }, response);
         }
 
         [HttpPut("{id}")]
@@ -76,42 +61,16 @@ namespace MediPlat.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
-            {
-                var response = await _subscriptionService.UpdateSubscriptionAsync(id, request);
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Subscription not found: {Id}", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating subscription: {Id}", id);
-                return StatusCode(500, "Internal server error");
-            }
+            var response = await _subscriptionService.UpdateSubscriptionAsync(id, request);
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteSubscription(Guid id)
         {
-            try
-            {
-                await _subscriptionService.DeleteSubscriptionAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Subscription not found: {Id}", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting subscription: {Id}", id);
-                return StatusCode(500, "Internal server error");
-            }
+            await _subscriptionService.DeleteSubscriptionAsync(id);
+            return NoContent();
         }
     }
 }

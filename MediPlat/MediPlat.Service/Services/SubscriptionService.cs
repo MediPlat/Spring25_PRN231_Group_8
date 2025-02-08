@@ -36,13 +36,26 @@ namespace MediPlat.Service.Services
 
         public async Task<SubscriptionResponse> AddSubscriptionAsync(SubscriptionRequest request)
         {
-            var subscription = _mapper.Map<Subscription>(request);
-            subscription.Id = Guid.NewGuid();
-            subscription.UpdateDate = DateTime.Now;
+            await _unitOfWork.BeginTransactionAsync();
 
-            _unitOfWork.Subscriptions.Add(subscription);
-            await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<SubscriptionResponse>(subscription);
+            try
+            {
+                var subscription = _mapper.Map<Subscription>(request);
+                subscription.Id = Guid.NewGuid();
+                subscription.UpdateDate = DateTime.Now;
+
+                _unitOfWork.Subscriptions.Add(subscription);
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return _mapper.Map<SubscriptionResponse>(subscription);
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task<SubscriptionResponse> UpdateSubscriptionAsync(Guid id, SubscriptionRequest request)
@@ -54,7 +67,13 @@ namespace MediPlat.Service.Services
             _mapper.Map(request, subscription);
             subscription.UpdateDate = DateTime.Now;
 
-            _unitOfWork.Subscriptions.Update(subscription);
+            _unitOfWork.Subscriptions.UpdatePartial(subscription,
+                s => s.Title,
+                s => s.Name,
+                s => s.Price,
+                s => s.Description,
+                s => s.UpdateDate);
+
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<SubscriptionResponse>(subscription);
         }

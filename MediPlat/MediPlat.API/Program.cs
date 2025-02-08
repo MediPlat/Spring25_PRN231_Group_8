@@ -1,6 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
@@ -8,7 +5,6 @@ using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
-using Microsoft.AspNetCore.OData.Extensions;
 using System.Text;
 using Microsoft.AspNetCore.OData;
 using MediPlat.Model.Model;
@@ -27,6 +23,7 @@ builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddHostedService<DoctorSubscriptionCleanupService>();
 
 //Register Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

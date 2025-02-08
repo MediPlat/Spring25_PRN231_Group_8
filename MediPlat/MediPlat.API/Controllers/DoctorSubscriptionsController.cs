@@ -27,25 +27,17 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Doctor")]
         public IActionResult GetDoctorSubscriptions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            try
+            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (doctorIdClaim == null)
             {
-                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (doctorIdClaim == null)
-                {
-                    return Unauthorized("DoctorId claim is missing.");
-                }
-                var doctorId = Guid.Parse(doctorIdClaim.Value);
-
-                var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId).Skip((page - 1) * pageSize)
-                             .Take(pageSize);
-
-                return Ok(doctorSubscriptions);
+                return Unauthorized("DoctorId claim is missing.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching doctorSubscriptions");
-                return StatusCode(500, "Internal server error");
-            }
+            var doctorId = Guid.Parse(doctorIdClaim.Value);
+
+            var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId).Skip((page - 1) * pageSize)
+                         .Take(pageSize);
+
+            return Ok(doctorSubscriptions);
         }
 
 
@@ -83,43 +75,34 @@ namespace MediPlat.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
+            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
             {
-                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
-                {
-                    return Unauthorized("Doctor ID is missing or invalid.");
-                }
-
-                var existingSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
-                if (existingSubscriptions.Any(ds => ds.SubscriptionId == request.SubscriptionId))
-                {
-                    return Conflict("Doctor already has an active subscription with this SubscriptionId.");
-                }
-
-                var startDate = request.StartDate ?? DateTime.Now;
-                var endDate = request.EndDate ?? startDate.AddMonths(1);
-
-                var doctorSubscription = new DoctorSubscriptionRequest
-                {
-                    SubscriptionId = request.SubscriptionId,
-                    EnableSlot = request.EnableSlot,
-                    DoctorId = doctorId,
-                    StartDate = startDate,
-                    EndDate = endDate,
-                    UpdateDate = request.UpdateDate
-                };
-
-                await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId);
-                return Ok(doctorSubscription);
+                return Unauthorized("Doctor ID is missing or invalid.");
             }
-            catch (Exception ex)
+
+            var existingSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
+            if (existingSubscriptions.Any(ds => ds.SubscriptionId == request.SubscriptionId))
             {
-                _logger.LogError(ex, "Error creating doctor subscription");
-                return StatusCode(500, "Internal server error");
+                return Conflict("Doctor already has an active subscription with this SubscriptionId.");
             }
+
+            var startDate = request.StartDate ?? DateTime.Now;
+            var endDate = request.EndDate ?? startDate.AddMonths(1);
+
+            var doctorSubscription = new DoctorSubscriptionRequest
+            {
+                SubscriptionId = request.SubscriptionId,
+                EnableSlot = request.EnableSlot,
+                DoctorId = doctorId,
+                StartDate = startDate,
+                EndDate = endDate,
+                UpdateDate = request.UpdateDate
+            };
+
+            await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId);
+            return Ok(doctorSubscription);
         }
-
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Doctor")]
@@ -129,70 +112,51 @@ namespace MediPlat.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
+
+            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
             {
-                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
-                {
-                    return Unauthorized("Doctor ID is missing or invalid.");
-                }
-
-                var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
-                if (existingSubscription == null)
-                {
-                    return NotFound($"Doctor subscription with ID {id} not found.");
-                }
-
-                var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-                var updatedSubscription = new DoctorSubscriptionRequest
-                {
-                    SubscriptionId = existingSubscription.SubscriptionId,
-                    EnableSlot = request.EnableSlot,
-                    DoctorId = existingSubscription.DoctorId,
-                    StartDate = existingSubscription.StartDate,
-                    EndDate = existingSubscription.EndDate == DateTime.MinValue
-                              ? existingSubscription.StartDate.AddMonths(1)
-                              : existingSubscription.EndDate,
-                    UpdateDate = TimeZoneInfo.ConvertTime(DateTime.Now, localTimeZone)
-                };
-
-                var response = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, updatedSubscription, doctorId);
-                return Ok(response);
+                return Unauthorized("Doctor ID is missing or invalid.");
             }
-            catch (Exception ex)
+
+            var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+            if (existingSubscription == null)
             {
-                _logger.LogError(ex, "Error updating doctor subscription: {Id}", id);
-                return StatusCode(500, "Internal server error");
+                return NotFound($"Doctor subscription with ID {id} not found.");
             }
+
+            if (existingSubscription.DoctorId != doctorId)
+            {
+                return Forbid("You do not have permission to modify this subscription.");
+            }
+
+            var response = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId);
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> DeleteDoctorSubscription(Guid id)
         {
-            try
+            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
             {
-                var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
-                {
-                    return Unauthorized("Doctor ID is missing or invalid.");
-                }
-
-                var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
-                if (existingSubscription == null)
-                {
-                    return NotFound($"Doctor subscription with ID {id} not found.");
-                }
-
-                await _doctorSubscriptionService.DeleteDoctorSubscriptionAsync(id, doctorId);
-                return NoContent();
+                return Unauthorized("Doctor ID is missing or invalid.");
             }
-            catch (Exception ex)
+
+            var existingSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+            if (existingSubscription == null)
             {
-                _logger.LogError(ex, "Error deleting doctor subscription: {Id}", id);
-                return StatusCode(500, "Internal server error");
+                return NotFound($"Doctor subscription with ID {id} not found.");
             }
+
+            if (existingSubscription.DoctorId != doctorId)
+            {
+                return Forbid("You do not have permission to delete this subscription.");
+            }
+
+            await _doctorSubscriptionService.DeleteDoctorSubscriptionAsync(id, doctorId);
+            return NoContent();
         }
-
     }
 }

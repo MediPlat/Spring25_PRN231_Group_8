@@ -33,21 +33,54 @@ namespace MediPlat.Service.Services
 
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
-
         public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            await _unitOfWork.BeginTransactionAsync();
 
-            var doctorSubscription = _mapper.Map<DoctorSubscription>(request);
-            doctorSubscription.Id = Guid.NewGuid();
-            doctorSubscription.DoctorId = doctorId;
-            doctorSubscription.UpdateDate = DateTime.Now;
+            try
+            {
+                var now = DateTime.Now;
 
-            _unitOfWork.DoctorSubscriptions.Add(doctorSubscription);
-            await _unitOfWork.SaveChangesAsync();
+                var existingSubscription = _unitOfWork.DoctorSubscriptions
+                    .GetList(ds => ds.DoctorId == doctorId)
+                    .OrderByDescending(ds => ds.EndDate)
+                    .FirstOrDefault();
 
-            return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
+                if (existingSubscription != null && existingSubscription.EndDate > now)
+                {
+                    var newSubscription = await _unitOfWork.Subscriptions.GetIdAsync(request.SubscriptionId);
+                    if (!existingSubscription.SubscriptionId.HasValue)
+                    {
+                        throw new InvalidOperationException("Existing subscription has no valid SubscriptionId.");
+                    }
+
+                    var oldSubscription = await _unitOfWork.Subscriptions.GetIdAsync(existingSubscription.SubscriptionId.Value);
+
+                    if (newSubscription.Price <= oldSubscription.Price)
+                    {
+                        throw new InvalidOperationException("You can only upgrade to a higher subscription.");
+                    }
+                }
+
+                var doctorSubscription = _mapper.Map<DoctorSubscription>(request);
+                doctorSubscription.Id = Guid.NewGuid();
+                doctorSubscription.DoctorId = doctorId;
+                doctorSubscription.StartDate = now;
+                doctorSubscription.EndDate = now.AddMonths(1);
+                doctorSubscription.UpdateDate = now;
+
+                _unitOfWork.DoctorSubscriptions.Add(doctorSubscription);
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId)
@@ -61,21 +94,17 @@ namespace MediPlat.Service.Services
             existingSubscription.EnableSlot = request.EnableSlot;
             existingSubscription.UpdateDate = DateTime.Now;
 
-            _unitOfWork.DoctorSubscriptions.Update(existingSubscription);
+            await _unitOfWork.DoctorSubscriptions.UpdatePartialAsync(existingSubscription,
+                ds => ds.EnableSlot,
+                ds => ds.UpdateDate);
+
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<DoctorSubscriptionResponse>(existingSubscription);
         }
 
-        public async Task DeleteDoctorSubscriptionAsync(Guid id, Guid doctorId)
+        public Task DeleteDoctorSubscriptionAsync(Guid id, Guid doctorId)
         {
-            var doctorSubscription = await _unitOfWork.DoctorSubscriptions.GetAsync(ds => ds.Id == id && ds.DoctorId == doctorId);
-            if (doctorSubscription == null)
-                throw new KeyNotFoundException("Doctor subscription not found.");
-            var relatedData = _unitOfWork.Subscriptions.GetList(s => s.Id == doctorSubscription.SubscriptionId);
-            if (relatedData.Any())
-                throw new InvalidOperationException("Cannot delete this subscription as it is referenced in other data.");
-            _unitOfWork.DoctorSubscriptions.Remove(doctorSubscription);
-            await _unitOfWork.SaveChangesAsync();
+            throw new InvalidOperationException("Deleting a DoctorSubscription is not allowed.");
         }
     }
 }

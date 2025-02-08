@@ -1,19 +1,22 @@
-﻿using MediPlat.Model;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace MediPlat.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private MediPlatContext _mediPlatDBContext;
+        private readonly MediPlatContext _mediPlatDBContext;
+
         public GenericRepository(MediPlatContext mediPlatDBContext)
         {
             _mediPlatDBContext = mediPlatDBContext;
         }
-
 
         public void Add(T model)
         {
@@ -69,7 +72,6 @@ namespace MediPlat.Repository.Repositories
             return await query.Where(predicate).ToListAsync();
         }
 
-
         public IEnumerable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _mediPlatDBContext.Set<T>();
@@ -94,7 +96,6 @@ namespace MediPlat.Repository.Repositories
             return await query.ToListAsync();
         }
 
-
         public int Count()
         {
             return _mediPlatDBContext.Set<T>().Count();
@@ -105,6 +106,7 @@ namespace MediPlat.Repository.Repositories
             return await _mediPlatDBContext.Set<T>().CountAsync();
         }
 
+        // Cập nhật toàn bộ đối tượng với các thuộc tính cụ thể
         public void Update(T objModel, params Expression<Func<T, object>>[] includeProperties)
         {
             var entry = _mediPlatDBContext.Entry(objModel);
@@ -120,6 +122,49 @@ namespace MediPlat.Repository.Repositories
             }
         }
 
+        // Cập nhật toàn bộ đối tượng (async)
+        public async Task UpdateAsync(T objModel, params Expression<Func<T, object>>[] includeProperties)
+        {
+            var entry = _mediPlatDBContext.Entry(objModel);
+            entry.State = EntityState.Modified;
+
+            foreach (var includeProperty in includeProperties)
+            {
+                var property = entry.Property(includeProperty);
+                if (!property.IsModified)
+                {
+                    property.IsModified = true;
+                }
+            }
+
+            await _mediPlatDBContext.SaveChangesAsync();
+        }
+
+        // Cập nhật từng thuộc tính cụ thể (Patch-style updates)
+        public void UpdatePartial(T objModel, params Expression<Func<T, object>>[] updatedProperties)
+        {
+            var entry = _mediPlatDBContext.Entry(objModel);
+            entry.State = EntityState.Unchanged;
+
+            foreach (var property in updatedProperties)
+            {
+                entry.Property(property).IsModified = true;
+            }
+        }
+
+        // Cập nhật từng thuộc tính cụ thể (async)
+        public async Task UpdatePartialAsync(T objModel, params Expression<Func<T, object>>[] updatedProperties)
+        {
+            var entry = _mediPlatDBContext.Entry(objModel);
+            entry.State = EntityState.Unchanged;
+
+            foreach (var property in updatedProperties)
+            {
+                entry.Property(property).IsModified = true;
+            }
+
+            await _mediPlatDBContext.SaveChangesAsync();
+        }
 
         public void Remove(T objModel)
         {

@@ -1,6 +1,9 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace MediPlat.API.Middleware
@@ -9,11 +12,13 @@ namespace MediPlat.API.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<GlobalExceptionMiddleware> _logger;
+        private readonly IHostEnvironment _env;
 
-        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
+        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IHostEnvironment env)
         {
             _next = next;
             _logger = logger;
+            _env = env;
         }
 
         public async Task Invoke(HttpContext context)
@@ -29,27 +34,32 @@ namespace MediPlat.API.Middleware
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception ex)
+        private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
             context.Response.ContentType = "application/json";
 
             var statusCode = ex switch
             {
-                KeyNotFoundException => (int)HttpStatusCode.NotFound, // 404 Not Found
-                UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized, // 401 Unauthorized
-                ArgumentException => (int)HttpStatusCode.BadRequest, // 400 Bad Request
-                _ => (int)HttpStatusCode.InternalServerError // 500 Internal Server Error
+                KeyNotFoundException => (int)HttpStatusCode.NotFound, // 404
+                UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized, // 401
+                ArgumentException => (int)HttpStatusCode.BadRequest, // 400
+                InvalidOperationException => (int)HttpStatusCode.Conflict, // 409 Conflict
+                _ => (int)HttpStatusCode.InternalServerError // 500
             };
 
             var response = new
             {
                 StatusCode = statusCode,
                 Message = ex.Message,
-                Details = ex.StackTrace
+                Details = _env.IsDevelopment() ? ex.StackTrace : null // Chỉ hiển thị StackTrace ở môi trường Dev
             };
 
             context.Response.StatusCode = statusCode;
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            }));
         }
     }
 }
