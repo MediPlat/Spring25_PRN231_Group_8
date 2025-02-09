@@ -21,8 +21,10 @@ namespace MediPlat.Service.Services
 
         public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId)
         {
-            var doctorSubscriptions = _unitOfWork.DoctorSubscriptions.GetList(ds => ds.DoctorId == doctorId);
-            return doctorSubscriptions.Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds)).AsQueryable();
+            return _unitOfWork.DoctorSubscriptions
+        .GetList(ds => ds.DoctorId == doctorId)
+        .AsQueryable()
+        .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
         }
 
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)

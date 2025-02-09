@@ -1,5 +1,6 @@
 ﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,27 +26,23 @@ namespace MediPlat.API.Controllers
         [HttpGet]
         [EnableQuery]
         [Authorize(Roles = "Doctor")]
-        public IActionResult GetDoctorSubscriptions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public IQueryable<DoctorSubscriptionResponse> GetDoctorSubscriptions()
         {
-            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var doctorIdClaim = User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (doctorIdClaim == null)
             {
-                return Unauthorized("DoctorId claim is missing.");
+                return Enumerable.Empty<DoctorSubscriptionResponse>().AsQueryable();
             }
             var doctorId = Guid.Parse(doctorIdClaim.Value);
 
-            var doctorSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId).Skip((page - 1) * pageSize)
-                         .Take(pageSize);
-
-            return Ok(doctorSubscriptions);
+            return _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
         }
-
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetDoctorSubscriptions(Guid id)
         {
-            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var doctorIdClaim = User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value))
             {
                 return Unauthorized("Doctor ID is missing.");
@@ -75,7 +72,7 @@ namespace MediPlat.API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var doctorIdClaim = User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
             {
                 return Unauthorized("Doctor ID is missing or invalid.");
@@ -113,7 +110,7 @@ namespace MediPlat.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var doctorIdClaim = User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
             {
                 return Unauthorized("Doctor ID is missing or invalid.");
@@ -138,7 +135,7 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> DeleteDoctorSubscription(Guid id)
         {
-            var doctorIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var doctorIdClaim = User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (doctorIdClaim == null || string.IsNullOrEmpty(doctorIdClaim.Value) || !Guid.TryParse(doctorIdClaim.Value, out Guid doctorId))
             {
                 return Unauthorized("Doctor ID is missing or invalid.");

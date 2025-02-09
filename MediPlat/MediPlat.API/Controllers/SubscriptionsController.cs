@@ -24,14 +24,11 @@ namespace MediPlat.API.Controllers
         [HttpGet]
         [EnableQuery]
         [Authorize(Roles = "Admin,Doctor")]
-        public IActionResult GetSubscriptions([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public IQueryable<SubscriptionResponse> GetSubscriptions()
         {
-            var subscriptions = _subscriptionService.GetAllSubscriptions()
-                         .Skip((page - 1) * pageSize)
-                         .Take(pageSize);
-            return Ok(subscriptions);
-
+            return _subscriptionService.GetAllSubscriptions();
         }
+
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Doctor")]

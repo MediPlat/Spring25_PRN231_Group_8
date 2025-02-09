@@ -9,15 +9,17 @@ public partial class DoctorSubscription
 
     public Guid? SubscriptionId { get; set; }
 
-    public byte? EnableSlot { get; set; }
+    public short? EnableSlot { get; set; }
+
+    public string? Description { get; set; }
+
+    public Guid? DoctorId { get; set; }
 
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
 
     public DateTime? UpdateDate { get; set; }
-
-    public Guid? DoctorId { get; set; }
 
     public virtual Doctor? Doctor { get; set; }
 

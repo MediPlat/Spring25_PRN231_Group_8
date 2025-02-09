@@ -7,8 +7,6 @@ public partial class Subscription
 {
     public Guid Id { get; set; }
 
-    public string? Title { get; set; }
-
     public string? Name { get; set; }
 
     public decimal? Price { get; set; }
@@ -16,6 +14,8 @@ public partial class Subscription
     public byte? EnableSlot { get; set; }
 
     public string? Description { get; set; }
+
+    public DateTime? CreatedDate { get; set; }
 
     public DateTime? UpdateDate { get; set; }
 

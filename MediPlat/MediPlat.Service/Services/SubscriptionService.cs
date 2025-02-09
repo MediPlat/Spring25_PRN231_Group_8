@@ -68,10 +68,10 @@ namespace MediPlat.Service.Services
             subscription.UpdateDate = DateTime.Now;
 
             _unitOfWork.Subscriptions.UpdatePartial(subscription,
-                s => s.Title,
                 s => s.Name,
                 s => s.Price,
                 s => s.Description,
+                s => s.CreatedDate,
                 s => s.UpdateDate);
 
             await _unitOfWork.SaveChangesAsync();

@@ -19,7 +19,7 @@ public partial class Doctor
 
     public decimal? Balance { get; set; }
 
-    public decimal? FeePerSession { get; set; }
+    public decimal? FeePerHour { get; set; }
 
     public string? Degree { get; set; }
 

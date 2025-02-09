@@ -11,10 +11,6 @@ namespace MediPlat.Model.ResponseObject
 
         [Required]
         [MaxLength(255)]
-        public string? Title { get; set; }
-
-        [Required]
-        [MaxLength(255)]
         public string? Name { get; set; }
 
         [Required]
@@ -24,6 +20,9 @@ namespace MediPlat.Model.ResponseObject
 
         [MaxLength(1000)]
         public string? Description { get; set; }
+
+        [Required]
+        public DateTime? CreatedDate { get; set; } = DateTime.Now;
 
         public DateTime? UpdateDate { get; set; }
 

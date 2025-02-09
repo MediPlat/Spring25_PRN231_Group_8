@@ -8,12 +8,10 @@ namespace MediPlat.Model.RequestObject
         [Required]
         public Guid SubscriptionId { get; set; }
 
-        [Required]
         [Range(1, 255, ErrorMessage = "EnableSlot must be between 1 and 255.")]
-        public byte EnableSlot { get; set; }
+        public short? EnableSlot { get; set; }
 
-        [Required]
-        public Guid DoctorId { get; set; }
+        public Guid? DoctorId { get; set; }
         public DateTime? StartDate { get; set; } = DateTime.Now;
 
         public DateTime? EndDate { get; set; }

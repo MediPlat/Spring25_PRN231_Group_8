@@ -10,11 +10,13 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid SubscriptionId { get; set; }
 
-        public byte EnableSlot { get; set; }
+        public short EnableSlot { get; set; }
 
         public DateTime StartDate { get; set; }
 
         public DateTime EndDate { get; set; }
+
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public DateTime? UpdateDate { get; set; }
 

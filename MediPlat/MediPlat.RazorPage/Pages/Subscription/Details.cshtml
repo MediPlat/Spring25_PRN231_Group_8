@@ -12,12 +12,6 @@
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Subscription.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Subscription.Title)
-        </dd>
-        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Subscription.Name)
         </dt>
         <dd class="col-sm-10">
@@ -40,6 +34,12 @@
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Subscription.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Subscription.CreatedDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Subscription.CreatedDate)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Subscription.UpdateDate)

@@ -14,9 +14,6 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].Title)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Subscription[0].Name)
             </th>
             <th>
@@ -29,6 +26,9 @@
                 @Html.DisplayNameFor(model => model.Subscription[0].Description)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Subscription[0].CreatedDate)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Subscription[0].UpdateDate)
             </th>
             <th></th>
@@ -37,9 +37,6 @@
     <tbody>
 @foreach (var item in Model.Subscription) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
@@ -52,6 +49,9 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedDate)
+                </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdateDate)
             </td>

@@ -17,19 +17,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Đăng ký AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-//Register Services
+// Đăng ký các service
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+// Đăng ký UnitOfWork
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+// Đăng ký Hosted Service
 builder.Services.AddHostedService<DoctorSubscriptionCleanupService>();
 
-//Register Repository
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
-builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
-
+//Register RazorPage
 builder.Services.AddRazorPages();
 
 // Add services to the container.
