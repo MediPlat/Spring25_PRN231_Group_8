@@ -121,7 +121,6 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
     options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
-    options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
 });
 
 // Build the app
@@ -161,8 +160,8 @@ static IEdmModel GetEdmModel()
 
     // Định nghĩa các thực thể và tập thực thể
     builder.EntitySet<DoctorSubscription>("DoctorSubscriptions");
-    builder.EntitySet<Patient>("Patient");
-    builder.EntitySet<Doctor>("Doctor");
+    builder.EntitySet<Patient>("Patients");
+    builder.EntitySet<Doctor>("Doctors");
     builder.EntitySet<AppointmentSlot>("AppointmentSlots");
     builder.EntitySet<Review>("Reviews");
     builder.EntitySet<Transaction>("Transactions");

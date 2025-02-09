@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 namespace MediPlat.API.Controllers
 {
     [ApiController]
-    [Route("api/patient")]
+    [Route("odata/[patient]")]
     public class PatientController : ODataController
     {
         private readonly IPatientService _patientService;
