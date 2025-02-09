@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
     [ApiController]
     [Route("api/patient")]
-    public class PatientController : ControllerBase
+    public class PatientController : ODataController
     {
         private readonly IPatientService _patientService;
         static Guid temp;
@@ -23,15 +24,15 @@ namespace MediPlat.API.Controllers
         //[Authorize(Roles = "Admin")]
         [EnableQuery]
         [HttpGet]
-        public async Task<ActionResult<List<PatientResponse>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return await _patientService.GetAll(HttpContext.User);
+            return Ok(await _patientService.GetAll(HttpContext.User));
         }
 
         [Authorize]
         [EnableQuery]
         [HttpGet("{id}")]
-        public async Task<ActionResult<PatientResponse>> GetById(string id)
+        public async Task<IActionResult> GetById(string id)
         {
             try
             {
@@ -50,9 +51,8 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [EnableQuery]
         [HttpPost]
-        public async Task<ActionResult<PatientResponse>> Create([FromForm] PatientRequest patientModel)
+        public async Task<IActionResult> Create([FromForm] PatientRequest patientModel)
         {
             try
             {
@@ -65,9 +65,8 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize(Roles = "Patient")]
-        [EnableQuery]
         [HttpPut("{id}")]
-        public async Task<ActionResult<PatientResponse>> Update(string id, [FromBody] PatientRequest patientModel)
+        public async Task<IActionResult> Update(string id, [FromBody] PatientRequest patientModel)
         {
             try
             {
@@ -86,9 +85,8 @@ namespace MediPlat.API.Controllers
         }
 
         [Authorize(Roles = "Admin, Patient")]
-        [EnableQuery]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<PatientResponse>> Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {

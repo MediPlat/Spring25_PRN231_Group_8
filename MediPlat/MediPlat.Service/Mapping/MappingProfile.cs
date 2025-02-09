@@ -2,6 +2,7 @@
 using MediPlat.Model;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject;
 
 namespace MediPlat.Service.Mapping
@@ -17,6 +18,8 @@ namespace MediPlat.Service.Mapping
             CreateMap<SubscriptionRequest, Subscription>();
 
             CreateMap<Subscription, SubscriptionResponse>();
+
+            CreateMap<PatientRequest, Patient>();
         }
     }
 }

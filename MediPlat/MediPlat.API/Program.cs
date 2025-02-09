@@ -22,16 +22,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 //Register Services
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
-builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
-builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
-//Register Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
-builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
 
 builder.Services.AddRazorPages();
 
@@ -39,11 +32,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     })
     .AddOData(options =>
     {
-        options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
+        options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100).AddRouteComponents("odata", GetEdmModel());
     });
 
 // Add DbContext 
@@ -167,9 +161,20 @@ static IEdmModel GetEdmModel()
 
     // Định nghĩa các thực thể và tập thực thể
     builder.EntitySet<DoctorSubscription>("DoctorSubscriptions");
+    builder.EntitySet<Patient>("Patient");
+    builder.EntitySet<Doctor>("Doctor");
+    builder.EntitySet<AppointmentSlot>("AppointmentSlots");
+    builder.EntitySet<Review>("Reviews");
+    builder.EntitySet<Transaction>("Transactions");
 
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
+    builder.EntityType<Patient>()
+        .HasMany(p => p.AppointmentSlots);
+    builder.EntityType<Patient>()
+        .HasMany(p => p.Reviews);
+    builder.EntityType<Patient>()
+        .HasMany(p => p.Transactions);
 
     return builder.GetEdmModel();
 }
