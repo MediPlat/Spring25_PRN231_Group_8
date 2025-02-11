@@ -11,6 +11,7 @@ using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
+using MediPlat.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +24,11 @@ builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
-// Đăng ký UnitOfWork
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
+
+// Đăng ký Repository (UnitOfWork)
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 // Đăng ký Hosted Service
 builder.Services.AddHostedService<DoctorSubscriptionCleanupService>();
 

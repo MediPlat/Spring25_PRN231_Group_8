@@ -55,7 +55,7 @@ CREATE TABLE "Subscription" (
   "EnableSlot" TINYINT,
   "Description" NVARCHAR(MAX),
   "CreatedDate" DATETIME DEFAULT GETDATE(),
-  "UpdateDate" DATETIME null
+  "UpdateDate" DATETIME
 );
 
 CREATE TABLE "DoctorSubscription" (
@@ -65,7 +65,8 @@ CREATE TABLE "DoctorSubscription" (
   "DoctorID" UNIQUEIDENTIFIER,
   "StartDate" DATETIME DEFAULT GETDATE(),
   "EndDate" DATETIME,
-  "UpdateDate" DATETIME null
+  "UpdateDate" DATETIME,
+  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Đang hoạt động', N'Đã hết hạn'))
 );
 
 CREATE TABLE "Services" (

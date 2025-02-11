@@ -16,8 +16,7 @@ namespace MediPlat.Repository.Repositories
         public IGenericRepository<Subscription> Subscriptions { get; }
         public IGenericRepository<Patient> Patients { get; }
         public IGenericRepository<Doctor> Doctors { get; }
-
-
+        public IGenericRepository<Experience> Experiences { get; }
         public UnitOfWork(MediPlatContext context)
         {
             _context = context;
@@ -25,6 +24,7 @@ namespace MediPlat.Repository.Repositories
             Subscriptions = new GenericRepository<Subscription>(context);
             Patients = new GenericRepository<Patient>(context);
             Doctors = new GenericRepository<Doctor>(context);
+            Experiences = new GenericRepository<Experience>(context);
         }
 
         public async Task<int> SaveChangesAsync()

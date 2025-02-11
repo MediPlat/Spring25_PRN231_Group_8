@@ -26,6 +26,9 @@
                 @Html.DisplayNameFor(model => model.DoctorSubscription[0].UpdateDate)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].Status)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.DoctorSubscription[0].Doctor)
             </th>
             <th>
@@ -50,10 +53,10 @@
                 @Html.DisplayFor(modelItem => item.UpdateDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Doctor.Id)
+                @Html.DisplayFor(modelItem => item.Doctor.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Subscription.Id)
+                @Html.DisplayFor(modelItem => item.Subscription.Name)
             </td>
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |

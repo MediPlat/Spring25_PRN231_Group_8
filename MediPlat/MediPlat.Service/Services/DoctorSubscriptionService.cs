@@ -3,7 +3,6 @@ using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
-using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
 
 namespace MediPlat.Service.Services
@@ -22,9 +21,9 @@ namespace MediPlat.Service.Services
         public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId)
         {
             return _unitOfWork.DoctorSubscriptions
-        .GetList(ds => ds.DoctorId == doctorId)
-        .AsQueryable()
-        .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
+                .GetList(ds => ds.DoctorId == doctorId)
+                .AsQueryable()
+                .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
         }
 
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
@@ -35,45 +34,23 @@ namespace MediPlat.Service.Services
 
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
+
         public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
             await _unitOfWork.BeginTransactionAsync();
-
             try
             {
                 var now = DateTime.Now;
-
-                var existingSubscription = _unitOfWork.DoctorSubscriptions
-                    .GetList(ds => ds.DoctorId == doctorId)
-                    .OrderByDescending(ds => ds.EndDate)
-                    .FirstOrDefault();
-
-                if (existingSubscription != null && existingSubscription.EndDate > now)
-                {
-                    var newSubscription = await _unitOfWork.Subscriptions.GetIdAsync(request.SubscriptionId);
-                    if (!existingSubscription.SubscriptionId.HasValue)
-                    {
-                        throw new InvalidOperationException("Existing subscription has no valid SubscriptionId.");
-                    }
-
-                    var oldSubscription = await _unitOfWork.Subscriptions.GetIdAsync(existingSubscription.SubscriptionId.Value);
-
-                    if (newSubscription.Price <= oldSubscription.Price)
-                    {
-                        throw new InvalidOperationException("You can only upgrade to a higher subscription.");
-                    }
-                }
-
                 var doctorSubscription = _mapper.Map<DoctorSubscription>(request);
                 doctorSubscription.Id = Guid.NewGuid();
                 doctorSubscription.DoctorId = doctorId;
                 doctorSubscription.StartDate = now;
                 doctorSubscription.EndDate = now.AddMonths(1);
+                doctorSubscription.Status = "Đang hoạt động";
                 doctorSubscription.UpdateDate = now;
 
                 _unitOfWork.DoctorSubscriptions.Add(doctorSubscription);
                 await _unitOfWork.SaveChangesAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
                 return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
@@ -95,18 +72,15 @@ namespace MediPlat.Service.Services
 
             existingSubscription.EnableSlot = request.EnableSlot;
             existingSubscription.UpdateDate = DateTime.Now;
+            existingSubscription.Status = request.Status;
 
             await _unitOfWork.DoctorSubscriptions.UpdatePartialAsync(existingSubscription,
                 ds => ds.EnableSlot,
-                ds => ds.UpdateDate);
+                ds => ds.UpdateDate,
+                ds => ds.Status);
 
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<DoctorSubscriptionResponse>(existingSubscription);
-        }
-
-        public Task DeleteDoctorSubscriptionAsync(Guid id, Guid doctorId)
-        {
-            throw new InvalidOperationException("Deleting a DoctorSubscription is not allowed.");
         }
     }
 }

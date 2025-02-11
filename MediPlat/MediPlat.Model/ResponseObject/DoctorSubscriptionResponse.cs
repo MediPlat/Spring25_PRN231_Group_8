@@ -16,9 +16,8 @@ namespace MediPlat.Model.ResponseObject
 
         public DateTime EndDate { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-
         public DateTime? UpdateDate { get; set; }
+        public string Status { get; set; }
 
         public Guid DoctorId { get; set; }
 

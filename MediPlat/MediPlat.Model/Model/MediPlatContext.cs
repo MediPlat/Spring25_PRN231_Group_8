@@ -121,6 +121,7 @@ public partial class MediPlatContext : DbContext
             entity.Property(e => e.StartDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.SubscriptionId).HasColumnName("SubscriptionID");
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
 

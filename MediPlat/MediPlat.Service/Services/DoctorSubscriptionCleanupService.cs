@@ -22,29 +22,35 @@ public class DoctorSubscriptionCleanupService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            try
             {
-                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-                var expiredSubscriptions = unitOfWork.DoctorSubscriptions
-                    .GetList(ds => ds.EndDate.HasValue && ds.EndDate.Value < DateTime.Now)
-                    .ToList();
-
-                if (expiredSubscriptions.Any())
+                using (var scope = _scopeFactory.CreateScope())
                 {
-                    _logger.LogInformation($"Deleting {expiredSubscriptions.Count} expired subscriptions...");
+                    var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                    var expiredSubscriptions = unitOfWork.DoctorSubscriptions
+                        .GetList(ds => ds.EndDate.HasValue && ds.EndDate.Value < DateTime.Now && ds.Status != "Đã hết hạn")
+                        .ToList();
 
-                    foreach (var subscription in expiredSubscriptions)
+                    if (expiredSubscriptions.Any())
                     {
-                        unitOfWork.DoctorSubscriptions.Remove(subscription);
-                    }
+                        _logger.LogInformation($"Updating {expiredSubscriptions.Count} expired subscriptions to 'Đã hết hạn'...");
 
-                    await unitOfWork.SaveChangesAsync();
+                        foreach (var subscription in expiredSubscriptions)
+                        {
+                            subscription.Status = "Đã hết hạn";
+                            unitOfWork.DoctorSubscriptions.UpdatePartial(subscription, ds => ds.Status);
+                        }
+
+                        await unitOfWork.SaveChangesAsync();
+                    }
                 }
             }
-            var nextRunTime = DateTime.Today.AddDays(1).AddHours(0).AddMinutes(0);
-            var delay = nextRunTime - DateTime.Now;
-            await Task.Delay(delay, stoppingToken);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating expired doctor subscriptions.");
+            }
+
+            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }
     }
 }
