@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 namespace MediPlat.API.Controllers
 {
     [ApiController]
-    [Route("odata/[patient]")]
+    [Route("odata/patient")]
     public class PatientController : ODataController
     {
         private readonly IPatientService _patientService;
@@ -21,7 +21,7 @@ namespace MediPlat.API.Controllers
             _patientService = patientService;
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [EnableQuery]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -29,7 +29,7 @@ namespace MediPlat.API.Controllers
             return Ok(await _patientService.GetAll(HttpContext.User));
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin, Patient")]
         [EnableQuery]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
@@ -64,7 +64,7 @@ namespace MediPlat.API.Controllers
             }
         }
 
-        [Authorize(Roles = "Patient")]
+        [Authorize(Roles = "Admin, Patient")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] PatientRequest patientModel)
         {
