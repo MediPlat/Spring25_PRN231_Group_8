@@ -10,10 +10,11 @@ namespace MediPlat.Model.Schema
     {
 
         public string? FullName { get; set; }
+        public string? UserName { get; set; }
 
         public string? Email { get; set; }
 
-        public decimal? FeePerSession { get; set; }
+        public decimal? FeePerHour { get; set; }
 
         public string? Degree { get; set; }
 

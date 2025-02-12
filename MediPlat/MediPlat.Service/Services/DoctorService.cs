@@ -43,6 +43,34 @@ namespace MediPlat.Service.Services
 
         }
 
+        public async Task<Doctor> Create(DoctorSchema doctor)
+        {
+           Doctor d = new Doctor();
+            Guid pass = Guid.NewGuid();
+            d.Id = Guid.NewGuid();
+            d.FullName = doctor.FullName;
+            d.UserName = doctor.UserName;
+            d.Email = doctor.Email;
+            d.FeePerHour = doctor.FeePerHour;
+            d.Degree = doctor.Degree;
+            d.AcademicTitle = doctor.AcademicTitle;
+            d.PhoneNumber = doctor.PhoneNumber;
+            d.Balance = 0;
+            d.Password = pass.ToString();
+            d.JoinDate = DateTime.Now;
+            d.AvatarUrl = null;
+            d.Status = "Active";
+            _doctor_repository.Add(d);
+            return d;
+        }
+
+        public async Task<List<Doctor>> GetAllDoctor()
+        {
+            List<Doctor> d = new List<Doctor>();
+            d = (List<Doctor>)await _doctor_repository.GetAllAsync(d => d.Experiences, d => d.Reviews);
+            return d;
+        }
+
         public async Task<Doctor> GetByID(Guid id)
         {
            var doctor = await _doctor_repository.GetIdAsync(id);
@@ -54,7 +82,8 @@ namespace MediPlat.Service.Services
             Doctor profile = _doctor_repository.GetId(Guid.Parse(id));
             if (!doctor.FullName.IsNullOrEmpty()) { profile.FullName = doctor.FullName; }
             if (!doctor.Email.IsNullOrEmpty()) { profile.Email = doctor.Email; }
-            if (doctor.FeePerSession.HasValue) { profile.FeePerSession = doctor.FeePerSession; }
+            if (!doctor.UserName.IsNullOrEmpty()) { profile.UserName = doctor.UserName; }
+            if (doctor.FeePerHour.HasValue) { profile.FeePerHour = doctor.FeePerHour; }
             if (!doctor.Degree.IsNullOrEmpty()) { profile.Degree = doctor.Degree; }
             if (!doctor.AcademicTitle.IsNullOrEmpty()) { profile.AcademicTitle = doctor.AcademicTitle; }
             if (!doctor.PhoneNumber.IsNullOrEmpty()) { profile.PhoneNumber = doctor.PhoneNumber; }

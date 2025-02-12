@@ -32,9 +32,32 @@ namespace MediPlat.Service.Services
         public AuthResult Login(LoginModel loginModel)
         {
             AuthResult result = new AuthResult();
-            var patient = _patient_repository.Get(c => c.Email == loginModel.Email);
 
-            if (patient != null)
+            var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
+                .FirstOrDefault(a => a.Email == loginModel.Email);
+
+            if (admin != null)
+            {
+                Console.WriteLine($"Admin found: {admin.Email}");
+                if (admin.Password == loginModel.Password)
+                {
+                    Console.WriteLine("Admin password is correct.");
+                    var token = GenerateJwtToken(Guid.NewGuid(), "Admin");
+                    result = new AuthResult
+                    {
+                        Token = "Bearer " + token,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                    };
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid admin password.");
+                }
+            }
+                var patient = _patient_repository.Get(c => c.Email == loginModel.Email);
+                
+            if (patient != null && patient.Status.Equals("Active"))
             {
                 Console.WriteLine($"Patient found: {patient.Email}");
                 if (patient.Password == loginModel.Password)
@@ -60,7 +83,7 @@ namespace MediPlat.Service.Services
 
             var doctor = _doctor_repository.Get(d => d.Email == loginModel.Email);
 
-            if (doctor != null)
+            if (doctor != null && doctor.Status.Equals("Active"))
             {
                 Console.WriteLine($"Doctor found: {doctor.Email}");
                 if (doctor.Password == loginModel.Password)
