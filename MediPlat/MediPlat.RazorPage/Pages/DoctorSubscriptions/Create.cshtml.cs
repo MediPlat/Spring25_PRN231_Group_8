@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.Subscription
+namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
     public class CreateModel : PageModel
     {
@@ -20,11 +20,13 @@ namespace MediPlat.RazorPage.Pages.Subscription
 
         public IActionResult OnGet()
         {
+        ViewData["DoctorId"] = new SelectList(_context.Doctors, "Id", "Id");
+        ViewData["SubscriptionId"] = new SelectList(_context.Subscriptions, "Id", "Id");
             return Page();
         }
 
         [BindProperty]
-        public Model.Model.Subscription Subscription { get; set; } = default!;
+        public DoctorSubscription DoctorSubscription { get; set; } = default!;
 
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
@@ -34,7 +36,7 @@ namespace MediPlat.RazorPage.Pages.Subscription
                 return Page();
             }
 
-            _context.Subscriptions.Add(Subscription);
+            _context.DoctorSubscriptions.Add(DoctorSubscription);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");

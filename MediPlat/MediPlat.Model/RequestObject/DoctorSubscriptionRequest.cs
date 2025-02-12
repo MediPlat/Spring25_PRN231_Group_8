@@ -5,10 +5,10 @@ namespace MediPlat.Model.RequestObject
 {
     public enum DoctorSubscriptionStatus
     {
-        [Display(Name = "Đang hoạt động")]
+        [Display(Name = "Active")]
         Active,
 
-        [Display(Name = "Đã hết hạn")]
+        [Display(Name = "Inactive")]
         Expired
     }
     public class DoctorSubscriptionRequest
@@ -27,6 +27,6 @@ namespace MediPlat.Model.RequestObject
         public DateTime? UpdateDate { get; set; }
         [Required]
         [EnumDataType(typeof(DoctorSubscriptionStatus))]
-        public string Status { get; set; } = "Đang hoạt động";
+        public string Status { get; set; } = "Active";
     }
 }

@@ -66,7 +66,7 @@ CREATE TABLE "DoctorSubscription" (
   "StartDate" DATETIME DEFAULT GETDATE(),
   "EndDate" DATETIME,
   "UpdateDate" DATETIME,
-  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Đang hoạt động', N'Đã hết hạn'))
+  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Active', N'Inactive'))
 );
 
 CREATE TABLE "Services" (
@@ -148,3 +148,8 @@ ALTER TABLE "Review" ADD FOREIGN KEY ("PatientID") REFERENCES "Patient" ("ID");
 ALTER TABLE "Review" ADD FOREIGN KEY ("DoctorID") REFERENCES "Doctor" ("ID");
 
 ALTER TABLE "Review" ADD FOREIGN KEY ("SlotID") REFERENCES "Slot" ("ID");
+
+
+INSERT INTO Doctor(ID, UserName, FullName, Email, Password, AvatarUrl, Balance, FeePerHour, Degree, AcademicTitle, JoinDate, PhoneNumber, Status)
+VALUES
+	(NEWID(), N'tuanntase140515', N'Nguyễn Thanh Anh Tuấn', 'tuanntase140515@gmail.com', N'123456', CONCAT('https://api.dicebear.com/7.x/pixel-art/png?seed=', CAST(NEWID() AS NVARCHAR(50))), 10000.00, 10000.00, N'Bác sĩ Đa Khoa', N'Giáo Sư', GETDATE(), '0705543619', 'Active');

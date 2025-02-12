@@ -37,6 +37,13 @@ namespace MediPlat.Service.Services
 
         public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
+            var existingSubscription = await _unitOfWork.DoctorSubscriptions
+        .GetAsync(ds => ds.DoctorId == doctorId && ds.SubscriptionId == request.SubscriptionId);
+
+            if (existingSubscription != null)
+            {
+                throw new InvalidOperationException("Doctor already has an active subscription with this SubscriptionId.");
+            }
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -46,7 +53,7 @@ namespace MediPlat.Service.Services
                 doctorSubscription.DoctorId = doctorId;
                 doctorSubscription.StartDate = now;
                 doctorSubscription.EndDate = now.AddMonths(1);
-                doctorSubscription.Status = "Đang hoạt động";
+                doctorSubscription.Status = "Active";
                 doctorSubscription.UpdateDate = now;
 
                 _unitOfWork.DoctorSubscriptions.Add(doctorSubscription);

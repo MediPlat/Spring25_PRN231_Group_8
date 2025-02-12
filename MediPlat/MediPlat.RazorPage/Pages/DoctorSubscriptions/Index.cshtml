@@ -1,5 +1,5 @@
 ﻿@page
-@model MediPlat.RazorPage.Pages.DoctorSubscription.IndexModel
+@model MediPlat.RazorPage.Pages.DoctorSubscriptions.IndexModel
 
 @{
     ViewData["Title"] = "Index";
@@ -15,6 +15,9 @@
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.DoctorSubscription[0].EnableSlot)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].Description)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.DoctorSubscription[0].StartDate)
@@ -44,6 +47,9 @@
                 @Html.DisplayFor(modelItem => item.EnableSlot)
             </td>
             <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
                 @Html.DisplayFor(modelItem => item.StartDate)
             </td>
             <td>
@@ -53,10 +59,13 @@
                 @Html.DisplayFor(modelItem => item.UpdateDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Doctor.FullName)
+                @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Subscription.Name)
+                @Html.DisplayFor(modelItem => item.Doctor.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Subscription.Id)
             </td>
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |

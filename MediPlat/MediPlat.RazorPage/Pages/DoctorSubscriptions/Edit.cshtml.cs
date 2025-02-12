@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.Subscription
+namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
     public class EditModel : PageModel
     {
@@ -20,7 +20,7 @@ namespace MediPlat.RazorPage.Pages.Subscription
         }
 
         [BindProperty]
-        public Model.Model.Subscription Subscription { get; set; } = default!;
+        public DoctorSubscription DoctorSubscription { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -29,12 +29,14 @@ namespace MediPlat.RazorPage.Pages.Subscription
                 return NotFound();
             }
 
-            var subscription =  await _context.Subscriptions.FirstOrDefaultAsync(m => m.Id == id);
-            if (subscription == null)
+            var doctorsubscription =  await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
+            if (doctorsubscription == null)
             {
                 return NotFound();
             }
-            Subscription = subscription;
+            DoctorSubscription = doctorsubscription;
+           ViewData["DoctorId"] = new SelectList(_context.Doctors, "Id", "Id");
+           ViewData["SubscriptionId"] = new SelectList(_context.Subscriptions, "Id", "Id");
             return Page();
         }
 
@@ -47,7 +49,7 @@ namespace MediPlat.RazorPage.Pages.Subscription
                 return Page();
             }
 
-            _context.Attach(Subscription).State = EntityState.Modified;
+            _context.Attach(DoctorSubscription).State = EntityState.Modified;
 
             try
             {
@@ -55,7 +57,7 @@ namespace MediPlat.RazorPage.Pages.Subscription
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SubscriptionExists(Subscription.Id))
+                if (!DoctorSubscriptionExists(DoctorSubscription.Id))
                 {
                     return NotFound();
                 }
@@ -68,9 +70,9 @@ namespace MediPlat.RazorPage.Pages.Subscription
             return RedirectToPage("./Index");
         }
 
-        private bool SubscriptionExists(Guid id)
+        private bool DoctorSubscriptionExists(Guid id)
         {
-            return _context.Subscriptions.Any(e => e.Id == id);
+            return _context.DoctorSubscriptions.Any(e => e.Id == id);
         }
     }
 }

@@ -151,12 +151,13 @@ namespace MediPlat.Repository.Repositories
                 entry.Property(property).IsModified = true;
             }
         }
-
-        // Cập nhật từng thuộc tính cụ thể (async)
         public async Task UpdatePartialAsync(T objModel, params Expression<Func<T, object>>[] updatedProperties)
         {
             var entry = _mediPlatDBContext.Entry(objModel);
-            entry.State = EntityState.Unchanged;
+            if (entry.State == EntityState.Detached)
+            {
+                _mediPlatDBContext.Set<T>().Attach(objModel);
+            }
 
             foreach (var property in updatedProperties)
             {

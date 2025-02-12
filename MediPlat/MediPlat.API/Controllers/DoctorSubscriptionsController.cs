@@ -44,11 +44,6 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var existingSubscriptions = _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
-            if (existingSubscriptions.Any(ds => ds.SubscriptionId == request.SubscriptionId))
-            {
-                throw new InvalidOperationException("Doctor already has an active subscription with this SubscriptionId.");
-            }
             return Ok(await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId));
         }
 

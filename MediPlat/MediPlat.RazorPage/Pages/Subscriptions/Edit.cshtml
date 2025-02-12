@@ -1,11 +1,11 @@
 ﻿@page
-@model MediPlat.RazorPage.Pages.Subscription.CreateModel
+@model MediPlat.RazorPage.Pages.Subscriptions.EditModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Edit";
 }
 
-<h1>Create</h1>
+<h1>Edit</h1>
 
 <h4>Subscription</h4>
 <hr />
@@ -13,11 +13,7 @@
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Subscription.Id" class="control-label"></label>
-                <input asp-for="Subscription.Id" class="form-control" />
-                <span asp-validation-for="Subscription.Id" class="text-danger"></span>
-            </div>
+            <input type="hidden" asp-for="Subscription.Id" />
             <div class="form-group">
                 <label asp-for="Subscription.Name" class="control-label"></label>
                 <input asp-for="Subscription.Name" class="form-control" />
@@ -49,14 +45,14 @@
                 <span asp-validation-for="Subscription.UpdateDate" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-page="Index">Back to List</a>
+    <a asp-page="./Index">Back to List</a>
 </div>
 
 @section Scripts {

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.Subscription
+namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class IndexModel : PageModel
     {
@@ -18,11 +18,13 @@ namespace MediPlat.RazorPage.Pages.Subscription
             _context = context;
         }
 
-        public IList<Model.Model.Subscription> Subscription { get;set; } = default!;
+        public IList<Experience> Experience { get;set; } = default!;
 
         public async Task OnGetAsync()
         {
-            Subscription = await _context.Subscriptions.ToListAsync();
+            Experience = await _context.Experiences
+                .Include(e => e.Doctor)
+                .Include(e => e.Specialty).ToListAsync();
         }
     }
 }

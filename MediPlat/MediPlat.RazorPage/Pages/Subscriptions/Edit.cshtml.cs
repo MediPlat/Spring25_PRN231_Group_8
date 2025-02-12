@@ -7,33 +7,37 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
-namespace MediPlat.RazorPage.Pages.DoctorSubscription
+
+namespace MediPlat.RazorPage.Pages.Subscriptions
 {
     public class EditModel : PageModel
     {
-        private readonly Model.Model.MediPlatContext _context;
-        public EditModel(Model.Model.MediPlatContext context)
+        private readonly MediPlat.Model.Model.MediPlatContext _context;
+
+        public EditModel(MediPlat.Model.Model.MediPlatContext context)
         {
             _context = context;
         }
+
         [BindProperty]
-        public Model.Model.DoctorSubscription DoctorSubscription { get; set; } = default!;
+        public Subscription Subscription { get; set; } = default!;
+
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var doctorsubscription = await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
-            if (doctorsubscription == null)
+
+            var subscription =  await _context.Subscriptions.FirstOrDefaultAsync(m => m.Id == id);
+            if (subscription == null)
             {
                 return NotFound();
             }
-            DoctorSubscription = doctorsubscription;
-            ViewData["DoctorId"] = new SelectList(_context.Doctors, "Id", "Id");
-            ViewData["SubscriptionId"] = new SelectList(_context.Subscriptions, "Id", "Id");
+            Subscription = subscription;
             return Page();
         }
+
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
@@ -42,14 +46,16 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscription
             {
                 return Page();
             }
-            _context.Attach(DoctorSubscription).State = EntityState.Modified;
+
+            _context.Attach(Subscription).State = EntityState.Modified;
+
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DoctorSubscriptionExists(DoctorSubscription.Id))
+                if (!SubscriptionExists(Subscription.Id))
                 {
                     return NotFound();
                 }
@@ -58,11 +64,13 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscription
                     throw;
                 }
             }
+
             return RedirectToPage("./Index");
         }
-        private bool DoctorSubscriptionExists(Guid id)
+
+        private bool SubscriptionExists(Guid id)
         {
-            return _context.DoctorSubscriptions.Any(e => e.Id == id);
+            return _context.Subscriptions.Any(e => e.Id == id);
         }
     }
 }

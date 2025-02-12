@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.Subscription
+namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
     public class DetailsModel : PageModel
     {
@@ -18,7 +18,7 @@ namespace MediPlat.RazorPage.Pages.Subscription
             _context = context;
         }
 
-        public Model.Model.Subscription Subscription { get; set; } = default!;
+        public DoctorSubscription DoctorSubscription { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -27,14 +27,14 @@ namespace MediPlat.RazorPage.Pages.Subscription
                 return NotFound();
             }
 
-            var subscription = await _context.Subscriptions.FirstOrDefaultAsync(m => m.Id == id);
-            if (subscription == null)
+            var doctorsubscription = await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
+            if (doctorsubscription == null)
             {
                 return NotFound();
             }
             else
             {
-                Subscription = subscription;
+                DoctorSubscription = doctorsubscription;
             }
             return Page();
         }

@@ -12,6 +12,7 @@ using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
 using MediPlat.Service;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,11 +48,10 @@ builder.Services.AddControllers()
     });
 
 // Add DbContext 
-//builder.Services.AddDbContext<MediPlatContext>(options =>
-//{
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
-//});
-builder.Services.AddDbContext<MediPlatContext>();
+builder.Services.AddDbContext<MediPlatContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -140,8 +140,6 @@ app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(
 app.UseRouting();
 app.UseHttpsRedirection();
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseAuthentication();
-app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

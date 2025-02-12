@@ -6,30 +6,35 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
-namespace MediPlat.RazorPage.Pages.DoctorSubscription
+
+namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class DetailsModel : PageModel
     {
-        private readonly MediPlatContext _context;
-        public DetailsModel(MediPlatContext context)
+        private readonly MediPlat.Model.Model.MediPlatContext _context;
+
+        public DetailsModel(MediPlat.Model.Model.MediPlatContext context)
         {
             _context = context;
         }
-        public Model.Model.DoctorSubscription DoctorSubscription { get; set; } = default!;
+
+        public Experience Experience { get; set; } = default!;
+
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var doctorsubscription = await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
-            if (doctorsubscription == null)
+
+            var experience = await _context.Experiences.FirstOrDefaultAsync(m => m.Id == id);
+            if (experience == null)
             {
                 return NotFound();
             }
             else
             {
-                DoctorSubscription = doctorsubscription;
+                Experience = experience;
             }
             return Page();
         }
