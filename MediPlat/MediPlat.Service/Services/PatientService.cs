@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediPlat.Model;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject.Auth;
 using MediPlat.Model.RequestObject.Patient;
@@ -38,7 +37,7 @@ namespace MediPlat.Service.Services
 
             if (patient == null)
             {
-                throw new NotFoundException("Incorrect jwt token or patient deleted");
+                throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
             if (!changePasswordRequest.oldPassword.Equals(patient.Password))
             {
@@ -149,7 +148,7 @@ namespace MediPlat.Service.Services
             var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
             if (patient == null)
             {
-                throw new NotFoundException("Patient not found.");
+                throw new KeyNotFoundException("Patient not found.");
             }
             return new PatientResponse
             {
