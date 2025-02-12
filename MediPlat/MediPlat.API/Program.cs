@@ -1,41 +1,58 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
 using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.Edm;
-using Microsoft.AspNetCore.OData.Extensions;
 using System.Text;
 using Microsoft.AspNetCore.OData;
+using MediPlat.Model.Model;
+using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
+using MediPlat.API.Middleware;
+using MediPlat.Service;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// Đăng ký các service
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IGenericRepository<Doctor>, GenericRepository<Doctor>>();
-builder.Services.AddScoped<IGenericRepository<DoctorSubscription>, GenericRepository<DoctorSubscription>>();
-builder.Services.AddScoped<IGenericRepository<Patient>, GenericRepository<Patient>>();
+builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDoctorSupcriptionService, DoctorSupcriptionService>();
+builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
+
+// Đăng ký Repository (UnitOfWork)
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Đăng ký Hosted Service
+builder.Services.AddHostedService<DoctorSubscriptionCleanupService>();
+
+//Register RazorPage
+builder.Services.AddRazorPages();
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-        options.JsonSerializerOptions.WriteIndented = true; // Tùy chọn
+        //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     })
-    .AddOData(options => options.Select().Expand().Filter().OrderBy().Count().SetMaxTop(100)
-        .AddRouteComponents("odata", GetEdmModel()));
+    .AddOData(options =>
+    {
+        options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
+    });
 
 // Add DbContext 
 builder.Services.AddDbContext<MediPlatContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
 });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -83,8 +100,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // Sử dụng đúng schema
-        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // Sử dụng đúng schema cho role
+        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?úng schema
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?úng schema cho role
     };
 
     options.Events = new JwtBearerEvents
@@ -116,6 +133,14 @@ builder.Services.AddAuthorization(options =>
 // Build the app
 var app = builder.Build();
 
+// Configure CORS
+app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+// Middleware
+app.UseRouting();
+app.UseHttpsRedirection();
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -129,8 +154,8 @@ app.UseHttpsRedirection();
 // Ensure the correct order of middlewares
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
 

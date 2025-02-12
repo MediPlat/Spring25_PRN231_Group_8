@@ -1,12 +1,6 @@
-﻿using MediPlat.Model;
-using MediPlat.Model.Authen_Athor;
-using MediPlat.Repository.Entities;
+﻿using MediPlat.Model.Authen_Athor;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace MediPlat.API.Controllers
 {

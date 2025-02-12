@@ -1,0 +1,78 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.DoctorSubscriptions.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].EnableSlot)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].EndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].UpdateDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].Doctor)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DoctorSubscription[0].Subscription)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.DoctorSubscription) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.EnableSlot)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdateDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Doctor.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Subscription.Id)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

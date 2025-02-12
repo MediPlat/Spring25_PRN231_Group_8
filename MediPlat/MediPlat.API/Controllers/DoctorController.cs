@@ -1,4 +1,5 @@
 ﻿using MediPlat.Model;
+using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -35,16 +36,16 @@ namespace MediPlat.API.Controllers
 
         [HttpPatch("profile/update")]
         [Authorize(Policy = "DoctorPolicy")]
-        public IActionResult UpadateProfile([FromBody]DoctorSchema doctor)
+        public IActionResult UpadateProfile([FromBody] DoctorSchema doctor)
         {
             var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-      
+
             if (doctor == null)
             {
                 return BadRequest();
             }
-            
-            Doctor doc =  _service.Update(doctor, doctorId);
+
+            Doctor doc = _service.Update(doctor, doctorId);
             return Ok(doc);
 
         }

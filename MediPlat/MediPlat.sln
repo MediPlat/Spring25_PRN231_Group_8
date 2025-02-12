@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediPlat.API", "MediPlat.API\MediPlat.API.csproj", "{15531519-23CE-484E-8E97-05E55B22E5D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.API", "MediPlat.API\MediPlat.API.csproj", "{15531519-23CE-484E-8E97-05E55B22E5D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediPlat.RazorPage", "MediPlat.RazorPage\MediPlat.RazorPage.csproj", "{7BB9363C-6DA1-439B-BDA6-5BADDBAF0C63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.Repository", "MediPlat.Repository\MediPlat.Repository.csproj", "{48DFC8B2-2B8D-409C-A1C6-54A8E3EA6D3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediPlat.Repository", "MediPlat.Repository\MediPlat.Repository.csproj", "{48DFC8B2-2B8D-409C-A1C6-54A8E3EA6D3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.Model", "MediPlat.Model\MediPlat.Model.csproj", "{6DD72FFD-C2CF-48B9-B8DF-2E3A5729BC04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediPlat.Model", "MediPlat.Model\MediPlat.Model.csproj", "{6DD72FFD-C2CF-48B9-B8DF-2E3A5729BC04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.Service", "MediPlat.Service\MediPlat.Service.csproj", "{05389691-1C9A-4A57-9C33-44B5396E35A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediPlat.Service", "MediPlat.Service\MediPlat.Service.csproj", "{05389691-1C9A-4A57-9C33-44B5396E35A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.RazorPage", "MediPlat.RazorPage\MediPlat.RazorPage.csproj", "{DCD87D18-0323-4D43-81AD-4B05B4724F9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,6 @@ Global
 		{15531519-23CE-484E-8E97-05E55B22E5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15531519-23CE-484E-8E97-05E55B22E5D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15531519-23CE-484E-8E97-05E55B22E5D0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7BB9363C-6DA1-439B-BDA6-5BADDBAF0C63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7BB9363C-6DA1-439B-BDA6-5BADDBAF0C63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7BB9363C-6DA1-439B-BDA6-5BADDBAF0C63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7BB9363C-6DA1-439B-BDA6-5BADDBAF0C63}.Release|Any CPU.Build.0 = Release|Any CPU
 		{48DFC8B2-2B8D-409C-A1C6-54A8E3EA6D3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{48DFC8B2-2B8D-409C-A1C6-54A8E3EA6D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48DFC8B2-2B8D-409C-A1C6-54A8E3EA6D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +35,10 @@ Global
 		{05389691-1C9A-4A57-9C33-44B5396E35A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05389691-1C9A-4A57-9C33-44B5396E35A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05389691-1C9A-4A57-9C33-44B5396E35A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCD87D18-0323-4D43-81AD-4B05B4724F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCD87D18-0323-4D43-81AD-4B05B4724F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCD87D18-0323-4D43-81AD-4B05B4724F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCD87D18-0323-4D43-81AD-4B05B4724F9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

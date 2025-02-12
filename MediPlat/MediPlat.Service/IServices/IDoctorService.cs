@@ -1,4 +1,5 @@
-﻿using MediPlat.Model;
+﻿
+using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
 using System;
 using System.Collections.Generic;
