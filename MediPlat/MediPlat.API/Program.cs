@@ -130,13 +130,6 @@ var app = builder.Build();
 // Configure CORS
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
-// Middleware
-app.UseRouting();
-app.UseHttpsRedirection();
-app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseAuthentication();
-app.UseAuthorization();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -148,11 +141,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Ensure the correct order of middlewares
+app.UseRouting();
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<GlobalExceptionMiddleware>(); // Move it here
 app.MapControllers();
-app.MapRazorPages();
-
 app.Run();
 
 static IEdmModel GetEdmModel()
