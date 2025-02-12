@@ -1,4 +1,5 @@
-﻿using MediPlat.Model.RequestObject.Patient;
+﻿using MediPlat.Model.RequestObject.Auth;
+using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Service.IServices;
 using MediPlat.Service.Services;
@@ -34,74 +35,39 @@ namespace MediPlat.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            try
-            {
-                bool isValid = Guid.TryParse(id, out temp);
-                if (!isValid) 
-                {
-                    return BadRequest("Incorrect GUID format.");
-                }
-                var result = await _patientService.GetById(id);
-                return result == null ? NotFound($"Can not find patient with id: {id}") : Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var result = await _patientService.GetById(id);
+            return Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] PatientRequest patientModel)
         {
-            try
-            {
-                return Ok(await _patientService.Create(patientModel, HttpContext.User));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(await _patientService.Create(patientModel, HttpContext.User));
         }
 
         [Authorize(Roles = "Admin, Patient")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] PatientRequest patientModel)
+        public async Task<IActionResult> Update([FromBody] PatientRequest patientModel)
         {
-            try
-            {
-                bool isValid = Guid.TryParse(id, out temp);
-                if (!isValid)
-                {
-                    return BadRequest("Incorrect GUID format.");
-                }
-                var result = await _patientService.Update(id, patientModel, HttpContext.User);
-                return result == null ? NotFound($"Can not find patient with id: {id}") : Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var result = await _patientService.Update(patientModel, HttpContext.User);
+            return Ok(result);
         }
 
         [Authorize(Roles = "Admin, Patient")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete()
         {
-            try
-            {
-                bool isValid = Guid.TryParse(id, out temp);
-                if (!isValid)
-                {
-                    return BadRequest("Incorrect GUID format.");
-                }
-                var result = await _patientService.DeleteById(id);
-                return result == null ? NotFound($"Can not find patient with id: {id}") : Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var result = await _patientService.DeleteById(HttpContext.User);
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "Patient")]
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordRequest changePasswordRequest)
+        {
+            var result = await _patientService.ChangePassword(HttpContext.User, changePasswordRequest);
+            return Ok(result);
         }
     }
 }

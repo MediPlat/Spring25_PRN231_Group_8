@@ -1,4 +1,7 @@
-﻿using MediPlat.Model.Model;
+﻿using AutoMapper;
+using MediPlat.Model;
+using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject.Auth;
 using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Repository.IRepositories;
@@ -19,87 +22,97 @@ namespace MediPlat.Service.Services
     {
         static Guid guid;
         private readonly IUnitOfWork _unitOfWork;
-        public PatientService(IUnitOfWork unitOfWork) 
+        private readonly IMapper _mapper;
+
+        public PatientService(IUnitOfWork unitOfWork, IMapper mapper) 
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public Task<PatientResponse?> ChangePassword(ClaimsPrincipal claims, string newPassword)
+        public async Task<PatientResponse?> ChangePassword(ClaimsPrincipal claims, ChangePasswordRequest changePasswordRequest)
         {
-            throw new NotImplementedException();
+            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var patientId = new Guid(id);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId && p.Status.Equals("Active"));
+
+            if (patient == null)
+            {
+                throw new NotFoundException("Incorrect jwt token or patient deleted");
+            }
+            if (!changePasswordRequest.oldPassword.Equals(patient.Password))
+            {
+                throw new ArgumentException("Old password is incorrected.");
+            }
+            if (!changePasswordRequest.newPassword.Equals(changePasswordRequest.confirmNewPassword))
+            {
+                throw new ArgumentException("Confirm password is different from new password.");
+            }
+            patient.Password = changePasswordRequest.newPassword;
+            _unitOfWork.Patients.Update(patient);
+            await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<PatientResponse>(patient);
         }
 
         public async Task<PatientResponse?> Create(PatientRequest patientModel, ClaimsPrincipal claims)
         {
-            try
+            Guid guid = Guid.NewGuid();
+            _unitOfWork.Patients.Add(new Patient
             {
-                Guid guid = Guid.NewGuid(); 
-                _unitOfWork.Patients.Add(new Patient
-                {
-                    Id = guid,
-                    UserName = patientModel.UserName,
-                    FullName = patientModel.FullName,
-                    Email = patientModel.Email,
-                    PhoneNumber = patientModel.PhoneNumber,
-                    Balance = patientModel.Balance,
-                    Address = patientModel.Address,
-                    Sex = patientModel.Sex,
-                    Status = patientModel.Status,
-                    JoinDate = patientModel.JoinDate,
-                    Password = patientModel.Password,
-                });
-
-                return new PatientResponse
-                {
-                    Id = guid,
-                    UserName = patientModel.UserName,
-                    FullName = patientModel.FullName,
-                    Email = patientModel.Email,
-                    PhoneNumber = patientModel.PhoneNumber,
-                    Balance = patientModel.Balance,
-                    JoinDate = patientModel.JoinDate,
-                    Sex = patientModel.Sex,
-                    Address = patientModel.Address,
-                    Status = patientModel.Status
-                };
-            }
-            catch (Exception ex)
+                Id = guid,
+                UserName = patientModel.UserName,
+                FullName = patientModel.FullName,
+                Email = patientModel.Email,
+                PhoneNumber = patientModel.PhoneNumber,
+                Balance = patientModel.Balance,
+                Address = patientModel.Address,
+                Sex = patientModel.Sex,
+                Status = patientModel.Status,
+                JoinDate = patientModel.JoinDate,
+                Password = patientModel.Password,
+            });
+            await _unitOfWork.SaveChangesAsync();
+            return new PatientResponse
             {
-                throw new Exception(ex.Message);
-            }
+                Id = guid,
+                UserName = patientModel.UserName,
+                FullName = patientModel.FullName,
+                Email = patientModel.Email,
+                PhoneNumber = patientModel.PhoneNumber,
+                Balance = patientModel.Balance,
+                JoinDate = patientModel.JoinDate,
+                Sex = patientModel.Sex,
+                Address = patientModel.Address,
+                Status = patientModel.Status
+            };
         }
 
-        public async Task<PatientResponse?> DeleteById(string id)
+        public async Task<PatientResponse?> DeleteById(ClaimsPrincipal claims)
         {
-            guid = new Guid(id);
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
+            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var patientId = new Guid(id);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId);
 
             if (patient == null)
             {
-                return null;
+                throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
-            try
-            {
-                _unitOfWork.Patients.Remove(patient);
+            _unitOfWork.Patients.Remove(patient);
+            await _unitOfWork.SaveChangesAsync();
 
-                return new PatientResponse
-                {
-                    Id = patient.Id,
-                    UserName = patient.UserName,
-                    FullName = patient.FullName,
-                    Email = patient.Email,
-                    PhoneNumber = patient.PhoneNumber,
-                    Balance = patient.Balance,
-                    JoinDate = patient.JoinDate,
-                    Sex = patient.Sex,
-                    Address = patient.Address,
-                    Status = patient.Status
-                };
-            }
-            catch (Exception ex)
+            return new PatientResponse
             {
-                throw new Exception(ex.Message);
-            }
+                Id = patient.Id,
+                UserName = patient.UserName,
+                FullName = patient.FullName,
+                Email = patient.Email,
+                PhoneNumber = patient.PhoneNumber,
+                Balance = patient.Balance,
+                JoinDate = patient.JoinDate,
+                Sex = patient.Sex,
+                Address = patient.Address,
+                Status = patient.Status
+            };
         }
 
         public async Task<List<PatientResponse>> GetAll(ClaimsPrincipal claims)
@@ -127,76 +140,68 @@ namespace MediPlat.Service.Services
 
         public async Task<PatientResponse?> GetById(string code)
         {
-            try
+            bool isValid = Guid.TryParse(code, out guid);
+            if (!isValid)
             {
-                guid = new Guid(code);
-                var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
+                throw new ArgumentException("Incorrect GUID format.");
+            }
 
-                if (patient == null)
-                {
-                    return null;
-                }
-                return new PatientResponse
-                {
-                    Id = patient.Id,
-                    UserName = patient.UserName,
-                    FullName = patient.FullName,
-                    Email = patient.Email,
-                    PhoneNumber = patient.PhoneNumber,
-                    Balance = patient.Balance,
-                    JoinDate = patient.JoinDate,
-                    Sex = patient.Sex,
-                    Address = patient.Address,
-                    Status = patient.Status
-                };
-            }
-            catch (Exception ex)
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
+            if (patient == null)
             {
-                throw new Exception(ex.Message);
+                throw new NotFoundException("Patient not found.");
             }
+            return new PatientResponse
+            {
+                Id = patient.Id,
+                UserName = patient.UserName,
+                FullName = patient.FullName,
+                Email = patient.Email,
+                PhoneNumber = patient.PhoneNumber,
+                Balance = patient.Balance,
+                JoinDate = patient.JoinDate,
+                Sex = patient.Sex,
+                Address = patient.Address,
+                Status = patient.Status
+            };
         }
 
-        public async Task<PatientResponse?> Update(string id, PatientRequest patientModel, ClaimsPrincipal claims)
+        public async Task<PatientResponse?> Update(PatientRequest patientModel, ClaimsPrincipal claims)
         {
-            guid = new Guid(id);
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
+            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var patientId = new Guid(id);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId && p.Status.Equals("Active"));
 
             if (patient == null)
             {
-                return null;
+                throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
-            try
-            {
-                patient.UserName = patientModel.UserName.IsNullOrEmpty() ? patient.UserName : patientModel.UserName;
-                patient.FullName = patientModel.FullName.IsNullOrEmpty() ? patient.FullName : patientModel.FullName;
-                patient.Email = patientModel.Email.IsNullOrEmpty() ? patient.Email : patientModel.Email;
-                patient.PhoneNumber = patientModel.PhoneNumber.IsNullOrEmpty() ? patient.PhoneNumber : patientModel.PhoneNumber;
-                patient.Balance = patientModel.Balance == null || patientModel.Balance <= 0 ? patient.Balance : patientModel.Balance;
-                patient.Address = patientModel.Address.IsNullOrEmpty() ? patient.Address : patientModel.Address;
-                patient.Status = patientModel.Status.IsNullOrEmpty() ? patient.Status : patientModel.Status;
-                patient.JoinDate = patientModel.JoinDate is null ? patient.JoinDate : patientModel.JoinDate;
-                patient.Sex = patientModel.Sex.IsNullOrEmpty() ? patient.Sex : patientModel.Sex;
+            patient.UserName = patientModel.UserName.IsNullOrEmpty() ? patient.UserName : patientModel.UserName;
+            patient.FullName = patientModel.FullName.IsNullOrEmpty() ? patient.FullName : patientModel.FullName;
+            patient.Email = patientModel.Email.IsNullOrEmpty() ? patient.Email : patientModel.Email;
+            patient.PhoneNumber = patientModel.PhoneNumber.IsNullOrEmpty() ? patient.PhoneNumber : patientModel.PhoneNumber;
+            patient.Balance = patientModel.Balance == null || patientModel.Balance <= 0 ? patient.Balance : patientModel.Balance;
+            patient.Address = patientModel.Address.IsNullOrEmpty() ? patient.Address : patientModel.Address;
+            patient.Status = patientModel.Status.IsNullOrEmpty() ? patient.Status : patientModel.Status;
+            patient.JoinDate = patientModel.JoinDate is null ? patient.JoinDate : patientModel.JoinDate;
+            patient.Sex = patientModel.Sex.IsNullOrEmpty() ? patient.Sex : patientModel.Sex;
 
-                _unitOfWork.Patients.Update(patient);
+            _unitOfWork.Patients.Update(patient);
+            await _unitOfWork.SaveChangesAsync();
 
-                return new PatientResponse
-                {
-                    Id = patient.Id,
-                    UserName = patient.UserName,
-                    FullName = patient.FullName,
-                    Email = patient.Email,
-                    PhoneNumber = patient.PhoneNumber,
-                    Balance = patient.Balance,
-                    JoinDate = patient.JoinDate,
-                    Sex = patient.Sex,
-                    Address = patient.Address,
-                    Status = patient.Status
-                };
-            }
-            catch (Exception ex)
+            return new PatientResponse
             {
-                throw new Exception(ex.Message);
-            }
+                Id = patient.Id,
+                UserName = patient.UserName,
+                FullName = patient.FullName,
+                Email = patient.Email,
+                PhoneNumber = patient.PhoneNumber,
+                Balance = patient.Balance,
+                JoinDate = patient.JoinDate,
+                Sex = patient.Sex,
+                Address = patient.Address,
+                Status = patient.Status
+            };
         }
     }
 }

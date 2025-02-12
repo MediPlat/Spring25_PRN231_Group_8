@@ -9,6 +9,7 @@ namespace MediPlat.Repository.IRepositories
         IGenericRepository<DoctorSubscription> DoctorSubscriptions { get; }
         IGenericRepository<Subscription> Subscriptions { get; }
         IGenericRepository<Patient> Patients { get; }
+        IGenericRepository<Doctor> Doctors { get; }
 
         Task<int> SaveChangesAsync();
     }

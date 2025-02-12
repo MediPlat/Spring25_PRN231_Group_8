@@ -14,20 +14,18 @@ namespace MediPlat.Service.Services
     public class AuthService : IAuthService
     {
         private readonly IConfiguration _configuration;
-        private readonly IGenericRepository<Doctor> _doctor_repository;
-        private readonly IGenericRepository<Patient> _patient_repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IConfiguration configuration, IGenericRepository<Doctor> doctor_repository, IGenericRepository<Patient> patient_repository)
+        public AuthService(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
-            _doctor_repository = doctor_repository;
-            _patient_repository = patient_repository;
+            _unitOfWork = unitOfWork;
         }
 
         public AuthResult Login(LoginModel loginModel)
         {
             AuthResult result = new AuthResult();
-            var patient = _patient_repository.Get(c => c.Email == loginModel.Email);
+            var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
 
             if (patient != null)
             {
@@ -53,7 +51,7 @@ namespace MediPlat.Service.Services
                 Console.WriteLine("Patient not found.");
             }
 
-            var doctor = _doctor_repository.Get(d => d.Email == loginModel.Email);
+            var doctor = _unitOfWork.Doctors.Get(d => d.Email == loginModel.Email);
 
             if (doctor != null)
             {
