@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MediPlat.Model;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.RequestObject.Patient;

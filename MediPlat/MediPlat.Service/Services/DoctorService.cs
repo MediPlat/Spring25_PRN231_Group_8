@@ -1,6 +1,4 @@
-﻿
-using MediPlat.Model;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;

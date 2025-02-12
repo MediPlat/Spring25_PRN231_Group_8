@@ -14,6 +14,4 @@ public partial class Specialty
     public virtual ICollection<Experience> Experiences { get; set; } = new List<Experience>();
 
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
-
-    public virtual ICollection<Slot> Slots { get; set; } = new List<Slot>();
 }

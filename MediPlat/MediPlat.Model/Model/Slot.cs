@@ -11,8 +11,6 @@ public partial class Slot
 
     public Guid? ServiceId { get; set; }
 
-    public Guid? SpecialtyId { get; set; }
-
     public string? Title { get; set; }
 
     public string? Description { get; set; }
@@ -34,6 +32,4 @@ public partial class Slot
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual Service? Service { get; set; }
-
-    public virtual Specialty? Specialty { get; set; }
 }

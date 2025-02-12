@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using MediPlat.Model;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;

@@ -22,7 +22,7 @@ namespace MediPlat.API.Controllers
             _patientService = patientService;
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [EnableQuery]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -39,7 +39,7 @@ namespace MediPlat.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] PatientRequest patientModel)
         {
