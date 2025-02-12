@@ -54,7 +54,7 @@ namespace MediPlat.Service.Services
             Doctor profile = _doctor_repository.GetId(Guid.Parse(id));
             if (!doctor.FullName.IsNullOrEmpty()) { profile.FullName = doctor.FullName; }
             if (!doctor.Email.IsNullOrEmpty()) { profile.Email = doctor.Email; }
-            if (doctor.FeePerSession.HasValue) { profile.FeePerSession = doctor.FeePerSession; }
+            if (doctor.FeePerSession.HasValue) { profile.FeePerHour = doctor.FeePerSession; }
             if (!doctor.Degree.IsNullOrEmpty()) { profile.Degree = doctor.Degree; }
             if (!doctor.AcademicTitle.IsNullOrEmpty()) { profile.AcademicTitle = doctor.AcademicTitle; }
             if (!doctor.PhoneNumber.IsNullOrEmpty()) { profile.PhoneNumber = doctor.PhoneNumber; }
