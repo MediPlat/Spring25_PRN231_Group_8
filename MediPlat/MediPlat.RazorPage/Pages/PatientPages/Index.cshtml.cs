@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
+using Newtonsoft.Json;
 
 namespace MediPlat.RazorPage.Pages.PatientPages
 {
@@ -18,11 +14,26 @@ namespace MediPlat.RazorPage.Pages.PatientPages
             _context = context;
         }
 
-        public IList<Patient> Patient { get;set; } = default!;
+        public IList<Patient> Patient { get; set; } = default!;
 
         public async Task OnGetAsync()
         {
-            Patient = await _context.Patients.ToListAsync();
+            //Patient = await _context.Patients.ToListAsync();
+
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Add("Key", "Value");
+
+                using (HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7002/odata/patient"))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string apiResponse = await response.Content.ReadAsStringAsync();
+                        Patient = JsonConvert.DeserializeObject<List<Patient>>(apiResponse);
+                    }
+
+                }
+            }
         }
     }
 }
