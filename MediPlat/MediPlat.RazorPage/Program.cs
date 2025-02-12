@@ -1,7 +1,10 @@
+using MediPlat.Model.Model;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddDbContext<MediPlatContext>();
 
 var app = builder.Build();
 
