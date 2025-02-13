@@ -18,6 +18,7 @@ namespace MediPlat.Model.ResponseObject
         public string? Description { get; set; }
 
         public string? Certificate { get; set; }
+        public string? Status { get; set; }
 
         public Guid? DoctorId { get; set; }
 

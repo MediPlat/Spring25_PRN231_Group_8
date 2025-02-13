@@ -44,10 +44,10 @@
                 @Html.DisplayFor(modelItem => item.Certificate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Doctor.Id)
+                @Html.DisplayFor(modelItem => item.Doctor.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Specialty.Id)
+                @Html.DisplayFor(modelItem => item.Specialty.Name)
             </td>
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |

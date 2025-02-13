@@ -36,6 +36,7 @@ namespace MediPlat.API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
+            _logger.LogError($"Exception occurred for {context.Request.Method} {context.Request.Path}: {ex.Message}");
             context.Response.ContentType = "application/json";
 
             var statusCode = ex switch

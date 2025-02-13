@@ -23,6 +23,8 @@ namespace MediPlat.Model.RequestObject
 
         public string? Certificate { get; set; }
 
+        public string? Status { get; set; }
+
         public Guid? DoctorId { get; set; }
 
     }

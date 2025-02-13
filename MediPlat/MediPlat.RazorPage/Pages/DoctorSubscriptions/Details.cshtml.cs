@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
+using System.Security.Claims;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
     public class DetailsModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public DetailsModel(MediPlat.Model.Model.MediPlatContext context)
+        public DetailsModel(MediPlatContext context)
         {
             _context = context;
         }
@@ -27,15 +26,17 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return NotFound();
             }
 
-            var doctorsubscription = await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
+            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var doctorsubscription = await _context.DoctorSubscriptions
+                .FirstOrDefaultAsync(m => m.Id == id && m.DoctorId == doctorId);
+
             if (doctorsubscription == null)
             {
-                return NotFound();
+                return Forbid();
             }
-            else
-            {
-                DoctorSubscription = doctorsubscription;
-            }
+
+            DoctorSubscription = doctorsubscription;
             return Page();
         }
     }

@@ -21,6 +21,11 @@ namespace MediPlat.Service.Mapping
             CreateMap<ExperienceRequest, Experience>();
 
             CreateMap<Experience, ExperienceResponse>();
+
+            CreateMap<ExperienceRequest, Experience>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+
+            CreateMap<Experience, ExperienceResponse>();
         }
     }
 }

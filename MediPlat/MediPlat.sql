@@ -29,7 +29,8 @@ CREATE TABLE "Experience" (
   "Title" NVARCHAR(255),
   "Description" NVARCHAR(MAX),
   "Certificate" NVARCHAR(MAX),
-  "DoctorID" UNIQUEIDENTIFIER
+  "DoctorID" UNIQUEIDENTIFIER,
+  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Active', N'Suspended'))
 );
 
 CREATE TABLE "Doctor" (

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
+using System.Security.Claims;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
@@ -49,26 +50,24 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 return Page();
             }
 
-            _context.Attach(Experience).State = EntityState.Modified;
+            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var existingExperience = await _context.Experiences.FirstOrDefaultAsync(e => e.Id == Experience.Id && e.DoctorId == doctorId);
 
-            try
+            if (existingExperience == null)
             {
-                await _context.SaveChangesAsync();
+                return Forbid();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ExperienceExists(Experience.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            existingExperience.Title = Experience.Title;
+            existingExperience.Description = Experience.Description;
+            existingExperience.Certificate = Experience.Certificate;
+            existingExperience.SpecialtyId = Experience.SpecialtyId;
+
+            await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
         }
+
 
         private bool ExperienceExists(Guid id)
         {

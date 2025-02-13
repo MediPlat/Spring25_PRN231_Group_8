@@ -49,7 +49,12 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return Page();
             }
 
-            _context.Attach(DoctorSubscription).State = EntityState.Modified;
+            var existingSubscription = await _context.DoctorSubscriptions.FindAsync(DoctorSubscription.Id);
+            if (existingSubscription != null)
+            {
+                existingSubscription.EnableSlot = DoctorSubscription.EnableSlot;
+                await _context.SaveChangesAsync();
+            }
 
             try
             {

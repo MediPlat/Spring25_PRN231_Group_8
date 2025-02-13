@@ -29,7 +29,8 @@ CREATE TABLE "Experience" (
   "Title" NVARCHAR(255),
   "Description" NVARCHAR(MAX),
   "Certificate" NVARCHAR(MAX),
-  "DoctorID" UNIQUEIDENTIFIER
+  "DoctorID" UNIQUEIDENTIFIER,
+  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Active', N'Suspended'))
 );
 
 CREATE TABLE "Doctor" (
@@ -66,7 +67,7 @@ CREATE TABLE "DoctorSubscription" (
   "StartDate" DATETIME DEFAULT GETDATE(),
   "EndDate" DATETIME,
   "UpdateDate" DATETIME,
-  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Đang hoạt động', N'Đã hết hạn'))
+  "Status" NVARCHAR(20) CHECK ("Status" IN (N'Active', N'Inactive'))
 );
 
 CREATE TABLE "Services" (

@@ -1,8 +1,14 @@
+using MediPlat.Model.Model;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-
+builder.Services.AddDbContext<MediPlatContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

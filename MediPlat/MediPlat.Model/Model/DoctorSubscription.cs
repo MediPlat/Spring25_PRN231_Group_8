@@ -11,8 +11,6 @@ public partial class DoctorSubscription
 
     public short EnableSlot { get; set; }
 
-    public string? Description { get; set; }
-
     public Guid? DoctorId { get; set; }
 
     public DateTime? StartDate { get; set; }

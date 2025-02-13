@@ -43,6 +43,11 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             return Ok(await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId));
         }
@@ -53,6 +58,12 @@ namespace MediPlat.API.Controllers
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             return Ok(await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteDoctorSubscription(Guid id)
+        {
+            return Forbid();
         }
     }
 }

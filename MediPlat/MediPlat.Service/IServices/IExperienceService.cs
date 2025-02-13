@@ -13,7 +13,9 @@ namespace MediPlat.Service.IServices
         IQueryable<ExperienceResponse> GetAllExperiences();
         Task<ExperienceResponse> GetExperienceByIdAsync(Guid id);
         Task<ExperienceResponse> AddExperienceAsync(ExperienceRequest request);
-        Task<ExperienceResponse> UpdateExperienceAsync(Guid id, ExperienceRequest request);
+        Task<ExperienceResponse> UpdateExperienceAsync(Guid id, ExperienceRequest request, bool isAdmin);
         Task DeleteExperienceAsync(Guid id);
+        Task<ExperienceResponse> UpdateExperienceStatusAsync(Guid id, string status);
+        Task<ExperienceResponse> UpdateExperienceWithoutStatusAsync(Guid id, ExperienceRequest request);
     }
 }

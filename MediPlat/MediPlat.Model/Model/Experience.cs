@@ -17,6 +17,8 @@ public partial class Experience
 
     public Guid? DoctorId { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual Doctor? Doctor { get; set; }
 
     public virtual Specialty? Specialty { get; set; }
