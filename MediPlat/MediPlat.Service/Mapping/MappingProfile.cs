@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.RequestObject.Auth;
 using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Model.ResponseObject.Patient;

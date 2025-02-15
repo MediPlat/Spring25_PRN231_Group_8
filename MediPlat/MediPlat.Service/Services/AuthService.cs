@@ -8,6 +8,7 @@ using MediPlat.Model.Model;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Model;
+using MediPlat.Model.Authen_Author;
 
 namespace MediPlat.Service.Services
 {
@@ -104,6 +105,22 @@ namespace MediPlat.Service.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        public async Task RegisterAsync(RegisterModel registerModel)
+        {
+            var existingPatient = await _unitOfWork.Patients.GetAsync(p => p.Email == registerModel.Email && p.Status.Equals("Active"));
+            if (existingPatient != null)
+            {
+                throw new ArgumentException("Account with this email existed!");
+            }
 
+            _unitOfWork.Patients.Add(new Patient
+            {
+                Id = Guid.NewGuid(),
+                Email = registerModel.Email,
+                Password = registerModel.Password
+            });
+
+             await _unitOfWork.SaveChangesAsync();
+        }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using MediPlat.Model.Authen_Athor;
+using MediPlat.Model.Authen_Author;
+using MediPlat.Model.RequestObject.Auth;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +31,21 @@ namespace MediPlat.API.Controllers
             }
 
             return Ok(login);
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromForm] RegisterRequest registerRequest)
+        {
+            await _authService.RegisterAsync(new RegisterModel
+            {
+                Email = registerRequest.Email,
+                Password = registerRequest.Password
+            });
+            return Created(nameof(AuthController), new
+            {
+                StatusCode = 201,
+                Message = "Register successful!"
+            });
         }
     }
 }

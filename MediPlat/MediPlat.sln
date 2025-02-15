@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.Model", "MediPlat.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.Service", "MediPlat.Service\MediPlat.Service.csproj", "{05389691-1C9A-4A57-9C33-44B5396E35A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediPlat.RazorPage", "MediPlat.RazorPage\MediPlat.RazorPage.csproj", "{7E0508A0-ADFA-4251-A258-4C6BCC74611E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediPlat.RazorPage", "MediPlat.RazorPage\MediPlat.RazorPage.csproj", "{7E0508A0-ADFA-4251-A258-4C6BCC74611E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
