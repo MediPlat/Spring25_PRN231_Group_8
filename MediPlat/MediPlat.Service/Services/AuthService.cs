@@ -116,8 +116,15 @@ namespace MediPlat.Service.Services
             _unitOfWork.Patients.Add(new Patient
             {
                 Id = Guid.NewGuid(),
+                UserName = registerModel.UserName,
+                FullName = registerModel.FullName,
                 Email = registerModel.Email,
-                Password = registerModel.Password
+                Password = registerModel.Password,
+                PhoneNumber = registerModel.PhoneNumber,
+                JoinDate = DateTime.UtcNow,
+                Sex = registerModel.Sex,
+                Address = registerModel.Address,
+                Status = "Active"
             });
 
              await _unitOfWork.SaveChangesAsync();

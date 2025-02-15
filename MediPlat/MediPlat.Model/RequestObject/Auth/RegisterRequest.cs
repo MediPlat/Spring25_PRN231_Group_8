@@ -10,6 +10,10 @@ namespace MediPlat.Model.RequestObject.Auth
 {
     public class RegisterRequest
     {
+        public string? UserName { get; set; }
+
+        public string? FullName { get; set; }
+
         [Required]
         [EmailAddress(ErrorMessage = "Invalid email")]
         public required string Email { get; set; }
@@ -18,5 +22,11 @@ namespace MediPlat.Model.RequestObject.Auth
         [RegularExpression(@"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$",
         ErrorMessage = "Password must have minimum 8 characters (>= 1 uppercase, >=1 lowercase, >= 1 digit, >= 1 special character)")]
         public required string Password { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public string? Sex { get; set; }
+
+        public string? Address { get; set; }
     }
 }

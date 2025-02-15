@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MediPlat.Model.Authen_Author;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.RequestObject.Auth;
@@ -23,6 +24,8 @@ namespace MediPlat.Service.Mapping
             CreateMap<PatientRequest, Patient>();
 
             CreateMap<Patient, PatientResponse>();
+
+            CreateMap<RegisterRequest, RegisterModel>();
 
         }
     }
