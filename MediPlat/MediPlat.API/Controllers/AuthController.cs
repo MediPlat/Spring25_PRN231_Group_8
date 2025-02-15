@@ -34,7 +34,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromForm] RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             await _authService.RegisterAsync(new RegisterModel
             {
