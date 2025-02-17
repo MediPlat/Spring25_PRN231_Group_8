@@ -1,5 +1,4 @@
-﻿using MediPlat.Model;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;

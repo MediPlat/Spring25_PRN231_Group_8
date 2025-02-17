@@ -13,26 +13,25 @@ using MediPlat.Repository.Entities;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Model;
+using MediPlat.Model.Authen_Author;
 
 namespace MediPlat.Service.Services
 {
     public class AuthService : IAuthService
     {
         private readonly IConfiguration _configuration;
-        private readonly IGenericRepository<Doctor> _doctor_repository;
-        private readonly IGenericRepository<Patient> _patient_repository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AuthService(IConfiguration configuration, IGenericRepository<Doctor> doctor_repository, IGenericRepository<Patient> patient_repository)
+        public AuthService(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
-            _doctor_repository = doctor_repository;
-            _patient_repository = patient_repository;
+            _unitOfWork = unitOfWork;
         }
 
         public AuthResult Login(LoginModel loginModel)
         {
             AuthResult result = new AuthResult();
-
+            var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
             var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
                 .FirstOrDefault(a => a.Email == loginModel.Email);
 
@@ -81,7 +80,7 @@ namespace MediPlat.Service.Services
                 Console.WriteLine("Patient not found.");
             }
 
-            var doctor = _doctor_repository.Get(d => d.Email == loginModel.Email);
+            var doctor = _unitOfWork.Doctors.Get(d => d.Email == loginModel.Email);
 
             if (doctor != null && doctor.Status.Equals("Active"))
             {
@@ -135,6 +134,29 @@ namespace MediPlat.Service.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+        public async Task RegisterAsync(RegisterModel registerModel)
+        {
+            var existingPatient = await _unitOfWork.Patients.GetAsync(p => p.Email == registerModel.Email && p.Status.Equals("Active"));
+            if (existingPatient != null)
+            {
+                throw new ArgumentException("Account with this email existed!");
+            }
 
+            _unitOfWork.Patients.Add(new Patient
+            {
+                Id = Guid.NewGuid(),
+                UserName = registerModel.UserName,
+                FullName = registerModel.FullName,
+                Email = registerModel.Email,
+                Password = registerModel.Password,
+                PhoneNumber = registerModel.PhoneNumber,
+                JoinDate = DateTime.UtcNow,
+                Sex = registerModel.Sex,
+                Address = registerModel.Address,
+                Status = "Active"
+            });
+
+             await _unitOfWork.SaveChangesAsync();
+        }
     }
 }

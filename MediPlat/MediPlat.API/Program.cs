@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
@@ -129,7 +131,6 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
     options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
-    options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
 });
 
 // Build the app
@@ -142,7 +143,6 @@ app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader(
 app.UseRouting();
 app.UseHttpsRedirection();
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -154,11 +154,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Ensure the correct order of middlewares
+app.UseRouting();
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<GlobalExceptionMiddleware>(); // Move it here
 app.MapControllers();
-app.MapRazorPages();
-
 app.Run();
 
 static IEdmModel GetEdmModel()
@@ -169,6 +170,20 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<AppointmentSlotMedicine>("AppointmentSlotMedicines");
     builder.EntitySet<Medicine>("Medicines");
     builder.EntitySet<Experience>("Experiences");
+    builder.EntitySet<Patient>("Patients");
+    builder.EntitySet<Doctor>("Doctors");
+    builder.EntitySet<AppointmentSlot>("AppointmentSlots");
+    builder.EntitySet<Review>("Reviews");
+    builder.EntitySet<Transaction>("Transactions");
+
+    // Định nghĩa các mối quan hệ nếu cần thiết
+    // builder.EntitySet<EntityName>("EntitySetName");
+    builder.EntityType<Patient>()
+        .HasMany(p => p.AppointmentSlots);
+    builder.EntityType<Patient>()
+        .HasMany(p => p.Reviews);
+    builder.EntityType<Patient>()
+        .HasMany(p => p.Transactions);
 
     return builder.GetEdmModel();
 }
