@@ -23,10 +23,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
-builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
-
+builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
+builder.Services.AddScoped<IMedicineService, MedicineService>();
 // Đăng ký Repository (UnitOfWork)
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -40,11 +41,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        //options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     })
     .AddOData(options =>
     {
         options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
+        options.AddRouteComponents("odata", GetEdmModel());
     });
 
 // Add DbContext 
@@ -163,11 +165,16 @@ static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    // Định nghĩa các thực thể và tập thực thể
     builder.EntitySet<DoctorSubscription>("DoctorSubscriptions");
-
-    // Định nghĩa các mối quan hệ nếu cần thiết
-    // builder.EntitySet<EntityName>("EntitySetName");
+    builder.EntitySet<AppointmentSlotMedicine>("AppointmentSlotMedicines");
+    builder.EntitySet<Medicine>("Medicines");
+    builder.EntitySet<Experience>("Experiences");
 
     return builder.GetEdmModel();
 }
+
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"Request Protocol: {context.Request.Protocol}");
+    await next();
+});

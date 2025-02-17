@@ -11,9 +11,9 @@ namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class CreateModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public CreateModel(MediPlat.Model.Model.MediPlatContext context)
+        public CreateModel(MediPlatContext context)
         {
             _context = context;
         }

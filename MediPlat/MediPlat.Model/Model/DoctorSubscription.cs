@@ -9,7 +9,7 @@ public partial class DoctorSubscription
 
     public Guid? SubscriptionId { get; set; }
 
-    public short EnableSlot { get; set; }
+    public short? EnableSlot { get; set; }
 
     public Guid? DoctorId { get; set; }
 

@@ -6,14 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
+using Newtonsoft.Json;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class IndexModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public IndexModel(MediPlat.Model.Model.MediPlatContext context)
+        public IndexModel(MediPlatContext context)
         {
             _context = context;
         }
@@ -22,9 +23,22 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
         public async Task OnGetAsync()
         {
-            Experience = await _context.Experiences
-                .Include(e => e.Doctor)
-                .Include(e => e.Specialty).ToListAsync();
+            //Patient = await _context.Patients.ToListAsync();
+
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Add("Key", "Value");
+
+                using (HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7002/odata/experience"))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string apiResponse = await response.Content.ReadAsStringAsync();
+                        Experience = JsonConvert.DeserializeObject<List<Experience>>(apiResponse);
+                    }
+
+                }
+            }
         }
     }
 }

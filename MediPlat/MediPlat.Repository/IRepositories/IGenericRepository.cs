@@ -17,8 +17,8 @@ namespace MediPlat.Repository.IRepositories
         Task<T?> GetAsync(Expression<Func<T, bool>> predicate);
         IEnumerable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
         Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
-        IEnumerable<T> GetAll(params Expression<Func<T, object>>[] includeProperties);
-        Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties);
+        IQueryable<T> GetAll(params Expression<Func<T, object>>[] includeProperties);
+        Task<IQueryable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties);
         int Count();
         Task<int> CountAsync();
         void Update(T objModel, params Expression<Func<T, object>>[] includeProperties);

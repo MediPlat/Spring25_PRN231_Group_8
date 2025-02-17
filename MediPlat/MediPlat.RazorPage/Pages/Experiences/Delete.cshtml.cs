@@ -11,9 +11,9 @@ namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class DeleteModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public DeleteModel(MediPlat.Model.Model.MediPlatContext context)
+        public DeleteModel(MediPlatContext context)
         {
             _context = context;
         }

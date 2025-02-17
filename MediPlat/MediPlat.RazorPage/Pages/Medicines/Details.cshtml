@@ -1,0 +1,43 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Medicines.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Medicine</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Medicine.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Medicine.Name)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Medicine.DosageForm)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Medicine.DosageForm)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Medicine.Strength)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Medicine.Strength)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Medicine.SideEffects)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Medicine.SideEffects)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.Medicine.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

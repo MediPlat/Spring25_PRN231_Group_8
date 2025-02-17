@@ -13,9 +13,9 @@ namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class EditModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public EditModel(MediPlat.Model.Model.MediPlatContext context)
+        public EditModel(MediPlatContext context)
         {
             _context = context;
         }

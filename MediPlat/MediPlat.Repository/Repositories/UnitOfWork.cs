@@ -19,6 +19,8 @@ namespace MediPlat.Repository.Repositories
         public IGenericRepository<Patient> Patients { get; }
         public IGenericRepository<Doctor> Doctors { get; }
         public IGenericRepository<Experience> Experiences { get; }
+        public IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
+        public IGenericRepository<Medicine> Medicines { get; }
         public UnitOfWork(MediPlatContext context, ILogger<UnitOfWork> logger)
         {
             _context = context;
@@ -28,6 +30,8 @@ namespace MediPlat.Repository.Repositories
             Patients = new GenericRepository<Patient>(context);
             Doctors = new GenericRepository<Doctor>(context);
             Experiences = new GenericRepository<Experience>(context);
+            AppointmentSlotMedicines = new GenericRepository<AppointmentSlotMedicine>(context);
+            Medicines = new GenericRepository<Medicine>(context);
         }
 
         public async Task<int> SaveChangesAsync()

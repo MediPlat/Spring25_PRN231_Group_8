@@ -13,7 +13,7 @@ namespace MediPlat.Model.Schema
 
         public string? Email { get; set; }
 
-        public decimal? FeePerSession { get; set; }
+        public decimal? FeePerHour { get; set; }
 
         public string? Degree { get; set; }
 

@@ -54,7 +54,7 @@ namespace MediPlat.Service.Services
                 doctorSubscription.StartDate = now;
                 doctorSubscription.EndDate = now.AddMonths(1);
                 doctorSubscription.Status = "Active";
-                doctorSubscription.UpdateDate = now;
+                doctorSubscription.UpdateDate = null;
 
                 _unitOfWork.DoctorSubscriptions.Add(doctorSubscription);
                 await _unitOfWork.SaveChangesAsync();
@@ -75,6 +75,11 @@ namespace MediPlat.Service.Services
             if (existingSubscription == null || existingSubscription.DoctorId != doctorId)
             {
                 throw new KeyNotFoundException($"Doctor subscription with ID {id} not found.");
+            }
+
+            if (request.EndDate.HasValue && request.EndDate <= existingSubscription.StartDate)
+            {
+                throw new ArgumentException("EndDate must be greater than StartDate.");
             }
 
             existingSubscription.EnableSlot = request.EnableSlot;

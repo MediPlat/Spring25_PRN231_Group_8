@@ -23,6 +23,7 @@ namespace MediPlat.Model.RequestObject
 
         public string? Certificate { get; set; }
 
+        [RegularExpression("^(Active|Suspended)$", ErrorMessage = "Status chỉ có thể là 'Active' hoặc 'Suspended'.")]
         public string? Status { get; set; }
 
         public Guid? DoctorId { get; set; }

@@ -10,21 +10,19 @@ using System.Security.Claims;
 namespace MediPlat.API.Controllers
 {
     [ApiController]
-    [Route("api/doctorsubscription")]
+    [Route("odata/DoctorSubscriptions")]
+    [Authorize(Roles = "Doctor")]
     public class DoctorSubscriptionsController : ODataController
     {
         private readonly IDoctorSubscriptionService _doctorSubscriptionService;
-        private readonly ILogger<DoctorSubscriptionsController> _logger;
 
-        public DoctorSubscriptionsController(IDoctorSubscriptionService doctorSubscriptionService, ILogger<DoctorSubscriptionsController> logger)
+        public DoctorSubscriptionsController(IDoctorSubscriptionService doctorSubscriptionService)
         {
             _doctorSubscriptionService = doctorSubscriptionService;
-            _logger = logger;
         }
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Roles = "Doctor")]
         public IQueryable<DoctorSubscriptionResponse> GetDoctorSubscriptions()
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -32,7 +30,6 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetDoctorSubscriptionById(Guid id)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -40,7 +37,6 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
             if (!ModelState.IsValid)
@@ -53,9 +49,13 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             return Ok(await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId));
         }

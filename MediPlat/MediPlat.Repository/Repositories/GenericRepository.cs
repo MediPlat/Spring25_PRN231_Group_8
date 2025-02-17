@@ -71,8 +71,7 @@ namespace MediPlat.Repository.Repositories
 
             return await query.Where(predicate).ToListAsync();
         }
-
-        public IEnumerable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)
+        public IQueryable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _mediPlatDBContext.Set<T>();
 
@@ -81,10 +80,10 @@ namespace MediPlat.Repository.Repositories
                 query = query.Include(includeProperty);
             }
 
-            return query.ToList();
+            return query;
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
+        public async Task<IQueryable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _mediPlatDBContext.Set<T>();
 
@@ -93,7 +92,7 @@ namespace MediPlat.Repository.Repositories
                 query = query.Include(includeProperty);
             }
 
-            return await query.ToListAsync();
+            return await Task.FromResult(query);
         }
 
         public int Count()

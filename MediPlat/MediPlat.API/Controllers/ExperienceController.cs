@@ -10,17 +10,15 @@ using System.Security.Claims;
 
 namespace MediPlat.API.Controllers
 {
-    [Route("api/experience")]
+    [Route("odata/Experiences")]
     [ApiController]
     public class ExperienceController : ODataController
     {
         private readonly IExperienceService _experienceService;
-        private readonly ILogger<ExperienceController> _logger;
 
-        public ExperienceController(IExperienceService experienceService, ILogger<ExperienceController> logger)
+        public ExperienceController(IExperienceService experienceService)
         {
             _experienceService = experienceService;
-            _logger = logger;
         }
 
         [HttpGet]
@@ -48,7 +46,9 @@ namespace MediPlat.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var doctorIdClaim = User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            request.DoctorId = doctorId;
+
             var response = await _experienceService.AddExperienceAsync(request);
             return CreatedAtAction(nameof(GetExperience), new { id = response.Id }, response);
         }
@@ -76,12 +76,13 @@ namespace MediPlat.API.Controllers
                 var response = await _experienceService.UpdateExperienceStatusAsync(id, request.Status);
                 return Ok(response);
             }
+
             else
             {
                 var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 if (existingExperience.DoctorId != doctorId)
                 {
-                    return Forbid(); // Chặn chỉnh sửa Experience của người khác
+                    return Forbid();
                 }
 
                 var response = await _experienceService.UpdateExperienceWithoutStatusAsync(id, request);
