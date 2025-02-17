@@ -50,8 +50,27 @@ namespace MediPlat.API.Controllers
 
         }
 
-        [HttpPatch("banned")]
+
+        [HttpPatch("profile/changing_password")]
         [Authorize(Policy = "DoctorPolicy")]
+
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePassword change)
+        {
+            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            if (change == null)
+            {
+                return BadRequest();
+            }
+            bool check = await _service.ChangePassword(change, Guid.Parse(doctorId));
+            if (check)
+            {
+                return Ok();
+            }
+            return BadRequest();
+        }
+
+        [HttpPatch("banned")]
+        [Authorize(Policy = "AdminPolicy")]
 
         public async Task<IActionResult> BanDoctor(string id)
         {
@@ -68,20 +87,31 @@ namespace MediPlat.API.Controllers
             return BadRequest();
         }
 
-        [HttpPatch("profile/changing_password")]
-        [Authorize(Policy = "DoctorPolicy")]
-
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePassword change)
+        [HttpPost("create_doctor")]
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<IActionResult> CreateDoctor([FromBody] DoctorSchema doctor)
         {
-            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            if (change == null)
+            if(doctor == null)
             {
                 return BadRequest();
             }
-            bool check = await _service.ChangePassword(change, Guid.Parse(doctorId));
-            if (check)
+            Doctor d = await _service.Create(doctor);
+            if (d == null)
             {
-                return Ok();
+                return BadRequest();
+            }
+            return Ok(d);
+        }
+
+        [HttpGet("all_doctor")]
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<IActionResult> GetAllDoctor()
+        {
+            List<Doctor> doctors = new List<Doctor>();
+            doctors = await _service.GetAllDoctor();
+            if(doctors.Count > 0)
+            {
+                return Ok(doctors);
             }
             return BadRequest();
         }
