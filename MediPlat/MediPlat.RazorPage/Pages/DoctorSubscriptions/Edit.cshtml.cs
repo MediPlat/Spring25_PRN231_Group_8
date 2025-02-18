@@ -1,27 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
+using Microsoft.Extensions.Logging;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
+    [Authorize(Policy = "DoctorPolicy")]
     public class EditModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<EditModel> _logger;
 
-        public EditModel(MediPlatContext context)
+        public EditModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<EditModel> logger)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
+            _logger = logger;
         }
 
         [BindProperty]
         public DoctorSubscription DoctorSubscription { get; set; } = default!;
 
+        [BindProperty]
+        public short AdditionalEnableSlot { get; set; }
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
@@ -29,19 +40,43 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return NotFound();
             }
 
-            var doctorsubscription =  await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
-            if (doctorsubscription == null)
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return RedirectToPage("/Auth/Login");
             }
-            DoctorSubscription = doctorsubscription;
-           ViewData["DoctorId"] = new SelectList(_context.Doctors, "Id", "Id");
-           ViewData["SubscriptionId"] = new SelectList(_context.Subscriptions, "Id", "Id");
+            if (token.StartsWith("Bearer "))
+            {
+                token = token.Substring("Bearer ".Length);
+            }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Forbid();
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                DoctorSubscription = JsonSerializer.Deserialize<DoctorSubscription>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (DoctorSubscription.SubscriptionId == null || DoctorSubscription.SubscriptionId == Guid.Empty)
+                {
+                    _logger.LogError("SubscriptionId is null after fetching data for DoctorSubscription {Id}", DoctorSubscription.Id);
+                    ModelState.AddModelError("", "Failed to load SubscriptionId.");
+                    return Page();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching subscription details for ID {SubscriptionId}", id);
+                return StatusCode(500, "An error occurred while fetching the subscription details.");
+            }
+
             return Page();
         }
-
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -49,35 +84,70 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return Page();
             }
 
-            var existingSubscription = await _context.DoctorSubscriptions.FindAsync(DoctorSubscription.Id);
-            if (existingSubscription != null)
+            _logger.LogInformation("Received AdditionalEnableSlot: {AdditionalEnableSlot}", AdditionalEnableSlot);
+
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            if (string.IsNullOrEmpty(token))
             {
-                existingSubscription.EnableSlot = DoctorSubscription.EnableSlot;
-                await _context.SaveChangesAsync();
+                return RedirectToPage("/Auth/Login");
             }
+            if (token.StartsWith("Bearer "))
+            {
+                token = token.Substring("Bearer ".Length);
+            }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                await _context.SaveChangesAsync();
+                if (DoctorSubscription.SubscriptionId == null || DoctorSubscription.SubscriptionId == Guid.Empty)
+                {
+                    _logger.LogError("SubscriptionId is null or empty for DoctorSubscription {Id}", DoctorSubscription.Id);
+                    ModelState.AddModelError("", "SubscriptionId is required.");
+                    return Page();
+                }
+
+                short newEnableSlot = (short)(DoctorSubscription.EnableSlot + AdditionalEnableSlot);
+
+                _logger.LogInformation("Before sending request: Current EnableSlot: {EnableSlot}, AdditionalEnableSlot: {AdditionalEnableSlot}, New EnableSlot: {NewEnableSlot}",
+                    DoctorSubscription.EnableSlot, AdditionalEnableSlot, newEnableSlot);
+
+                if (newEnableSlot > 1000)
+                {
+                    ModelState.AddModelError("", "Total EnableSlot cannot exceed 1000.");
+                    return Page();
+                }
+
+                var requestData = new
+                {
+                    SubscriptionId = DoctorSubscription.SubscriptionId,
+                    EnableSlot = newEnableSlot,
+                    UpdateDate = DateTime.UtcNow,
+                    Status = DoctorSubscription.Status
+                };
+
+                var jsonContent = JsonSerializer.Serialize(requestData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+                _logger.LogInformation("Sending request to API: {JsonContent}", jsonContent);
+
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync($"https://localhost:7002/odata/DoctorSubscriptions/{DoctorSubscription.Id}", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Update failed: {Error}", errorResponse);
+                    ModelState.AddModelError("", $"Update failed: {errorResponse}");
+                    return Page();
+                }
+
+                return RedirectToPage("./Index");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!DoctorSubscriptionExists(DoctorSubscription.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                _logger.LogError(ex, "Error updating DoctorSubscription for ID {SubscriptionId}", DoctorSubscription.Id);
+                ModelState.AddModelError("", "An error occurred while updating the subscription.");
+                return Page();
             }
-
-            return RedirectToPage("./Index");
-        }
-
-        private bool DoctorSubscriptionExists(Guid id)
-        {
-            return _context.DoctorSubscriptions.Any(e => e.Id == id);
         }
     }
 }

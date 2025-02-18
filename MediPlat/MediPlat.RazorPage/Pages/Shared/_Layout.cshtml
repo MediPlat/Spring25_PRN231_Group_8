@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Index - Medilab Bootstrap Template</title>
+    <title>@(ViewData["Title"] ?? "Default Title") - MediPlat</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -89,6 +89,17 @@
                 </nav>
 
                 <a class="cta-btn d-none d-sm-block" href="#appointment">Make an Appointment</a>
+                @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+                @{
+                    var token = HttpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+                    bool isLoggedIn = !string.IsNullOrEmpty(token);
+                }
+
+                <a class="cta-btn d-none d-sm-block" href="@(!isLoggedIn ? "/Auth/Login" : "/Auth/Logout")">
+                    @(!isLoggedIn ? "Login" : "Logout")
+                </a>
+
 
             </div>
 

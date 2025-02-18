@@ -7,48 +7,28 @@
 
 <h1>Edit</h1>
 
-<h4>DoctorSubscription</h4>
+<h4>Doctor Subscription</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <input type="hidden" asp-for="DoctorSubscription.Id" />
+            <input type="hidden" asp-for="DoctorSubscription.SubscriptionId" />
+            <input type="hidden" asp-for="DoctorSubscription.EnableSlot" />
+
             <div class="form-group">
-                <label asp-for="DoctorSubscription.SubscriptionId" class="control-label"></label>
-                <select asp-for="DoctorSubscription.SubscriptionId" class="form-control" asp-items="ViewBag.SubscriptionId"></select>
-                <span asp-validation-for="DoctorSubscription.SubscriptionId" class="text-danger"></span>
+                <label>Current EnableSlot</label>
+                <input class="form-control" value="@Model.DoctorSubscription.EnableSlot" disabled />
             </div>
+
             <div class="form-group">
-                <label asp-for="DoctorSubscription.EnableSlot" class="control-label"></label>
-                <input asp-for="DoctorSubscription.EnableSlot" class="form-control" />
-                <span asp-validation-for="DoctorSubscription.EnableSlot" class="text-danger"></span>
+                <label>Additional EnableSlot</label>
+                <input asp-for="AdditionalEnableSlot" type="number" class="form-control" min="0" max="1000" required />
+                <span asp-validation-for="AdditionalEnableSlot" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="DoctorSubscription.Doctor.FullName" class="control-label"></label>
-                <select asp-for="DoctorSubscription.Doctor.FullName" class="form-control" asp-items="ViewBag.DoctorId"></select>
-                <span asp-validation-for="DoctorSubscription.DoctorId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DoctorSubscription.StartDate" class="control-label"></label>
-                <input asp-for="DoctorSubscription.StartDate" class="form-control" />
-                <span asp-validation-for="DoctorSubscription.StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DoctorSubscription.EndDate" class="control-label"></label>
-                <input asp-for="DoctorSubscription.EndDate" class="form-control" />
-                <span asp-validation-for="DoctorSubscription.EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DoctorSubscription.UpdateDate" class="control-label"></label>
-                <input asp-for="DoctorSubscription.UpdateDate" class="form-control" />
-                <span asp-validation-for="DoctorSubscription.UpdateDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DoctorSubscription.Status" class="control-label"></label>
-                <input asp-for="DoctorSubscription.Status" class="form-control" />
-                <span asp-validation-for="DoctorSubscription.Status" class="text-danger"></span>
-            </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -61,5 +41,22 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const additionalSlot = document.getElementById("additionalSlot");
+            const currentSlot = parseInt(document.getElementById("CurrentEnableSlot").value);
+            const errorText = document.getElementById("slotError");
+
+            additionalSlot.addEventListener("input", function () {
+                const newSlot = parseInt(additionalSlot.value) || 0;
+                if (newSlot + currentSlot > 1000) {
+                    errorText.textContent = "Total EnableSlot cannot exceed 1000.";
+                    additionalSlot.setCustomValidity("Total EnableSlot cannot exceed 1000.");
+                } else {
+                    errorText.textContent = "";
+                    additionalSlot.setCustomValidity("");
+                }
+            });
+        });
+    </script>
 }

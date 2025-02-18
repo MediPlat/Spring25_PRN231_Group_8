@@ -8,57 +8,80 @@ using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
+    [Authorize(Policy = "DoctorPolicy")]
     public class IndexModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpClient _httpClient;
-        public IList<DoctorSubscription> DoctorSubscription { get; set; } = new List<DoctorSubscription>();
 
-        public IndexModel(IHttpContextAccessor httpContextAccessor)
+        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
         }
 
-        public async Task OnGetAsync()
+        public IList<DoctorSubscription> DoctorSubscription { get; set; } = new List<DoctorSubscription>();
+        public string DoctorFullName { get; set; } = "Chưa có thông tin bác sĩ";
+
+        public async Task<IActionResult> OnGetAsync()
         {
-            // ✅ Lấy JWT Token từ HttpContext
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var authCookie = HttpContext.Request.Cookies[".AspNetCore.Cookies"];
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("⚠️ Không tìm thấy token, có thể bạn chưa đăng nhập!");
-                return;
+                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của DoctorSubscription, chuyển hướng đến trang login...");
+                return RedirectToPage("/Auth/Login");
             }
 
-            // ✅ Đính kèm token vào Header khi gọi API
+            if (token.StartsWith("Bearer "))
+            {
+                token = token.Substring("Bearer ".Length);
+            }
+
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/DoctorSubscriptions"))
             {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+
                 if (response.IsSuccessStatusCode)
                 {
-                    string apiResponse = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("✅ API Response: " + apiResponse);
-                    var result = JsonConvert.DeserializeObject<ODataResponse<List<DoctorSubscription>>>(apiResponse);
-                    if (result != null)
+                    DoctorSubscription = JsonConvert.DeserializeObject<List<DoctorSubscription>>(apiResponse);
+
+                    if (DoctorSubscription != null && DoctorSubscription.Any())
                     {
-                        DoctorSubscription = result.Value;
+                        DoctorFullName = DoctorSubscription.First().Doctor.FullName;
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ Không có gói đăng ký nào cho bác sĩ này.");
+                        var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                        if (doctorResponse.IsSuccessStatusCode)
+                        {
+                            var doctorJson = await doctorResponse.Content.ReadAsStringAsync();
+                            var doctor = JsonConvert.DeserializeObject<Doctor>(doctorJson);
+
+                            if (doctor != null)
+                            {
+                                DoctorFullName = doctor.FullName;
+                            }
+                        }
                     }
                 }
-                else
-                {
-                    Console.WriteLine($"❌ API call failed with status: {response.StatusCode}");
-                }
-            }
-        }
 
-        public class ODataResponse<T>
-        {
-            [JsonProperty("value")]
-            public T Value { get; set; }
+            }
+            ViewData["Title"] = "Gói đăng ký của bác sĩ " + (string.IsNullOrEmpty(DoctorFullName) ? "Không có tên" : DoctorFullName);
+            return Page();
         }
     }
 }

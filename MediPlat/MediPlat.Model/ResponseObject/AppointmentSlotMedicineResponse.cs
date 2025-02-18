@@ -19,11 +19,8 @@ namespace MediPlat.Model.ResponseObject
         public string? Instructions { get; set; }
         public short Quantity { get; set; }
 
-        [JsonIgnore]
-        public virtual AppointmentSlotResponse AppointmentSlot { get; set; } = null!;
-        [JsonIgnore]
-        public virtual MedicineResponse Medicine { get; set; } = null!;
-        [JsonIgnore]
-        public virtual PatientResponse Patient { get; set; }
+        public AppointmentSlot AppointmentSlot { get; set; } = null!;
+        public Medicine Medicine { get; set; } = null!;
+        public Model.Patient Patient { get; set; }
     }
 }

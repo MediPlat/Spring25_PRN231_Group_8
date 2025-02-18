@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MediPlat.Model.Model;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {

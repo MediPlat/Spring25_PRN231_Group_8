@@ -30,7 +30,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Doctor,Admin,Patient")]
+        [Authorize(Roles = "Doctor,Admin")]
         public async Task<IActionResult> GetExperience(Guid id)
         {
             var experience = await _experienceService.GetExperienceByIdAsync(id);

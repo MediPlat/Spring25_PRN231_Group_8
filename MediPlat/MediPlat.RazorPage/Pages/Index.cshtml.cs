@@ -1,28 +1,20 @@
-using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace MediPlat.RazorPage.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(MediPlat.Model.Model.MediPlatContext context)
+        public IndexModel(ILogger<IndexModel> logger)
         {
-            _context = context;
+            _logger = logger;
         }
 
-        public IList<DoctorSubscription> DoctorSubscription { get; set; } = default!;
-
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            DoctorSubscription = await _context.DoctorSubscriptions
-                .Include(d => d.Doctor)
-                .Include(d => d.Subscription)
-                .ToListAsync();
+
         }
     }
-
 }

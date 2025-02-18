@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {

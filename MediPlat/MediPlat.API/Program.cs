@@ -15,6 +15,8 @@ using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
 using MediPlat.Service;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +32,8 @@ builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
-// Đăng ký Repository (UnitOfWork)
+
+// Đăng ký Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Đăng ký Hosted Service
@@ -91,6 +94,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
@@ -104,8 +108,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", // S? d?ng ?úng schema
-        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" // S? d?ng ?úng schema cho role
+        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+        RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
     };
 
     options.Events = new JwtBearerEvents
@@ -130,17 +134,31 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
-    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+    options.AddPolicy("DoctorOrAdminPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Admin")))));
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", builder =>
+    {
+        builder.SetIsOriginAllowed(origin => true)
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    });
 });
 
 // Build the app
 var app = builder.Build();
 
-// Configure CORS
-app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
 // Middleware
 app.UseRouting();
+app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 // Configure the HTTP request pipeline.
@@ -150,26 +168,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-// Ensure the correct order of middlewares
-app.UseRouting();
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<GlobalExceptionMiddleware>(); // Move it here
 app.MapControllers();
+app.MapRazorPages();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.Run();
 
 static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    builder.EntitySet<DoctorSubscription>("DoctorSubscriptions");
-    builder.EntitySet<AppointmentSlotMedicine>("AppointmentSlotMedicines");
-    builder.EntitySet<Medicine>("Medicines");
-    builder.EntitySet<Experience>("Experiences");
     builder.EntitySet<Patient>("Patients");
     builder.EntitySet<Doctor>("Doctors");
     builder.EntitySet<AppointmentSlot>("AppointmentSlots");

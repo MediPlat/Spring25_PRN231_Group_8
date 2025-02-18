@@ -1,15 +1,34 @@
 ﻿using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using MediPlat.Model.Model;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Services.AddHttpClient();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("AuthToken"))
+                {
+                    var token = context.Request.Cookies["AuthToken"];
+                    if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
+                    {
+                        token = token.Substring("Bearer ".Length);
+                    }
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
+        };
         options.Authority = "https://localhost:7002";
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -23,16 +42,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
-builder.Services.AddHttpContextAccessor();
-// Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddDbContext<MediPlatContext>(options =>
+builder.Services.AddAuthorization(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
+    options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+    options.AddPolicy("DoctorOrAdminPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Admin")))));
 });
-builder.Services.AddDbContext<MediPlatContext>();
-builder.Services.AddHttpClient();
+
+builder.Services.AddRazorPages();
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

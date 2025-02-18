@@ -1,8 +1,3 @@
-CREATE DATABASE MediPlat
-GO
-USE MediPlat
-GO
-
 CREATE TABLE "Patient" (
   "ID" UNIQUEIDENTIFIER PRIMARY KEY,
   "UserName" NVARCHAR(255),
@@ -177,4 +172,16 @@ ALTER TABLE "AppointmentSlotMedicine" ADD FOREIGN KEY ("MedicineID") REFERENCES 
 
 ALTER TABLE "AppointmentSlotMedicine" ADD FOREIGN KEY ("PatientID") REFERENCES "Patient" ("ID");
 
-
+INSERT INTO Doctor(ID, UserName, FullName, Email, "Password", AvatarUrl, Balance, FeePerHour, Degree, AcademicTitle, JoinDate, PhoneNumber, Status)
+VALUES
+	(NEWID(), N'tuanntase140515', N'Nguyễn Thanh Anh Tuấn', 'tuanntase140515@gmail.com', N'12345', CONCAT('https://api.dicebear.com/7.x/pixel-art/png?seed=', CAST(NEWID() AS NVARCHAR(50))), 10000.00, 10000.00, N'Bác sĩ Đa Khoa', N'Giáo Sư', GETDATE(), '0705543619', 'Active');
+INSERT INTO Patient(ID, UserName, FullName, Email, "Password", PhoneNumber, Balance, JoinDate, Sex, "Address", "Status")
+VALUES
+	(NewID(), N'TuanNTA', N'Tuan Nguyen', N'tuannguyen123@gmail.com', N'12345', '0705543618', 10000, GETDATE(), 'Male', N'123 Lý Trự Trọng', N'Active');
+INSERT INTO Subscription(ID, "Name", Price, EnableSlot, "Description", CreatedDate, UpdateDate)
+VALUES
+	(NEWID(), N'Gói cơ bản', 1500000, 50, N'Gói cơ bản có 50 slots khám bệnh', GETDATE(), null),
+	(NEWID(), N'Gói nâng cấp 1', 2900000, 100, N'Gói nâng cấp 1 có 100 slots khám bệnh', GETDATE(), null),
+	(NEWID(), N'Gói nâng cấp 2', 4050000, 150, N'Gói nâng cấp 2 có 150 slots khám bệnh', GETDATE(), null),
+	(NEWID(), N'Gói nâng cấp 3', 4800000, 200, N'Gói nâng cấp 3 có 200 slots khám bệnh', GETDATE(), null),
+	(NEWID(), N'Gói cao cấp', 1500000, 250, N'Gói cao cấp có 250 slots khám bệnh', GETDATE(), null)

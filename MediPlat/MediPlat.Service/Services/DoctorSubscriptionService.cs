@@ -4,6 +4,7 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using Microsoft.Extensions.Logging;
 
 namespace MediPlat.Service.Services
 {
@@ -11,24 +12,28 @@ namespace MediPlat.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public DoctorSubscriptionService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ILogger<DoctorSubscriptionService> _logger;
+        public DoctorSubscriptionService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<DoctorSubscriptionService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
-
         public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId)
         {
             return _unitOfWork.DoctorSubscriptions
-                .GetList(ds => ds.DoctorId == doctorId)
-                .AsQueryable()
+                .GetAll(ds => ds.Doctor, ds => ds.Subscription)
+                .Where(ds => ds.DoctorId == doctorId)
                 .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
         }
-
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
         {
-            var doctorSubscription = await _unitOfWork.DoctorSubscriptions.GetAsync(ds => ds.Id == id && ds.DoctorId == doctorId);
+            var doctorSubscription = await _unitOfWork.DoctorSubscriptions.GetAsync(
+                ds => ds.Id == id && ds.DoctorId == doctorId,
+                ds => ds.Doctor,
+                ds => ds.Subscription
+            );
+
             if (doctorSubscription == null)
                 throw new KeyNotFoundException("Doctor subscription not found.");
 
@@ -44,6 +49,11 @@ namespace MediPlat.Service.Services
             {
                 throw new InvalidOperationException("Doctor already has an active subscription with this SubscriptionId.");
             }
+            var subscription = await _unitOfWork.Subscriptions.GetAsync(s => s.Id == request.SubscriptionId);
+            if (subscription == null)
+            {
+                throw new KeyNotFoundException("Subscription not found.");
+            }
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -51,6 +61,7 @@ namespace MediPlat.Service.Services
                 var doctorSubscription = _mapper.Map<DoctorSubscription>(request);
                 doctorSubscription.Id = Guid.NewGuid();
                 doctorSubscription.DoctorId = doctorId;
+                doctorSubscription.EnableSlot = subscription.EnableSlot;
                 doctorSubscription.StartDate = now;
                 doctorSubscription.EndDate = now.AddMonths(1);
                 doctorSubscription.Status = "Active";
@@ -68,7 +79,6 @@ namespace MediPlat.Service.Services
                 throw;
             }
         }
-
         public async Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId)
         {
             var existingSubscription = await _unitOfWork.DoctorSubscriptions.GetIdAsync(id);
@@ -77,22 +87,56 @@ namespace MediPlat.Service.Services
                 throw new KeyNotFoundException($"Doctor subscription with ID {id} not found.");
             }
 
-            if (request.EndDate.HasValue && request.EndDate <= existingSubscription.StartDate)
+            _logger.LogInformation("Before Update: Subscription {Id} - Current EnableSlot: {EnableSlot}, SubscriptionId: {SubscriptionId}",
+                id, existingSubscription.EnableSlot, existingSubscription.SubscriptionId);
+
+            if (request.EnableSlot.HasValue && request.EnableSlot.Value != existingSubscription.EnableSlot)
             {
-                throw new ArgumentException("EndDate must be greater than StartDate.");
+                _logger.LogInformation("EnableSlot has changed from {OldEnableSlot} to {NewEnableSlot}. Updating...",
+                    existingSubscription.EnableSlot, request.EnableSlot.Value);
+                existingSubscription.EnableSlot = request.EnableSlot.Value;
+            }
+            else
+            {
+                _logger.LogWarning("EnableSlot remains unchanged. Skipping update.");
             }
 
-            existingSubscription.EnableSlot = request.EnableSlot;
-            existingSubscription.UpdateDate = DateTime.Now;
-            existingSubscription.Status = request.Status;
+            existingSubscription.UpdateDate = DateTime.UtcNow;
 
             await _unitOfWork.DoctorSubscriptions.UpdatePartialAsync(existingSubscription,
                 ds => ds.EnableSlot,
-                ds => ds.UpdateDate,
-                ds => ds.Status);
+                ds => ds.UpdateDate);
 
             await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("After Update: Subscription {Id} - Updated EnableSlot: {EnableSlot}",
+                id, existingSubscription.EnableSlot);
+
             return _mapper.Map<DoctorSubscriptionResponse>(existingSubscription);
         }
+
+        public async Task<bool> DeleteDoctorSubscriptionAsync(Guid id, Guid doctorId)
+        {
+            var doctorSubscription = await _unitOfWork.DoctorSubscriptions.GetAsync(ds => ds.Id == id && ds.DoctorId == doctorId);
+            if (doctorSubscription == null)
+            {
+                throw new KeyNotFoundException("Doctor subscription not found or you don't have permission to delete it.");
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                _unitOfWork.DoctorSubscriptions.Remove(doctorSubscription);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
     }
 }

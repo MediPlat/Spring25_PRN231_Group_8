@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {

@@ -24,10 +24,8 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid? DoctorId { get; set; }
 
-        [JsonIgnore]
-        public virtual Doctor? Doctor { get; set; }
+        public Doctor? Doctor { get; set; }
 
-        [JsonIgnore]
-        public virtual Specialty? Specialty { get; set; }
+        public Specialty? Specialty { get; set; }
     }
 }

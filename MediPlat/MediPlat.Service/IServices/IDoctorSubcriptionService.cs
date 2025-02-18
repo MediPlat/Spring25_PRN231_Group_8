@@ -9,5 +9,7 @@ namespace MediPlat.Service.IServices
         IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId);
         Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId);
         Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId);
-        Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId);    }
+        Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId);
+        Task<bool> DeleteDoctorSubscriptionAsync(Guid id, Guid doctorId);
+    }
 }
