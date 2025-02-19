@@ -22,7 +22,7 @@ namespace MediPlat.API.Controllers
             _patientService = patientService;
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize]
         [EnableQuery]
         [HttpGet]
         public async Task<IActionResult> GetAll()

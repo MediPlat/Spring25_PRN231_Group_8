@@ -2,37 +2,49 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace MediPlat.RazorPage.Pages.PatientPages
 {
     public class IndexModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IndexModel(MediPlatContext context)
+        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
         {
-            _context = context;
+            _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        public IList<Patient> Patient { get; set; } = default!;
+        public IList<Patient> Patient { get; set; } = [];
 
         public async Task OnGetAsync()
         {
             //Patient = await _context.Patients.ToListAsync();
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
 
-            using (var httpClient = new HttpClient())
+            if (string.IsNullOrEmpty(token))
             {
-                httpClient.DefaultRequestHeaders.Add("Key", "Value");
+                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của DoctorSubscription, chuyển hướng đến trang login...");
+                RedirectToPage("/Auth/Login");
+            }
+            if (token.StartsWith("Bearer "))
+            {
+                token = token.Substring("Bearer ".Length);
+            }
 
-                using (HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7002/odata/patient"))
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/patient"))
+            {
+                if (response.IsSuccessStatusCode)
                 {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string apiResponse = await response.Content.ReadAsStringAsync();
-                        Patient = JsonConvert.DeserializeObject<List<Patient>>(apiResponse);
-                    }
-
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    Patient = JsonConvert.DeserializeObject<List<Patient>>(apiResponse);
                 }
+
             }
         }
     }

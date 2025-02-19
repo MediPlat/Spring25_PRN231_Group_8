@@ -9,6 +9,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddDbContext<MediPlatContext>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -51,6 +52,7 @@ builder.Services.AddAuthorization(options =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin")))));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
 
 builder.Services.AddRazorPages();

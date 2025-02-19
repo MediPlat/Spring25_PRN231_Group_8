@@ -55,10 +55,7 @@ builder.Services.AddControllers()
     });
 
 // Add DbContext 
-builder.Services.AddDbContext<MediPlatContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
-});
+builder.Services.AddDbContext<MediPlatContext>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -140,6 +137,7 @@ builder.Services.AddAuthorization(options =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin")))));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
 
 builder.Services.AddCors(options =>
@@ -179,11 +177,12 @@ static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    builder.EntitySet<Patient>("Patients");
-    builder.EntitySet<Doctor>("Doctors");
-    builder.EntitySet<AppointmentSlot>("AppointmentSlots");
-    builder.EntitySet<Review>("Reviews");
-    builder.EntitySet<Transaction>("Transactions");
+    builder.EntitySet<Patient>("Patient");
+    builder.EntitySet<Doctor>("Doctor");
+    builder.EntitySet<AppointmentSlot>("AppointmentSlot");
+    builder.EntitySet<Review>("Review");
+    builder.EntitySet<Transaction>("Transaction");
+
 
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
