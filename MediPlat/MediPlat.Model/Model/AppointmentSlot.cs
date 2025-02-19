@@ -11,7 +11,13 @@ public partial class AppointmentSlot
 
     public Guid? PatientId { get; set; }
 
-    public string? Status { get; set; }
+    public string Status { get; set; } = null!;
+
+    public DateTime? CreatedDate { get; set; }
+
+    public string? Notes { get; set; }
+
+    public virtual ICollection<AppointmentSlotMedicine> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicine>();
 
     public virtual Patient? Patient { get; set; }
 

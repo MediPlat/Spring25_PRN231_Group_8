@@ -6,14 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MediPlat.Model.Model;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
     public class CreateModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public CreateModel(MediPlat.Model.Model.MediPlatContext context)
+        public CreateModel(MediPlatContext context)
         {
             _context = context;
         }

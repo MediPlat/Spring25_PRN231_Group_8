@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -36,10 +37,12 @@ namespace MediPlat.API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
+            _logger.LogError($"Exception occurred for {context.Request.Method} {context.Request.Path}: {ex.Message}");
             context.Response.ContentType = "application/json";
 
             var statusCode = ex switch
             {
+                ValidationException => (int)HttpStatusCode.BadRequest,
                 KeyNotFoundException => (int)HttpStatusCode.NotFound, // 404
                 UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized, // 401
                 ArgumentException => (int)HttpStatusCode.BadRequest, // 400

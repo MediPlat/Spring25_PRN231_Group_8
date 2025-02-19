@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MediPlat.Model\MediPlat.Model.csproj" />
     <ProjectReference Include="..\MediPlat.Service\MediPlat.Service.csproj" />
   </ItemGroup>
 

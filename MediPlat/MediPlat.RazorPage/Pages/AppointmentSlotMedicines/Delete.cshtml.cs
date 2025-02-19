@@ -7,19 +7,19 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
+namespace MediPlat.RazorPage.Pages.AppointmentSlotMedicines
 {
     public class DeleteModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly MediPlatContext _context;
 
-        public DeleteModel(MediPlat.Model.Model.MediPlatContext context)
+        public DeleteModel(MediPlatContext context)
         {
             _context = context;
         }
 
         [BindProperty]
-        public DoctorSubscription DoctorSubscription { get; set; } = default!;
+        public AppointmentSlotMedicine AppointmentSlotMedicine { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -28,15 +28,15 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return NotFound();
             }
 
-            var doctorsubscription = await _context.DoctorSubscriptions.FirstOrDefaultAsync(m => m.Id == id);
+            var appointmentslotmedicine = await _context.AppointmentSlotMedicines.FirstOrDefaultAsync(m => m.AppointmentSlotMedicineId == id);
 
-            if (doctorsubscription == null)
+            if (appointmentslotmedicine == null)
             {
                 return NotFound();
             }
             else
             {
-                DoctorSubscription = doctorsubscription;
+                AppointmentSlotMedicine = appointmentslotmedicine;
             }
             return Page();
         }
@@ -48,11 +48,11 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return NotFound();
             }
 
-            var doctorsubscription = await _context.DoctorSubscriptions.FindAsync(id);
-            if (doctorsubscription != null)
+            var appointmentslotmedicine = await _context.AppointmentSlotMedicines.FindAsync(id);
+            if (appointmentslotmedicine != null)
             {
-                DoctorSubscription = doctorsubscription;
-                _context.DoctorSubscriptions.Remove(DoctorSubscription);
+                AppointmentSlotMedicine = appointmentslotmedicine;
+                _context.AppointmentSlotMedicines.Remove(AppointmentSlotMedicine);
                 await _context.SaveChangesAsync();
             }
 

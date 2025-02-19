@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
-    [Route("api/subscription")]
+    [Route("odata/Subscriptions")]
     [ApiController]
     public class SubscriptionsController : ODataController
     {

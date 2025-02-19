@@ -27,6 +27,8 @@ public partial class Patient
 
     public string? Status { get; set; }
 
+    public virtual ICollection<AppointmentSlotMedicine> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicine>();
+
     public virtual ICollection<AppointmentSlot> AppointmentSlots { get; set; } = new List<AppointmentSlot>();
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

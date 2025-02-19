@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediPlat.Model.Model;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -21,7 +22,7 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid DoctorId { get; set; }
 
-        [JsonIgnore]
-        public virtual SubscriptionResponse? Subscription { get; set; }
+        public Doctor Doctor { get; set; }
+        public Subscription Subscription { get; set; }
     }
 }

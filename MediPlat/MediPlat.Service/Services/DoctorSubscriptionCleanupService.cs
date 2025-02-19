@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediPlat.Model.RequestObject;
 using MediPlat.Repository.IRepositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,16 +29,16 @@ public class DoctorSubscriptionCleanupService : BackgroundService
                 {
                     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                     var expiredSubscriptions = unitOfWork.DoctorSubscriptions
-                        .GetList(ds => ds.EndDate.HasValue && ds.EndDate.Value < DateTime.Now && ds.Status != "Đã hết hạn")
+                        .GetList(ds => ds.EndDate.HasValue && ds.EndDate.Value < DateTime.Now && ds.Status != "Expired")
                         .ToList();
 
                     if (expiredSubscriptions.Any())
                     {
-                        _logger.LogInformation($"Updating {expiredSubscriptions.Count} expired subscriptions to 'Đã hết hạn'...");
+                        _logger.LogInformation($"Đang cập nhật {expiredSubscriptions.Count} đăng ký đã hết hạn thành 'Đã hết hạn'...");
 
                         foreach (var subscription in expiredSubscriptions)
                         {
-                            subscription.Status = "Đã hết hạn";
+                            subscription.Status = DoctorSubscriptionStatus.Expired.ToString();
                             unitOfWork.DoctorSubscriptions.UpdatePartial(subscription, ds => ds.Status);
                         }
 
