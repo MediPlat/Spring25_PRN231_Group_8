@@ -13,11 +13,9 @@ using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
 using MediPlat.Service;
 using Microsoft.EntityFrameworkCore;
+using MediPlat.Model;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Đăng ký AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Đăng ký các service
 builder.Services.AddScoped<IAuthService, AuthService>();

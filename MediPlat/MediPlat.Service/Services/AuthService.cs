@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using MediPlat.Repository.Entities;
+using MediPlat.Repository.Repositories;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Model;
+using MediPlat.Model.Model;
 
 namespace MediPlat.Service.Services
 {

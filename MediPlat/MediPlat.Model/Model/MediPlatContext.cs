@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediPlat.Model.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace MediPlat.Model;
+namespace MediPlat.Model.Model;
 
 public partial class MediPlatContext : DbContext
 {
