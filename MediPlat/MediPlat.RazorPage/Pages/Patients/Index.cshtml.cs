@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace MediPlat.RazorPage.Pages.PatientPages
+namespace MediPlat.RazorPage.Pages.Patients
 {
     public class IndexModel : PageModel
     {

@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject;
+using MediPlat.Model.ResponseObject.Patient;
 
 namespace MediPlat.Service.Mapping
 {
@@ -59,6 +61,13 @@ namespace MediPlat.Service.Mapping
             CreateMap<SpecialtyRequest, Specialty>();
 
             CreateMap<Specialty, SpecialtyResponse>();
+
+            CreateMap<Patient, PatientRequest>();
+
+            CreateMap<PatientRequest, PatientResponse>();
+
+            CreateMap<Patient, PatientResponse>();
+
         }
     }
 }

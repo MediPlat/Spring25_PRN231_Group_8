@@ -1,9 +1,13 @@
 ﻿using MediPlat.Model.Model;
+using MediPlat.Service.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 

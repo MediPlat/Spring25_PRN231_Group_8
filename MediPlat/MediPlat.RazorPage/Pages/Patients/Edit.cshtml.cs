@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.PatientPages
+namespace MediPlat.RazorPage.Pages.Patients
 {
     public class EditModel : PageModel
     {
