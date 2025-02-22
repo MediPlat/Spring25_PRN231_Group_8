@@ -22,7 +22,6 @@ namespace MediPlat.Model.Schema
         public string? Degree { get; set; }
         [Required]
         public string? AcademicTitle { get; set; }
-        
         [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Phone number must be 10 digits and start with a number")]
         public string? PhoneNumber { get; set; }
     }
