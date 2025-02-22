@@ -28,5 +28,6 @@ namespace MediPlat.Repository.IRepositories
         Task UpdatePartialAsync(T objModel, params Expression<Func<T, object>>[] updatedProperties);
         void Remove(T objModel);
         void Dispose();
+        Task GetFirstOrDefaultAsync(Func<object, bool> value);
     }
 }

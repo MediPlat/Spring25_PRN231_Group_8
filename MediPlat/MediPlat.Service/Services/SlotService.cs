@@ -33,5 +33,36 @@ namespace MediPlat.Service.Services
             throw new NotImplementedException();
         }
 
+        public async Task<string> UpdateSlot(SlotRequest slotRequest)
+        {
+            try
+            {
+                var slot = _mapper.Map<Slot>(slotRequest);
+                _unitOfWork.Slots.Update(slot);
+                await _unitOfWork.SaveChangesAsync();
+                return "Slot updated successfully";
+            }
+            catch (Exception ex) { }
+            throw new NotImplementedException();
+        } throw new NotImplementedException();
+        }
+
+        public async Task<string> GetSlotByDocorID(Guid doctorId)
+        {
+            try
+            {
+                var slots = await _unitOfWork.Slots.GetAllAsync(s =>
+                {
+                    return s.Doctor == doctorId;
+                });
+                if (slots == null)
+                {
+                    return "Slot not found";
+                }
+                return "Slot found";
+            }
+            catch (Exception ex) { }
+            throw new NotImplementedException();
+        }
     }
 }

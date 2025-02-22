@@ -9,5 +9,9 @@ namespace MediPlat.Service.IServices
 {
     public interface ISlotService
     {
-        Task<string> CreateSlot(SlotRequest slotRequest);    }
+        Task<string> CreateSlot(SlotRequest slotRequest);
+        Task<string> UpdateSlot(SlotRequest slotRequest);
+        Task<string> GetSlotByID(Guid slotId);
+        Task<string> GetSlotByDocorID(Guid slotId);
+    }
 }
