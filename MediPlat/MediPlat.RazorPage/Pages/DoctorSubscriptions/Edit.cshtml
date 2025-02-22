@@ -1,0 +1,62 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.DoctorSubscriptions.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Doctor Subscription</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="DoctorSubscription.Id" />
+            <input type="hidden" asp-for="DoctorSubscription.SubscriptionId" />
+            <input type="hidden" asp-for="DoctorSubscription.EnableSlot" />
+
+            <div class="form-group">
+                <label>Current EnableSlot</label>
+                <input class="form-control" value="@Model.DoctorSubscription.EnableSlot" disabled />
+            </div>
+
+            <div class="form-group">
+                <label>Additional EnableSlot</label>
+                <input asp-for="AdditionalEnableSlot" type="number" class="form-control" min="0" max="1000" required />
+                <span asp-validation-for="AdditionalEnableSlot" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const additionalSlot = document.getElementById("additionalSlot");
+            const currentSlot = parseInt(document.getElementById("CurrentEnableSlot").value);
+            const errorText = document.getElementById("slotError");
+
+            additionalSlot.addEventListener("input", function () {
+                const newSlot = parseInt(additionalSlot.value) || 0;
+                if (newSlot + currentSlot > 1000) {
+                    errorText.textContent = "Total EnableSlot cannot exceed 1000.";
+                    additionalSlot.setCustomValidity("Total EnableSlot cannot exceed 1000.");
+                } else {
+                    errorText.textContent = "";
+                    additionalSlot.setCustomValidity("");
+                }
+            });
+        });
+    </script>
+}
