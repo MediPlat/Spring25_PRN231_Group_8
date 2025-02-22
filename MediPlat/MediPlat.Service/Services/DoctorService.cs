@@ -24,7 +24,14 @@ namespace MediPlat.Service.Services
         public async Task<bool> Banned(Guid id)
         {
             var doctor = await _unitOfWork.Doctors.GetIdAsync(id);
-            doctor.Status = "Inactive";
+            if(doctor.Status == "Inactive")
+            {
+                doctor.Status = "Active";
+            }else if(doctor.Status == "Active")
+            {
+                doctor.Status = "Inactive";
+            }
+            
             _unitOfWork.Doctors.Update(doctor);
             return true;
         }
@@ -68,14 +75,16 @@ namespace MediPlat.Service.Services
 
         public async Task<List<Doctor>> GetAllDoctor()
         {
-            List<Doctor> d = new List<Doctor>();
-            d = (List<Doctor>)await _unitOfWork.Doctors.GetAllAsync(d => d.Experiences, d => d.Reviews);
-            return d;
+            var doctorsQueryable = await _unitOfWork.Doctors.GetAllAsync();
+            var doctorsList = doctorsQueryable.ToList();
+            return doctorsList;
         }
 
         public async Task<Doctor> GetByID(Guid id)
         {
-            var doctor = await _unitOfWork.Doctors.GetIdAsync(id);
+            var d = await _unitOfWork.Doctors.GetIdAsync(id);
+            Doctor doctor = new Doctor();
+            doctor = d;
             return doctor;
         }
 

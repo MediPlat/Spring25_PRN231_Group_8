@@ -74,7 +74,7 @@ namespace MediPlat.API.Controllers
             return BadRequest();
         }
 
-        [HttpPatch("banned")]
+        [HttpPatch("banned_unbanned")]
         [Authorize(Policy = "AdminPolicy")]
 
         public async Task<IActionResult> BanDoctor(string id)

@@ -24,7 +24,7 @@ namespace MediPlat.API.Controllers
         [HttpGet]
         [EnableQuery]
         [Authorize(Roles = "Admin,Doctor")]
-        public IQueryable<SubscriptionResponse> GetSubscriptions()
+        public IQueryable<SubscriptionResponse> GetAllSubscriptions()
         {
             return _subscriptionService.GetAllSubscriptions();
         }
