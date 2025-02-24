@@ -20,18 +20,32 @@ namespace MediPlat.Service.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-
-        public IQueryable<ExperienceResponse> GetAllExperiences()
+        public IQueryable<ExperienceResponse> GetAllExperiences(bool isPatient)
         {
-            var experiences = _unitOfWork.Experiences.GetAll();
+            var experiences = _unitOfWork.Experiences.GetAll(e => e.Doctor, e => e.Specialty);
+
+            if (isPatient)
+            {
+                experiences = experiences.Where(e => e.Status == "Active");
+            }
+
             return experiences.Select(exp => _mapper.Map<ExperienceResponse>(exp)).AsQueryable();
         }
 
-        public async Task<ExperienceResponse> GetExperienceByIdAsync(Guid id)
+        public async Task<ExperienceResponse> GetExperienceByIdAsync(Guid id, bool isPatient)
         {
-            var experience = await _unitOfWork.Experiences.GetIdAsync(id);
+            var experience = await _unitOfWork.Experiences.GetAsync(
+                e => e.Id == id,
+                e => e.Doctor, e => e.Specialty
+            );
+
             if (experience == null)
-                throw new KeyNotFoundException("Experience not found.");
+                throw new KeyNotFoundException("Experience không tồn tại.");
+
+            if (isPatient && experience.Status != "Active")
+            {
+                throw new UnauthorizedAccessException("Bạn không có quyền xem Experience này.");
+            }
 
             return _mapper.Map<ExperienceResponse>(experience);
         }
@@ -46,24 +60,6 @@ namespace MediPlat.Service.Services
 
             return _mapper.Map<ExperienceResponse>(experience);
         }
-        public async Task<ExperienceResponse> UpdateExperienceAsync(Guid id, ExperienceRequest request, bool isAdmin)
-        {
-            var experience = await _unitOfWork.Experiences.GetIdAsync(id);
-            if (experience == null)
-                throw new KeyNotFoundException("Experience not found.");
-
-            _mapper.Map(request, experience);
-
-            if (!isAdmin)
-            {
-                request.Status = experience.Status;
-            }
-
-            experience.Status = request.Status;
-
-            await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<ExperienceResponse>(experience);
-        }
 
         public async Task<ExperienceResponse> UpdateExperienceStatusAsync(Guid id, string status)
         {
@@ -76,18 +72,28 @@ namespace MediPlat.Service.Services
 
             return _mapper.Map<ExperienceResponse>(experience);
         }
-
-        public async Task<ExperienceResponse> UpdateExperienceWithoutStatusAsync(Guid id, ExperienceRequest request)
+        public async Task<ExperienceResponse> UpdateExperienceWithoutStatusAsync(Guid id, ExperienceRequest request, Guid doctorId)
         {
-            var experience = await _unitOfWork.Experiences.GetIdAsync(id);
-            if (experience == null)
-                throw new KeyNotFoundException("Experience không tồn tại.");
+            var existingExperience = await _unitOfWork.Experiences.GetAsync(
+                e => e.Id == id && e.DoctorId == doctorId && e.SpecialtyId == request.SpecialtyId,
+                e => e.Doctor, e => e.Specialty
+            );
 
-            _mapper.Map(request, experience);
-            request.Status = experience.Status;
-            await _unitOfWork.SaveChangesAsync();
+            if (existingExperience == null)
+                throw new KeyNotFoundException("Experience không tồn tại hoặc không thuộc về bác sĩ này.");
 
-            return _mapper.Map<ExperienceResponse>(experience);
+            _mapper.Map(request, existingExperience);
+            request.Status = existingExperience.Status;
+
+            await _unitOfWork.Experiences.UpdatePartialAsync(
+                existingExperience,
+                e => e.Title,
+                e => e.Description,
+                e => e.Certificate,
+                e => e.SpecialtyId
+            );
+
+            return _mapper.Map<ExperienceResponse>(existingExperience);
         }
 
         public async Task DeleteExperienceAsync(Guid id)

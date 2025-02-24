@@ -23,29 +23,30 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Roles = "Doctor,Admin,Patient")]
+        [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
         public IQueryable<ExperienceResponse> GetExperiences()
         {
-            return _experienceService.GetAllExperiences();
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            bool isPatient = userRole == "Patient";
+
+            return _experienceService.GetAllExperiences(isPatient);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
         public async Task<IActionResult> GetExperience(Guid id)
         {
-            var experience = await _experienceService.GetExperienceByIdAsync(id);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            bool isPatient = userRole == "Patient";
+
+            var experience = await _experienceService.GetExperienceByIdAsync(id, isPatient);
             return experience != null ? Ok(experience) : NotFound($"Experience với ID {id} không tồn tại.");
         }
 
         [HttpPost]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateExperience([FromBody] ExperienceRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             request.DoctorId = doctorId;
 
@@ -54,18 +55,14 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Doctor,Admin")]
-        public async Task<IActionResult> UpdateExperience(Guid id, [FromBody] ExperienceRequest request)
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
+        public async Task<IActionResult> UpdateExperience(Guid id, [FromBody] ExperienceRequest request, bool isPatient)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             var isAdmin = userRole == "Admin";
 
-            var existingExperience = await _experienceService.GetExperienceByIdAsync(id);
+            var existingExperience = await _experienceService.GetExperienceByIdAsync(id, isPatient);
             if (existingExperience == null)
             {
                 return NotFound("Experience không tồn tại.");
@@ -73,29 +70,30 @@ namespace MediPlat.API.Controllers
 
             if (isAdmin)
             {
-                var response = await _experienceService.UpdateExperienceStatusAsync(id, request.Status);
-                return Ok(response);
+                var adminResponse = await _experienceService.UpdateExperienceStatusAsync(id, request.Status);
+                return Ok(adminResponse);
             }
 
-            else
+            if (!Guid.TryParse(userId, out var doctorId))
             {
-                var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                if (existingExperience.DoctorId != doctorId)
-                {
-                    return Forbid();
-                }
-
-                var response = await _experienceService.UpdateExperienceWithoutStatusAsync(id, request);
-                return Ok(response);
+                return Unauthorized("Invalid doctor ID.");
             }
+
+            if (existingExperience.DoctorId != doctorId)
+            {
+                return Forbid();
+            }
+
+            var response = await _experienceService.UpdateExperienceWithoutStatusAsync(id, request, doctorId);
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> DeleteExperience(Guid id)
+        [Authorize(Policy = "DoctorPolicy")]
+        public async Task<IActionResult> DeleteExperience(Guid id, bool inPatient)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var existingExperience = await _experienceService.GetExperienceByIdAsync(id);
+            var existingExperience = await _experienceService.GetExperienceByIdAsync(id, inPatient);
 
             if (existingExperience == null || existingExperience.DoctorId != doctorId)
             {

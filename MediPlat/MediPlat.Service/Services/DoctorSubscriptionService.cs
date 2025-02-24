@@ -19,11 +19,10 @@ namespace MediPlat.Service.Services
             _mapper = mapper;
             _logger = logger;
         }
-        public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId)
+        public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions()
         {
             return _unitOfWork.DoctorSubscriptions
                 .GetAll(ds => ds.Doctor, ds => ds.Subscription)
-                .Where(ds => ds.DoctorId == doctorId)
                 .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
         }
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
@@ -87,9 +86,6 @@ namespace MediPlat.Service.Services
                 throw new KeyNotFoundException($"Doctor subscription with ID {id} not found.");
             }
 
-            _logger.LogInformation("Before Update: Subscription {Id} - Current EnableSlot: {EnableSlot}, SubscriptionId: {SubscriptionId}",
-                id, existingSubscription.EnableSlot, existingSubscription.SubscriptionId);
-
             if (request.EnableSlot.HasValue && request.EnableSlot.Value != existingSubscription.EnableSlot)
             {
                 _logger.LogInformation("EnableSlot has changed from {OldEnableSlot} to {NewEnableSlot}. Updating...",
@@ -101,7 +97,7 @@ namespace MediPlat.Service.Services
                 _logger.LogWarning("EnableSlot remains unchanged. Skipping update.");
             }
 
-            existingSubscription.UpdateDate = DateTime.UtcNow;
+            existingSubscription.UpdateDate = DateTime.Now;
 
             await _unitOfWork.DoctorSubscriptions.UpdatePartialAsync(existingSubscription,
                 ds => ds.EnableSlot,

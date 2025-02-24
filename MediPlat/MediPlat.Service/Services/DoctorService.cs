@@ -65,12 +65,9 @@ namespace MediPlat.Service.Services
             _unitOfWork.Doctors.Add(d);
             return d;
         }
-
-        public async Task<List<Doctor>> GetAllDoctor()
+        public IQueryable<Doctor> GetAllDoctor()
         {
-            List<Doctor> d = new List<Doctor>();
-            d = (List<Doctor>)await _unitOfWork.Doctors.GetAllAsync(d => d.Experiences, d => d.Reviews);
-            return d;
+            return _unitOfWork.Doctors.GetAll(d => d.DoctorSubscriptions);
         }
 
         public async Task<Doctor> GetByID(Guid id)

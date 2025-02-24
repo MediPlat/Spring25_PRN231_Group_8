@@ -38,7 +38,7 @@ namespace MediPlat.Service.Services
                     result = new AuthResult
                     {
                         Token = "Bearer " + token,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                        ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
                     };
                     return result;
                 }
@@ -64,7 +64,7 @@ namespace MediPlat.Service.Services
                     result = new AuthResult
                     {
                         Token = "Bearer " + token,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                        ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
                     };
                     return result;
                 }
@@ -77,6 +77,30 @@ namespace MediPlat.Service.Services
             {
                 Console.WriteLine("Doctor not found.");
             }
+
+            var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
+    .FirstOrDefault(a => a.Email == loginModel.Email);
+
+            if (admin != null)
+            {
+                Console.WriteLine($"Admin found: {admin.Email}");
+                if (admin.Password == loginModel.Password)
+                {
+                    Console.WriteLine("Admin password is correct.");
+                    var token = GenerateJwtToken(Guid.NewGuid(), "Admin");
+                    result = new AuthResult
+                    {
+                        Token = "Bearer " + token,
+                        ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                    };
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid admin password.");
+                }
+            }
+
 
             return result;
 
@@ -97,7 +121,7 @@ namespace MediPlat.Service.Services
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"])),
+                expires: DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"])),
                 signingCredentials: creds);
 
             Console.WriteLine("Generated Token: Bearer " + new JwtSecurityTokenHandler().WriteToken(token));
@@ -120,7 +144,7 @@ namespace MediPlat.Service.Services
                 Email = registerModel.Email,
                 Password = registerModel.Password,
                 PhoneNumber = registerModel.PhoneNumber,
-                JoinDate = DateTime.UtcNow,
+                JoinDate = DateTime.Now,
                 Sex = registerModel.Sex,
                 Address = registerModel.Address,
                 Status = "Active"

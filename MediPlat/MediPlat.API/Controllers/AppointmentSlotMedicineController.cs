@@ -42,10 +42,6 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> Create([FromBody] AppointmentSlotMedicineRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             await _appointmentSlotMedicineService.AddAppointmentSlotMedicineAsync(request);
             return Created("odata/AppointmentSlotMedicines", request);
         }

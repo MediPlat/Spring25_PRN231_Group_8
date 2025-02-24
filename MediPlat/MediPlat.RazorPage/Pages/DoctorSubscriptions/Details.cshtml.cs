@@ -33,7 +33,6 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
         {
             if (id == null)
             {
-                _logger.LogWarning("Details page accessed without an ID.");
                 return NotFound("Subscription ID is required.");
             }
 
@@ -53,29 +52,16 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             {
                 var response = await _httpClient.GetAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}?$expand=Doctor,Subscription");
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation("API Response: {JsonResponse}", jsonResponse);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Doctor attempted to access an unauthorized or non-existent subscription {SubscriptionId}.", id);
                     return Forbid();
                 }
 
                 DoctorSubscription = JsonSerializer.Deserialize<DoctorSubscription>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                // Kiểm tra xem Doctor và Subscription có dữ liệu không
-                if (DoctorSubscription?.Doctor == null)
-                {
-                    _logger.LogWarning("Doctor information is missing for subscription ID {SubscriptionId}", id);
-                }
-                if (DoctorSubscription?.Subscription == null)
-                {
-                    _logger.LogWarning("Subscription information is missing for subscription ID {SubscriptionId}", id);
-                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching subscription details for ID {SubscriptionId}", id);
                 return StatusCode(500, "An error occurred while fetching the subscription details.");
             }
 

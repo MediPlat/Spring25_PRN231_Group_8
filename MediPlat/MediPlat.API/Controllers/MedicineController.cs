@@ -37,10 +37,6 @@ public class MedicineController : ODataController
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] MedicineRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
         await _medicineService.AddMedicineAsync(request);
         return Created("odata/Medicines", request);
     }

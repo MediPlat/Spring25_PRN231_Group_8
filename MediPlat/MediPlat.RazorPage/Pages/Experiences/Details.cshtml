@@ -2,7 +2,7 @@
 @model MediPlat.RazorPage.Pages.Experiences.DetailsModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Experience Details";
 }
 
 <h1>Details</h1>
@@ -33,13 +33,13 @@
             @Html.DisplayNameFor(model => model.Experience.Doctor)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Doctor.FullName)
+            @(Model.Experience.Doctor != null ? Model.Experience.Doctor.FullName : "N/A")
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Experience.Specialty)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Specialty.Name)
+            @(Model.Experience.Specialty != null ? Model.Experience.Specialty.Name : "N/A")
         </dd>
     </dl>
 </div>

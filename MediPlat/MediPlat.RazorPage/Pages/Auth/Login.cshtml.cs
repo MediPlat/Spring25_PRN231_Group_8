@@ -46,7 +46,7 @@ public class LoginModel : PageModel
                     SameSite = SameSiteMode.Strict,
                     Expires = authResult.ExpiresAt
                 });
-                return RedirectToPage("/DoctorSubscriptions/Index");
+                return RedirectToPage("/Experiences/Index");
             }
         }
 

@@ -4,17 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
@@ -36,10 +29,8 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
         public async Task<IActionResult> OnGetAsync()
         {
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
-            var authCookie = HttpContext.Request.Cookies[".AspNetCore.Cookies"];
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của DoctorSubscription, chuyển hướng đến trang login...");
                 return RedirectToPage("/Auth/Login");
             }
 
@@ -52,35 +43,28 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 
             using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/DoctorSubscriptions"))
             {
-                string apiResponse = await response.Content.ReadAsStringAsync();
-
                 if (response.IsSuccessStatusCode)
                 {
-                    DoctorSubscription = JsonConvert.DeserializeObject<List<DoctorSubscription>>(apiResponse);
+                    var apiResponse = await response.Content.ReadAsStringAsync();
+                    DoctorSubscription = JsonConvert.DeserializeObject<List<DoctorSubscription>>(apiResponse) ?? new List<DoctorSubscription>();
 
-                    if (DoctorSubscription != null && DoctorSubscription.Any())
-                    {
-                        DoctorFullName = DoctorSubscription.First().Doctor.FullName;
-                    }
-                    else
-                    {
-                        Console.WriteLine("⚠️ Không có gói đăng ký nào cho bác sĩ này.");
-                        var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
-                        if (doctorResponse.IsSuccessStatusCode)
-                        {
-                            var doctorJson = await doctorResponse.Content.ReadAsStringAsync();
-                            var doctor = JsonConvert.DeserializeObject<Doctor>(doctorJson);
-
-                            if (doctor != null)
-                            {
-                                DoctorFullName = doctor.FullName;
-                            }
-                        }
-                    }
+                    DoctorFullName = DoctorSubscription.FirstOrDefault()?.Doctor?.FullName ?? "Chưa có thông tin bác sĩ";
                 }
-
             }
-            ViewData["Title"] = "Gói đăng ký của bác sĩ " + (string.IsNullOrEmpty(DoctorFullName) ? "Không có tên" : DoctorFullName);
+
+            if (DoctorFullName == "Chưa có thông tin bác sĩ")
+            {
+                var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                if (doctorResponse.IsSuccessStatusCode)
+                {
+                    var doctorJson = await doctorResponse.Content.ReadAsStringAsync();
+                    var doctor = JsonConvert.DeserializeObject<Doctor>(doctorJson);
+                    DoctorFullName = doctor?.FullName ?? "Chưa có thông tin bác sĩ";
+                }
+            }
+
+            ViewData["Title"] = $"Gói đăng ký của bác sĩ {DoctorFullName}";
+
             return Page();
         }
     }

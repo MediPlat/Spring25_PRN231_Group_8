@@ -29,7 +29,7 @@ namespace MediPlat.API.Controllers
         public IQueryable<DoctorSubscriptionResponse> GetDoctorSubscriptions()
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            return _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
+            return _doctorSubscriptionService.GetAllDoctorSubscriptions();
         }
 
         [HttpGet("{id}")]
@@ -44,10 +44,6 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
             if (string.IsNullOrEmpty(request.Status))
             {
@@ -62,19 +58,8 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
         {
-            _logger.LogInformation("Received UpdateDoctorSubscription request - ID: {Id}, SubscriptionId: {SubscriptionId}, EnableSlot: {EnableSlot}",
-                id, request.SubscriptionId, request.EnableSlot);
-
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Model validation failed: {Errors}", ModelState);
-                return BadRequest(ModelState);
-            }
-
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var result = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId);
-
-            _logger.LogInformation("Update successful for {Id} - New EnableSlot: {EnableSlot}", id, result.EnableSlot);
 
             return Ok(result);
         }

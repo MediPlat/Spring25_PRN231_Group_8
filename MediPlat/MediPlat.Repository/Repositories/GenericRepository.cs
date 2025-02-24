@@ -58,7 +58,7 @@ namespace MediPlat.Repository.Repositories
             return await query.FirstOrDefaultAsync(predicate);
         }
 
-        public IEnumerable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public IQueryable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _mediPlatDBContext.Set<T>();
 
@@ -67,20 +67,13 @@ namespace MediPlat.Repository.Repositories
                 query = query.Include(includeProperty);
             }
 
-            return query.Where(predicate).ToList();
+            return query.Where(predicate);
         }
-
-        public async Task<IEnumerable<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<List<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
-            IQueryable<T> query = _mediPlatDBContext.Set<T>();
-
-            foreach (var includeProperty in includeProperties)
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return await query.Where(predicate).ToListAsync();
+            return await GetList(predicate, includeProperties).ToListAsync(); // ✅ Thực thi truy vấn async
         }
+
         public IQueryable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _mediPlatDBContext.Set<T>();
@@ -93,16 +86,9 @@ namespace MediPlat.Repository.Repositories
             return query;
         }
 
-        public async Task<IQueryable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
+        public IQueryable<T> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
         {
-            IQueryable<T> query = _mediPlatDBContext.Set<T>();
-
-            foreach (var includeProperty in includeProperties)
-            {
-                query = query.Include(includeProperty);
-            }
-
-            return await Task.FromResult(query);
+            return GetAll(includeProperties);
         }
 
         public int Count()

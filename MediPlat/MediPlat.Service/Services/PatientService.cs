@@ -5,6 +5,7 @@ using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -116,7 +117,7 @@ namespace MediPlat.Service.Services
 
         public async Task<List<PatientResponse>> GetAll(ClaimsPrincipal claims)
         {
-            var patients = await _unitOfWork.Patients.GetAllAsync();
+            var patients = await _unitOfWork.Patients.GetAllAsync().ToListAsync();
             List<PatientResponse> result = new List<PatientResponse>();
             foreach (var item in patients)
             {

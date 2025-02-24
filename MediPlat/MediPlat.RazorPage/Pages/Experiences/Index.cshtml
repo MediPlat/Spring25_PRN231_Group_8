@@ -2,59 +2,48 @@
 @model MediPlat.RazorPage.Pages.Experiences.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Danh sách Experience";
 }
 
-<h1>Index</h1>
+<h1>@ViewData["Title"]</h1>
 
 <p>
     <a asp-page="Create">Create New</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Certificate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Doctor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Specialty)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Experience) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Certificate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Doctor.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Specialty.Name)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+
+@if (Model.Experience != null && Model.Experience.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Experience[0].Title)</th>
+                <th>@Html.DisplayNameFor(model => model.Experience[0].Description)</th>
+                <th>@Html.DisplayNameFor(model => model.Experience[0].Certificate)</th>
+                <th>@Html.DisplayNameFor(model => model.Experience[0].Doctor)</th>
+                <th>@Html.DisplayNameFor(model => model.Experience[0].Specialty)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Experience)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Certificate)</td>
+                    <td>@(item.Doctor != null ? item.Doctor.FullName : "N/A")</td>
+                    <td>@(item.Specialty != null ? item.Specialty.Name : "N/A")</td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
-    </tbody>
-</table>
+else
+{
+    <p>No Experiences available.</p>
+}

@@ -23,7 +23,7 @@ namespace MediPlat.Model.RequestObject
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
         public decimal Amount { get; set; }
 
-        public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime? CreatedDate { get; set; } = DateTime.Now;
 
         [Required]
         [MaxLength(50, ErrorMessage = "Status cannot exceed 50 characters.")]

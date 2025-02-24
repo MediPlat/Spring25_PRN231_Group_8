@@ -15,7 +15,7 @@ namespace MediPlat.Model.RequestObject
         [MaxLength(50, ErrorMessage = "Status cannot exceed 50 characters.")]
         public string Status { get; set; } = null!;
 
-        public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime? CreatedDate { get; set; } = DateTime.Now;
 
         [MaxLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters.")]
         public string? Notes { get; set; }

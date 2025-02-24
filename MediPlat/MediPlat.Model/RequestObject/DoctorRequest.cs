@@ -35,7 +35,7 @@ namespace MediPlat.Model.RequestObject
         [MaxLength(255, ErrorMessage = "AcademicTitle cannot exceed 255 characters.")]
         public string? AcademicTitle { get; set; }
 
-        public DateTime? JoinDate { get; set; } = DateTime.UtcNow;
+        public DateTime? JoinDate { get; set; } = DateTime.Now;
 
         [MaxLength(50, ErrorMessage = "PhoneNumber cannot exceed 50 characters.")]
         public string? PhoneNumber { get; set; }
