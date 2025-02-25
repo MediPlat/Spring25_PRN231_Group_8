@@ -20,7 +20,7 @@ public class MedicineController : ODataController
     [HttpGet]
     [EnableQuery]
     [Authorize(Roles = "Admin,Doctor")]
-    public IActionResult Get()
+    public IActionResult GetAllMedicines()
     {
         return Ok(_medicineService.GetAllMedicines());
     }
@@ -37,8 +37,8 @@ public class MedicineController : ODataController
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] MedicineRequest request)
     {
-        await _medicineService.AddMedicineAsync(request);
-        return Created("odata/Medicines", request);
+        var result = await _medicineService.AddMedicineAsync(request);
+        return Created($"odata/Medicines/{result.Id}", new { result.Id });
     }
 
     [HttpPut("{id}")]
@@ -51,9 +51,10 @@ public class MedicineController : ODataController
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Deactivate(Guid id)
     {
-        await _medicineService.DeleteMedicineAsync(id);
-        return NoContent();
+        var result = await _medicineService.DeactivateMedicineAsync(id);
+        return result != null ? Ok(result) : NotFound();
     }
+
 }

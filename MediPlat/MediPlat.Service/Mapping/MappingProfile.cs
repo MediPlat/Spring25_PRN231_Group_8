@@ -5,7 +5,7 @@ using MediPlat.Model.ResponseObject;
 
 namespace MediPlat.Service.Mapping
 {
-    public class MappingProfile : Profile
+    public class MappingProfile : AutoMapper.Profile
     {
         public MappingProfile()
         {
@@ -28,7 +28,8 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<AppointmentSlotMedicine, AppointmentSlotMedicineResponse>();
 
-            CreateMap<MedicineRequest, Medicine>();
+            CreateMap<MedicineRequest, Medicine>()
+    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? "Active"));
 
             CreateMap<Medicine, MedicineResponse>();
 

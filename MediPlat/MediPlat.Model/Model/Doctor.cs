@@ -31,11 +31,11 @@ public partial class Doctor
 
     public string? Status { get; set; }
 
+    public decimal? AverageRating { get; set; }
+
     public virtual ICollection<DoctorSubscription> DoctorSubscriptions { get; set; } = new List<DoctorSubscription>();
 
     public virtual ICollection<Experience> Experiences { get; set; } = new List<Experience>();
-
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual ICollection<Slot> Slots { get; set; } = new List<Slot>();
 

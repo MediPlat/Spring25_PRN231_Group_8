@@ -132,7 +132,8 @@ CREATE TABLE "Medicine" (
   "Name" NVARCHAR(255) NOT NULL,
   "DosageForm" NVARCHAR(100), -- Dạng thuốc (Viên nén, Siro, Tiêm,...)
   "Strength" NVARCHAR(50) NOT NULL, -- Hàm lượng (500mg, 200mg,...)
-  "SideEffects" NVARCHAR(MAX) -- Tác dụng phụ
+  "SideEffects" NVARCHAR(MAX), -- Tác dụng phụ
+  "Status" NVARCHAR(50) NOT NULL DEFAULT 'Active'
 );
 
 CREATE TABLE "AppointmentSlotMedicine" (

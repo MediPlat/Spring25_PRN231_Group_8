@@ -44,16 +44,20 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
-
             if (string.IsNullOrEmpty(request.Status))
             {
                 request.Status = "Active";
             }
 
-            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var doctorIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(doctorIdClaim) || !Guid.TryParse(doctorIdClaim, out var doctorId))
+            {
+                return Unauthorized("Doctor ID is invalid.");
+            }
 
             return Ok(await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId));
         }
+
         [HttpPut("{id}")]
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)

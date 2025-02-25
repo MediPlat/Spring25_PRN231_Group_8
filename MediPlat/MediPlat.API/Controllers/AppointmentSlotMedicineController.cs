@@ -42,8 +42,8 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> Create([FromBody] AppointmentSlotMedicineRequest request)
         {
-            await _appointmentSlotMedicineService.AddAppointmentSlotMedicineAsync(request);
-            return Created("odata/AppointmentSlotMedicines", request);
+            var result = await _appointmentSlotMedicineService.AddAppointmentSlotMedicineAsync(request);
+            return Created($"odata/AppointmentSlotMedicines/{result.AppointmentSlotMedicineId}", new { result.AppointmentSlotMedicineId });
         }
 
         [HttpPut("{appointmentSlotId}/{medicineId}")]

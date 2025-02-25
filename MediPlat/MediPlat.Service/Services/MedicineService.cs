@@ -15,10 +15,10 @@ public class MedicineService : IMedicineService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
-
     public IQueryable<MedicineResponse> GetAllMedicines()
     {
-        return _unitOfWork.Medicines.GetAll().AsQueryable()
+        return _unitOfWork.Medicines.GetAll()
+            .Where(m => m.Status == "Active")
             .Select(m => _mapper.Map<MedicineResponse>(m));
     }
 
@@ -27,7 +27,8 @@ public class MedicineService : IMedicineService
         var entity = await _unitOfWork.Medicines.GetAsync(m => m.Id == id);
         return entity != null ? _mapper.Map<MedicineResponse>(entity) : null;
     }
-    public async Task AddMedicineAsync(MedicineRequest request)
+
+    public async Task<MedicineResponse> AddMedicineAsync(MedicineRequest request)
     {
         var existingMedicine = await _unitOfWork.Medicines.GetAsync(m =>
             m.Name.ToLower() == request.Name.ToLower() &&
@@ -43,8 +44,10 @@ public class MedicineService : IMedicineService
         entity.Id = Guid.NewGuid();
         _unitOfWork.Medicines.Add(entity);
         await _unitOfWork.SaveChangesAsync();
+
+        return _mapper.Map<MedicineResponse>(entity);
     }
-    public async Task UpdateMedicineAsync(Guid id, MedicineRequest request)
+    public async Task<MedicineResponse> UpdateMedicineAsync(Guid id, MedicineRequest request)
     {
         var entity = await _unitOfWork.Medicines.GetAsync(m => m.Id == id);
         if (entity == null)
@@ -70,9 +73,10 @@ public class MedicineService : IMedicineService
 
         await _unitOfWork.Medicines.UpdatePartialAsync(entity,
             e => e.Name, e => e.DosageForm, e => e.Strength, e => e.SideEffects);
-    }
 
-    public async Task DeleteMedicineAsync(Guid id)
+        return _mapper.Map<MedicineResponse>(entity);
+    }
+    public async Task<MedicineResponse> DeactivateMedicineAsync(Guid id)
     {
         var entity = await _unitOfWork.Medicines.GetAsync(m => m.Id == id);
         if (entity == null)
@@ -80,13 +84,9 @@ public class MedicineService : IMedicineService
             throw new KeyNotFoundException("Không tìm thấy thuốc.");
         }
 
-        var isBeingUsed = await _unitOfWork.AppointmentSlotMedicines.GetAsync(am => am.MedicineId == id);
-        if (isBeingUsed != null)
-        {
-            throw new InvalidOperationException("Thuốc này đang được kê đơn, không thể xóa.");
-        }
+        entity.Status = "Inactive";
+        await _unitOfWork.Medicines.UpdatePartialAsync(entity, e => e.Status);
 
-        _unitOfWork.Medicines.Remove(entity);
-        await _unitOfWork.SaveChangesAsync();
+        return _mapper.Map<MedicineResponse>(entity);
     }
 }

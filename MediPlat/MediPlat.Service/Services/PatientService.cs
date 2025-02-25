@@ -61,14 +61,9 @@ namespace MediPlat.Service.Services
             {
                 Id = guid,
                 UserName = patientModel.UserName,
-                FullName = patientModel.FullName,
                 Email = patientModel.Email,
-                PhoneNumber = patientModel.PhoneNumber,
                 Balance = patientModel.Balance,
-                Address = patientModel.Address,
-                Sex = patientModel.Sex,
                 Status = patientModel.Status,
-                JoinDate = patientModel.JoinDate,
                 Password = patientModel.Password,
             });
             await _unitOfWork.SaveChangesAsync();
@@ -76,13 +71,8 @@ namespace MediPlat.Service.Services
             {
                 Id = guid,
                 UserName = patientModel.UserName,
-                FullName = patientModel.FullName,
                 Email = patientModel.Email,
-                PhoneNumber = patientModel.PhoneNumber,
                 Balance = patientModel.Balance,
-                JoinDate = patientModel.JoinDate,
-                Sex = patientModel.Sex,
-                Address = patientModel.Address,
                 Status = patientModel.Status
             };
         }
@@ -104,13 +94,8 @@ namespace MediPlat.Service.Services
             {
                 Id = patient.Id,
                 UserName = patient.UserName,
-                FullName = patient.FullName,
                 Email = patient.Email,
-                PhoneNumber = patient.PhoneNumber,
                 Balance = patient.Balance,
-                JoinDate = patient.JoinDate,
-                Sex = patient.Sex,
-                Address = patient.Address,
                 Status = patient.Status
             };
         }
@@ -125,13 +110,8 @@ namespace MediPlat.Service.Services
                 {
                     Id = item.Id,
                     UserName = item.UserName,
-                    Address = item.Address,
                     Balance = item.Balance,
                     Email = item.Email,
-                    FullName = item.FullName,
-                    JoinDate = item.JoinDate,
-                    PhoneNumber = item.PhoneNumber,
-                    Sex = item.Sex,
                     Status = item.Status
                 });
             }
@@ -155,13 +135,8 @@ namespace MediPlat.Service.Services
             {
                 Id = patient.Id,
                 UserName = patient.UserName,
-                FullName = patient.FullName,
                 Email = patient.Email,
-                PhoneNumber = patient.PhoneNumber,
                 Balance = patient.Balance,
-                JoinDate = patient.JoinDate,
-                Sex = patient.Sex,
-                Address = patient.Address,
                 Status = patient.Status
             };
         }
@@ -177,14 +152,9 @@ namespace MediPlat.Service.Services
                 throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
             patient.UserName = patientModel.UserName.IsNullOrEmpty() ? patient.UserName : patientModel.UserName;
-            patient.FullName = patientModel.FullName.IsNullOrEmpty() ? patient.FullName : patientModel.FullName;
             patient.Email = patientModel.Email.IsNullOrEmpty() ? patient.Email : patientModel.Email;
-            patient.PhoneNumber = patientModel.PhoneNumber.IsNullOrEmpty() ? patient.PhoneNumber : patientModel.PhoneNumber;
             patient.Balance = patientModel.Balance == null || patientModel.Balance <= 0 ? patient.Balance : patientModel.Balance;
-            patient.Address = patientModel.Address.IsNullOrEmpty() ? patient.Address : patientModel.Address;
             patient.Status = patientModel.Status.IsNullOrEmpty() ? patient.Status : patientModel.Status;
-            patient.JoinDate = patientModel.JoinDate is null ? patient.JoinDate : patientModel.JoinDate;
-            patient.Sex = patientModel.Sex.IsNullOrEmpty() ? patient.Sex : patientModel.Sex;
 
             _unitOfWork.Patients.Update(patient);
             await _unitOfWork.SaveChangesAsync();
@@ -193,13 +163,8 @@ namespace MediPlat.Service.Services
             {
                 Id = patient.Id,
                 UserName = patient.UserName,
-                FullName = patient.FullName,
                 Email = patient.Email,
-                PhoneNumber = patient.PhoneNumber,
                 Balance = patient.Balance,
-                JoinDate = patient.JoinDate,
-                Sex = patient.Sex,
-                Address = patient.Address,
                 Status = patient.Status
             };
         }

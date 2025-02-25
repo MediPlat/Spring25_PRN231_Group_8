@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MediPlat.Model.ResponseObject
 {
@@ -14,6 +11,7 @@ namespace MediPlat.Model.ResponseObject
         public string? DosageForm { get; set; }
         public string Strength { get; set; } = null!;
         public string? SideEffects { get; set; }
+        public string Status { get; set; } = null!;
 
         [JsonIgnore]
         public virtual ICollection<AppointmentSlotMedicineResponse> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicineResponse>();

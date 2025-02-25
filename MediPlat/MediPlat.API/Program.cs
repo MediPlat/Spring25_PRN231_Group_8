@@ -32,6 +32,7 @@ builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
+builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 
 // Đăng ký Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -193,10 +194,6 @@ static IEdmModel GetEdmModel()
 
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
-    builder.EntityType<Patient>()
-        .HasMany(p => p.AppointmentSlots);
-    builder.EntityType<Patient>()
-        .HasMany(p => p.Reviews);
     builder.EntityType<Patient>()
         .HasMany(p => p.Transactions);
 

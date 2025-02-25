@@ -140,13 +140,8 @@ namespace MediPlat.Service.Services
             {
                 Id = Guid.NewGuid(),
                 UserName = registerModel.UserName,
-                FullName = registerModel.FullName,
                 Email = registerModel.Email,
                 Password = registerModel.Password,
-                PhoneNumber = registerModel.PhoneNumber,
-                JoinDate = DateTime.Now,
-                Sex = registerModel.Sex,
-                Address = registerModel.Address,
                 Status = "Active"
             });
 

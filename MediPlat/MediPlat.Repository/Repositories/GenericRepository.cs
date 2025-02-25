@@ -101,7 +101,6 @@ namespace MediPlat.Repository.Repositories
             return await _mediPlatDBContext.Set<T>().CountAsync();
         }
 
-        // Cập nhật toàn bộ đối tượng với các thuộc tính cụ thể
         public void Update(T objModel, params Expression<Func<T, object>>[] includeProperties)
         {
             var entry = _mediPlatDBContext.Entry(objModel);
@@ -117,7 +116,6 @@ namespace MediPlat.Repository.Repositories
             }
         }
 
-        // Cập nhật toàn bộ đối tượng (async)
         public async Task UpdateAsync(T objModel, params Expression<Func<T, object>>[] includeProperties)
         {
             var entry = _mediPlatDBContext.Entry(objModel);
@@ -135,7 +133,6 @@ namespace MediPlat.Repository.Repositories
             await _mediPlatDBContext.SaveChangesAsync();
         }
 
-        // Cập nhật từng thuộc tính cụ thể (Patch-style updates)
         public void UpdatePartial(T objModel, params Expression<Func<T, object>>[] updatedProperties)
         {
             var entry = _mediPlatDBContext.Entry(objModel);

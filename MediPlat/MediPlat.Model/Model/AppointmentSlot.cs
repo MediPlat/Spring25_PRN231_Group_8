@@ -9,7 +9,7 @@ public partial class AppointmentSlot
 
     public Guid? SlotId { get; set; }
 
-    public Guid? PatientId { get; set; }
+    public Guid? ProfileId { get; set; }
 
     public string Status { get; set; } = null!;
 
@@ -19,7 +19,7 @@ public partial class AppointmentSlot
 
     public virtual ICollection<AppointmentSlotMedicine> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicine>();
 
-    public virtual Patient? Patient { get; set; }
+    public virtual Profile? Profile { get; set; }
 
     public virtual Slot? Slot { get; set; }
 
