@@ -10,6 +10,7 @@ namespace MediPlat.Repository.IRepositories
     public interface IGenericRepository<T> where T : class
     {
         void Add(T objModel);
+        Task AddAsync(T objModel);
         void AddRange(IEnumerable<T> objModel);
         T? GetId(Guid id);
         Task<T?> GetIdAsync(Guid id);

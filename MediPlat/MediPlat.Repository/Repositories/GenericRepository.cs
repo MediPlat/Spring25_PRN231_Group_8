@@ -23,6 +23,11 @@ namespace MediPlat.Repository.Repositories
             _mediPlatDBContext.Set<T>().Add(model);
         }
 
+        public async Task AddAsync(T model)
+        {
+            await _mediPlatDBContext.Set<T>().AddAsync(model);
+        }
+
         public void AddRange(IEnumerable<T> model)
         {
             _mediPlatDBContext.Set<T>().AddRange(model);
