@@ -3,30 +3,269 @@
 @{
     ViewData["Title"] = "Profile";
 }
+@inject IConfiguration Configuration
 
-<h2>Profile</h2>
-
-<form method="post">
-    <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" class="form-control" asp-for="Patient.UserName" readonly />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" asp-for="Patient.Email" required readonly />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Balance</label>
-        <input type="text" class="form-control" asp-for="Patient.Balance" readonly />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Status</label>
-        <input type="text" class="form-control" asp-for="Patient.Status" readonly />
-    </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-</form>
-
-@if (!string.IsNullOrEmpty(Model.Message))
-{
-    <div class="alert alert-success mt-3">@Model.Message</div>
+<style>
+/* Profile card styling */
+.profile-field {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adjust spacing between label and data */
+    margin-bottom: 10px; /* Add spacing between fields */
 }
+
+.profile-field label {
+    min-width: 120px; /* Adjust label width */
+    font-weight: bold;
+}
+.editable-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between input and icon */
+    width: 100%;
+}
+
+.editable-container input {
+    flex: 1;
+    min-width: 0;
+}
+
+.edit-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 8px; /* Ensure space between input and icon */
+}
+/* Save button */
+.btn-save {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save:hover {
+    background-color: #0056b3;
+}
+
+/* Profiles table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table th {
+    background: #007bff;
+    color: white;
+}
+
+/* Add Profile button */
+.btn-add-profile {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-add-profile:hover {
+    background-color: #218838;
+}
+
+</style>
+<div class="card">
+    <div class="card-body">
+        <h2>@Model.Patient.UserName's Profile</h2>
+        <form method="post">
+            <div class="profile-field">
+                <label class="form-label">Username:</label>
+                <div class="editable-container">
+                    <span class="editable" id="username">@Model.Patient.UserName</span>
+                    <input type="text" class="form-control d-none" id="usernameInput" asp-for="Patient.UserName" />
+                    <i class="fas fa-edit edit-icon" onclick="toggleEdit('username')"></i>
+                </div>
+            </div>
+
+            <div class="profile-field">
+                <label class="form-label">Email:</label>
+                <div class="editable-container">
+                    <span class="editable" id="email">@Model.Patient.Email</span>
+                    <input type="email" class="form-control d-none" id="emailInput" asp-for="Patient.Email" />
+                    <i class="fas fa-edit edit-icon" onclick="toggleEdit('email')"></i>
+                </div>
+            </div>
+
+            <div class="profile-field">
+                <label class="form-label">Balance:</label>
+                <span>@Model.Patient.Balance</span>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- Profiles Section -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h3>Profiles</h3>
+        <button class="btn btn-success mb-3" onclick="openProfileModal()">Add Profile</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Sex</th>
+                    <th>DoB</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="profilesTable">
+                <!-- Profile rows will be added dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="profileId">
+                <label>Full Name</label>
+                <input type="text" id="profileFullName" class="form-control mb-2">
+                <label>Sex</label>
+                <input type="text" id="profileSex" class="form-control mb-2">
+                <label>DoB</label>
+                <input type="date" id="profileDob" class="form-control mb-2">
+                <label>Phone</label>
+                <input type="text" id="profilePhone" class="form-control mb-2">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveProfile()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = "@Configuration["ApiBaseUrl"]";
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        loadProfiles();
+    });
+
+    function toggleEdit(field) {
+        document.getElementById(field).classList.toggle("d-none");
+        document.getElementById(field + "Input").classList.toggle("d-none");
+    }
+
+    function loadProfiles() {
+        fetch(API_BASE_URL + "/odata/Profile", {
+    method: "GET",
+    headers: {
+        "Authorization": "Bearer @Model.JWTToken"
+    }
+})
+.then(response => response.json()) // Convert to JSON
+.then(data => {
+    console.log("API Response:", data); // Log full response
+
+    // If data is not an array, log an error
+    if (!Array.isArray(data)) {
+        console.error("Error: API response is not an array.", data);
+        return;
+    }
+
+    let table = document.getElementById("profilesTable");
+    table.innerHTML = "";
+    
+    data.forEach(profile => { 
+        let dob = new Date(profile.dob).toLocaleDateString();
+        let row = `<tr>
+            <td>${profile.fullName}</td>
+            <td>${profile.sex}</td>
+            <td>${dob}</td>
+            <td>${profile.phoneNumber}</td>
+            <td>
+                <button class='btn btn-warning' onclick='editProfile(${JSON.stringify(profile)})'>Edit</button>
+                <button class='btn btn-danger' onclick='deleteProfile("${profile.id}")'>Delete</button>
+            </td>
+        </tr>`;
+        table.innerHTML += row;
+    });
+})
+.catch(error => console.error("Fetch error:", error));
+
+
+    }
+
+    function openProfileModal() {
+        document.getElementById("profileId").value = "";
+        document.getElementById("profileFullName").value = "";
+        document.getElementById("profileSex").value = "";
+        document.getElementById("profileDob").value = "";
+        document.getElementById("profilePhone").value = "";
+        new bootstrap.Modal(document.getElementById("profileModal")).show();
+    }
+
+    function editProfile(profile) {
+        document.getElementById("profileId").value = profile.Id;
+        document.getElementById("profileFullName").value = profile.FullName;
+        document.getElementById("profileSex").value = profile.Sex;
+        document.getElementById("profileDob").value = profile.Dob;
+        document.getElementById("profilePhone").value = profile.PhoneNumber;
+        new bootstrap.Modal(document.getElementById("profileModal")).show();
+    }
+
+    function saveProfile() {
+        let id = document.getElementById("profileId").value;
+        let profile = {
+            FullName: document.getElementById("profileFullName").value,
+            Sex: document.getElementById("profileSex").value,
+            Dob: document.getElementById("profileDob").value,
+            PhoneNumber: document.getElementById("profilePhone").value
+        };
+        
+        let method = id ? "PUT" : "POST";
+        let url = API_BASE_URL + (id ? `/odata/Profile/${id}` : "/odata/Profile");
+        
+        fetch(url, {
+            method: method,
+            headers : {
+                'Content-Type': 'application/json',
+                "Authorization": `Bearer @Html.Raw(Model.JWTToken)`
+            },            
+            body: JSON.stringify(profile)
+        }).then(() => {
+            loadProfiles();
+            new bootstrap.Modal(document.getElementById("profileModal")).hide();
+        });
+    }
+
+    function deleteProfile(id) {
+        fetch(API_BASE_URL + `/odata/Profile/${id}`, { 
+            method: "DELETE", 
+            headers: { "Authorization": `Bearer @Html.Raw(Model.JWTToken)` }
+        })
+    }
+</script>

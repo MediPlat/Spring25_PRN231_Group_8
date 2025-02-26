@@ -4,6 +4,7 @@ using MediPlat.Model.RequestObject.Patient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -27,14 +28,14 @@ namespace MediPlat.RazorPage.Pages.Patients
         [BindProperty]
         public Patient Patient { get; set; } = new();
         public string? Message { get; set; }
-
+        public string? JWTToken { get { return _httpClient.DefaultRequestHeaders.Authorization?.Parameter; } }
         public async Task OnGetAsync()
         {
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
 
-            if (string.IsNullOrEmpty(token))
+            if (token.IsNullOrEmpty())
             {
-                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của DoctorSubscription, chuyển hướng đến trang login...");
+                Console.WriteLine("⚠️ Không tìm thấy token, chuyển hướng đến trang login...");
                 RedirectToPage("/Auth/Login");
             }
             if (token.StartsWith("Bearer "))
@@ -42,6 +43,7 @@ namespace MediPlat.RazorPage.Pages.Patients
                 token = token.Substring("Bearer ".Length);
             }
 
+            
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using (HttpResponseMessage response = await _httpClient.GetAsync($"https://localhost:7002/odata/patient/{HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value}"))

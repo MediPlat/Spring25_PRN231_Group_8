@@ -21,6 +21,8 @@ namespace MediPlat.Repository.Repositories
         public IGenericRepository<Experience> Experiences { get; }
         public IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
         public IGenericRepository<Medicine> Medicines { get; }
+        public IGenericRepository<Profile> Profiles { get; }
+
         public UnitOfWork(MediPlatContext context, ILogger<UnitOfWork> logger)
         {
             _context = context;
@@ -32,6 +34,7 @@ namespace MediPlat.Repository.Repositories
             Experiences = new GenericRepository<Experience>(context);
             AppointmentSlotMedicines = new GenericRepository<AppointmentSlotMedicine>(context);
             Medicines = new GenericRepository<Medicine>(context);
+            Profiles = new GenericRepository<Profile>(context);
         }
 
         public async Task<int> SaveChangesAsync()

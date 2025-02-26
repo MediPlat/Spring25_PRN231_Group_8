@@ -62,6 +62,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

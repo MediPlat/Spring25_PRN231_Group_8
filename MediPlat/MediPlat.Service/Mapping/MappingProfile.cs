@@ -65,10 +65,15 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<Patient, PatientRequest>();
 
-            CreateMap<PatientRequest, PatientResponse>();
+            CreateMap<PatientRequest, Patient>();
 
             CreateMap<Patient, PatientResponse>();
 
+            CreateMap<Model.Model.Profile, ProfileRequest>();
+
+            CreateMap<ProfileRequest, Model.Model.Profile>();
+
+            CreateMap<Model.Model.Profile, ProfileResponse>();
         }
     }
 }
