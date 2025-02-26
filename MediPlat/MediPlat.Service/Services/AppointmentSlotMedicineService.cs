@@ -29,7 +29,7 @@ namespace MediPlat.Service.Services
 
         public async Task<AppointmentSlotMedicineResponse?> GetAppointmentSlotMedicineByIdAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)
         {
-            var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId && m.PatientId == patientId);
+            var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
             return entity != null ? _mapper.Map<AppointmentSlotMedicineResponse>(entity) : null;
         }
         public async Task AddAppointmentSlotMedicineAsync(AppointmentSlotMedicineRequest request)

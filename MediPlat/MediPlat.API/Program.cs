@@ -179,17 +179,15 @@ static IEdmModel GetEdmModel()
 
     builder.EntitySet<Patient>("Patient");
     builder.EntitySet<Doctor>("Doctor");
-    builder.EntitySet<AppointmentSlot>("AppointmentSlot");
-    builder.EntitySet<Review>("Review");
+    builder.EntitySet<Profile>("Profile");
     builder.EntitySet<Transaction>("Transaction");
 
 
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
+
     builder.EntityType<Patient>()
-        .HasMany(p => p.AppointmentSlots);
-    builder.EntityType<Patient>()
-        .HasMany(p => p.Reviews);
+        .HasMany(p => p.Profiles);
     builder.EntityType<Patient>()
         .HasMany(p => p.Transactions);
 

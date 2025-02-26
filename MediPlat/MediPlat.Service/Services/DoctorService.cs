@@ -68,7 +68,7 @@ namespace MediPlat.Service.Services
         public async Task<List<Doctor>> GetAllDoctor()
         {
             List<Doctor> d = new List<Doctor>();
-            d = (List<Doctor>)await _unitOfWork.Doctors.GetAllAsync(d => d.Experiences, d => d.Reviews);
+            d = (List<Doctor>)await _unitOfWork.Doctors.GetAllAsync(d => d.Experiences);
             return d;
         }
 
