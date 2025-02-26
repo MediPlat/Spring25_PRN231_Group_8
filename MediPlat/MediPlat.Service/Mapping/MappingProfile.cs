@@ -4,6 +4,7 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Model.ResponseObject.Patient;
+using Profile = AutoMapper.Profile;
 
 namespace MediPlat.Service.Mapping
 {
