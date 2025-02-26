@@ -3,6 +3,7 @@ using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace MediPlat.API.Controllers
 {
@@ -17,19 +18,65 @@ namespace MediPlat.API.Controllers
             _slotService = slotService;
             _logger = logger;
         }
-        [HttpPost("create")]
-        //[Authorize(Policy = "DoctorPolicy")]
-        public async Task<IActionResult> CreateSlot([FromBody] SlotRequest slotRequest)
-        {
+        [HttpGet]
+        [EnableQuery]
+        public IActionResult Get() {
             try
             {
-                var result = await _slotService.CreateSlot(slotRequest);
+                var result = _slotService.GetSlot();
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"❌ Lỗi khi tạo slot: {ex.Message}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi tạo slot");
+                _logger.LogError(ex, "Error in GetSlot");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error in GetSlot");
+            }
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSlotById(Guid id) {
+            var result = await _slotService.GetSlotByID(id);
+            return result != null ? Ok(result) : NotFound();
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateSlot([FromBody] SlotRequest slotRequest)
+        {
+            try
+            {
+                _slotService.CreateSlot(slotRequest);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in CreateSlot");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error in CreateSlot");
+            }
+        }
+        [HttpPut]
+        public async Task<IActionResult> UpdateSlot([FromBody] SlotRequest slotRequest)
+        {
+            try
+            {
+                _slotService.UpdateSlot(slotRequest);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in UpdateSlot");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateSlot");
+            }
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteSlot(Guid id)
+        {
+            try
+            {
+                _slotService.DeleteSlot(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in DeleteSlot");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error in DeleteSlot");
             }
         }
     }

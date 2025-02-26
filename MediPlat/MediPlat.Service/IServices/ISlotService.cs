@@ -1,4 +1,6 @@
-﻿using MediPlat.Model.RequestObject;
+﻿using MediPlat.Model;
+using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +11,11 @@ namespace MediPlat.Service.IServices
 {
     public interface ISlotService
     {
-        Task<string> CreateSlot(SlotRequest slotRequest);
-        Task<string> UpdateSlot(SlotRequest slotRequest);
-        Task<string> GetSlotByID(Guid slotId);
-        Task<string> GetSlotByDocorID(Guid slotId);
+        IQueryable<SlotResponse> GetSlot();
+        Task<SlotResponse?> GetSlotByID(Guid slotId);
+        Task CreateSlot(SlotRequest slotRequest);
+        Task UpdateSlot(SlotRequest slotRequest);
+        Task DeleteSlot(Guid slotId);
+
     }
 }

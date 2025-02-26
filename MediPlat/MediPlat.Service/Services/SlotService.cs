@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
 using System;
@@ -20,48 +21,86 @@ namespace MediPlat.Service.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task<string> CreateSlot(SlotRequest slotRequest)
+
+        public Task CreateSlot(SlotRequest slotRequest)
         {
-            try 
+            try
             {
                 var slot = _mapper.Map<Slot>(slotRequest);
-                slot.Id = Guid.NewGuid();
                 _unitOfWork.Slots.Add(slot);
-                await _unitOfWork.SaveChangesAsync();
-                return "Slot created successfully";
-            } catch (Exception ex) { }
+                return _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             throw new NotImplementedException();
         }
 
-        public async Task<string> UpdateSlot(SlotRequest slotRequest)
+        public async Task DeleteSlot(Guid slotId)
+        {
+            var entity = await _unitOfWork.Slots.GetAsync(s => s.Id == slotId);
+            if (entity == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy Slot.");
+            }
+
+            var isBeingUsed = await _unitOfWork.AppointmentsSlots.GetAsync(am => am.SlotId == slotId);
+            if (isBeingUsed != null)
+            {
+                throw new InvalidOperationException("Slot đã được kích hoạt, không thể xóa.");
+            }
+
+            _unitOfWork.Slots.Remove(entity);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public IQueryable<SlotResponse> GetSlot()
+        {
+            try
+            {
+                var slots = _unitOfWork.Slots.GetAll().AsQueryable()
+                    .Select(s => _mapper.Map<SlotResponse>(s));
+                return slots;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            throw new NotImplementedException();
+        }
+
+        public async Task<SlotResponse?> GetSlotByID(Guid slotId)
+        {
+            try
+            {
+                var slot = await _unitOfWork.Slots.GetAsync(s => s.Id == slotId);
+                if (slot == null)
+                {
+                    return null;
+                }
+                var slotResponse = _mapper.Map<SlotResponse>(slot);
+                return slotResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateSlot(SlotRequest slotRequest)
         {
             try
             {
                 var slot = _mapper.Map<Slot>(slotRequest);
                 _unitOfWork.Slots.Update(slot);
-                await _unitOfWork.SaveChangesAsync();
-                return "Slot updated successfully";
+                return _unitOfWork.SaveChangesAsync();
             }
-            catch (Exception ex) { }
-            throw new NotImplementedException();
-        } throw new NotImplementedException();
-        }
-
-        public async Task<string> GetSlotByDocorID(Guid doctorId)
-        {
-            try
+            catch (Exception ex)
             {
-                var slots = await _unitOfWork.Slots.GetAllAsync(s =>
-                {
-                    return s.Doctor == doctorId;
-                });
-                if (slots == null)
-                {
-                    return "Slot not found";
-                }
-                return "Slot found";
+                throw ex;
             }
-            catch (Exception ex) { }
             throw new NotImplementedException();
         }
     }
