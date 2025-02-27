@@ -14,6 +14,5 @@ namespace MediPlat.Service.IServices
         Task<MedicineResponse?> GetMedicineByIdAsync(Guid id);
         Task<MedicineResponse> AddMedicineAsync(MedicineRequest request);
         Task<MedicineResponse> UpdateMedicineAsync(Guid id, MedicineRequest request);
-        Task<MedicineResponse> DeactivateMedicineAsync(Guid id);
     }
 }

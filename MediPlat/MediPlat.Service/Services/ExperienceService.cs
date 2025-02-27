@@ -29,7 +29,28 @@ namespace MediPlat.Service.Services
                 experiences = experiences.Where(e => e.Status == "Active");
             }
 
-            return experiences.Select(exp => _mapper.Map<ExperienceResponse>(exp)).AsQueryable();
+            return experiences
+                .Select(exp => new ExperienceResponse
+                {
+                    Id = exp.Id,
+                    Title = exp.Title,
+                    Description = exp.Description,
+                    Certificate = exp.Certificate,
+                    Status = exp.Status,
+                    DoctorId = exp.DoctorId,
+                    SpecialtyId = exp.SpecialtyId,
+                    Doctor = exp.Doctor != null ? new DoctorResponse
+                    {
+                        Id = exp.Doctor.Id,
+                        FullName = exp.Doctor.FullName ?? "Không có thông tin"
+                    } : null,
+                    Specialty = exp.Specialty != null ? new SpecialtyResponse
+                    {
+                        Id = exp.Specialty.Id,
+                        Name = exp.Specialty.Name ?? "Không có chuyên khoa"
+                    } : null
+                })
+                .AsQueryable();
         }
 
         public async Task<ExperienceResponse> GetExperienceByIdAsync(Guid id, bool isPatient)
@@ -52,9 +73,18 @@ namespace MediPlat.Service.Services
 
         public async Task<ExperienceResponse> AddExperienceAsync(ExperienceRequest request)
         {
+            var existingExperience = await _unitOfWork.Experiences
+                .GetAsync(e => e.DoctorId == request.DoctorId && e.SpecialtyId == request.SpecialtyId);
+
+            if (existingExperience != null)
+            {
+                throw new InvalidOperationException("Bác sĩ đã có Experience với chuyên khoa này.");
+            }
+
             var experience = _mapper.Map<Experience>(request);
             experience.Id = Guid.NewGuid();
             experience.Status = "Active";
+
             _unitOfWork.Experiences.Add(experience);
             await _unitOfWork.SaveChangesAsync();
 

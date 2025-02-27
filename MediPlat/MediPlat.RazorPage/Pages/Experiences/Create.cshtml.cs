@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +65,12 @@ namespace MediPlat.RazorPage.Pages.Experiences
                     var doctor = JsonSerializer.Deserialize<Doctor>(doctorJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (Experience == null)
                     {
-                        Experience = new Experience();
+                        Experience = new Experience { DoctorId = doctor?.Id ?? Guid.Empty };
+                    }
+                    if (Experience.DoctorId == Guid.Empty || Experience.SpecialtyId == Guid.Empty)
+                    {
+                        ModelState.AddModelError("", "Vui lòng chọn Bác sĩ và Chuyên khoa hợp lệ.");
+                        return Page();
                     }
                     if (doctor != null)
                     {
@@ -88,8 +94,6 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             return Page();
         }
-    
-
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -112,18 +116,23 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             try
             {
-                var jsonContent = JsonSerializer.Serialize(Experience, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-                var checkResponse = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences?$filter=doctorId eq {Experience.DoctorId} and specialtyId eq {Experience.SpecialtyId}");
+                // Kiểm tra xem Doctor đã có Experience với Speciality chưa
+                var checkResponse = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences?$filter=doctorId eq '{Experience.DoctorId}' and specialtyId eq '{Experience.SpecialtyId}'");
                 if (checkResponse.IsSuccessStatusCode)
                 {
                     var existingExperiencesJson = await checkResponse.Content.ReadAsStringAsync();
-                    if (!string.IsNullOrWhiteSpace(existingExperiencesJson) && existingExperiencesJson.Contains("value"))
+                    var jsonDocument = JsonNode.Parse(existingExperiencesJson);
+                    var experiencesArray = jsonDocument?["value"]?.AsArray();
+
+                    if (experiencesArray != null && experiencesArray.Count > 0)
                     {
                         ModelState.AddModelError("", "Bác sĩ này đã có Experience với chuyên khoa này.");
                         return Page();
                     }
                 }
+
+                var jsonContent = JsonSerializer.Serialize(Experience, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("https://localhost:7002/odata/Experiences", content);
 
                 if (!response.IsSuccessStatusCode)

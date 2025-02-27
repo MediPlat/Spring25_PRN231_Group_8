@@ -22,7 +22,7 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid DoctorId { get; set; }
 
-        public Doctor Doctor { get; set; }
-        public Subscription Subscription { get; set; }
+        public virtual DoctorResponse Doctor { get; set; }
+        public virtual SubscriptionResponse Subscription { get; set; }
     }
 }

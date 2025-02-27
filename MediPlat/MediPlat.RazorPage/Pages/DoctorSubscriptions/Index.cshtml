@@ -8,7 +8,7 @@
 <p>
     <a asp-page="Create">Create New</a>
 </p>
-@if (Model.DoctorSubscription != null && Model.DoctorSubscription.Any())
+@if (Model.DoctorSubscription != null && Model.DoctorSubscriptionResponses.Any())
 {
     <table class="table">
         <thead>
@@ -24,7 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.DoctorSubscription)
+            @foreach (var item in Model.DoctorSubscriptionResponses)
             {
                 <tr>
                     <td>@Html.DisplayFor(modelItem => item.EnableSlot)</td>

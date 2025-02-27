@@ -7,6 +7,7 @@ using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
@@ -69,7 +70,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 }
 
                 var subscriptions = JsonSerializer.Deserialize<List<Subscription>>(subscriptionsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                ViewData["SubscriptionId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(subscriptions, "Id", "Name");
+                ViewData["SubscriptionId"] = new SelectList(subscriptions, "Id", "Name");
                 ViewData["Subscriptions"] = subscriptions;
             }
             catch (Exception ex)

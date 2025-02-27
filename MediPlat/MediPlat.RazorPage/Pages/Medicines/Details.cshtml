@@ -2,42 +2,67 @@
 @model MediPlat.RazorPage.Pages.Medicines.DetailsModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi tiết thuốc";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <h1 class="text-primary mb-4"><i class="bi bi-info-circle"></i> Chi tiết thuốc</h1>
 
-<div>
-    <h4>Medicine</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Medicine.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Medicine.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Medicine.DosageForm)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Medicine.DosageForm)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Medicine.Strength)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Medicine.Strength)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Medicine.SideEffects)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Medicine.SideEffects)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Medicine.Id">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
+    @if (Model.Medicine != null)
+    {
+        <div class="card shadow-lg border-0" x-data="{ show: false }" x-init="setTimeout(() => show = true, 100)" x-bind:class="{ 'fade-in': show }">
+            <div class="card-body">
+                <h4 class="mb-3 text-secondary"><i class="bi bi-capsule-pill"></i> Thông tin thuốc</h4>
+                <hr />
+                <table class="table table-bordered table-striped">
+                    <tbody>
+                        <tr>
+                            <th class="bg-light"><i class="bi bi-tag"></i> Tên thuốc</th>
+                            <td>@Model.Medicine.Name</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light"><i class="bi bi-capsule"></i> Dạng thuốc</th>
+                            <td>@Model.Medicine.DosageForm</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light"><i class="bi bi-balance-scale"></i> Hàm lượng</th>
+                            <td>@Model.Medicine.Strength</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light"><i class="bi bi-exclamation-triangle"></i> Tác dụng phụ</th>
+                            <td>@(string.IsNullOrEmpty(Model.Medicine.SideEffects) ? "Không có thông tin" : Model.Medicine.SideEffects)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <style>
+            .fade-in {
+                opacity: 1;
+                transform: translateY(0);
+                transition: all 0.5s ease-in-out;
+            }
+        </style>
+
+        <div class="d-flex gap-3 mt-4">
+            <a asp-page="./Edit" asp-route-id="@Model.Medicine.Id" class="btn btn-warning px-4">
+                <i class="bi bi-pencil-square"></i> Chỉnh sửa
+            </a>
+            <a asp-page="./Index" class="btn btn-secondary px-4">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger mt-3 text-center fade-in">
+            <i class="bi bi-exclamation-triangle"></i> 🚨 Không tìm thấy thông tin thuốc.
+        </div>
+        <div class="text-center">
+            <a asp-page="./Index" class="btn btn-secondary mt-2">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    }
 </div>

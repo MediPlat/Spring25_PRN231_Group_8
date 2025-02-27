@@ -12,7 +12,7 @@ namespace MediPlat.Model.ResponseObject
     {
         public Guid Id { get; set; }
 
-        public Guid SpecialtyId { get; set; }
+        public Guid? SpecialtyId { get; set; }
 
         public string Title { get; set; }
 
@@ -24,8 +24,8 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid? DoctorId { get; set; }
 
-        public Doctor? Doctor { get; set; }
+        public virtual DoctorResponse Doctor { get; set; }
 
-        public Specialty? Specialty { get; set; }
+        public virtual SpecialtyResponse Specialty { get; set; }
     }
 }

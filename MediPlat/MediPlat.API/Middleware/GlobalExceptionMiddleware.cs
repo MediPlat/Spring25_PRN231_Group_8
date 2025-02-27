@@ -37,6 +37,19 @@ namespace MediPlat.API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
+            if (context.Response.HasStarted)
+            {
+                // Nếu response đã gửi, không thực hiện ghi lỗi nữa
+                return;
+            }
+
+            context.Response.Clear();
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+
+            var errorResponse = new { message = "An unexpected error occurred.", details = ex.Message };
+            await context.Response.WriteAsJsonAsync(errorResponse);
+
             _logger.LogError($"Exception occurred for {context.Request.Method} {context.Request.Path}: {ex.Message}");
             context.Response.ContentType = "application/json";
 

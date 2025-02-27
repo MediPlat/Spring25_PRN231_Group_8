@@ -23,8 +23,8 @@ namespace MediPlat.Service.Services
 
         public IQueryable<AppointmentSlotMedicineResponse> GetAllAppointmentSlotMedicines()
         {
-            return _unitOfWork.AppointmentSlotMedicines.GetAll().AsQueryable()
-                .Select(m => _mapper.Map<AppointmentSlotMedicineResponse>(m));
+            return _unitOfWork.AppointmentSlotMedicines.GetAll().ToList()
+                .Select(m => _mapper.Map<AppointmentSlotMedicineResponse>(m)).AsQueryable();
         }
 
         public async Task<AppointmentSlotMedicineResponse?> GetAppointmentSlotMedicineByIdAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)

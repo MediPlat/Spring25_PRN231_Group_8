@@ -22,8 +22,8 @@ namespace MediPlat.Service.Services
         public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions()
         {
             return _unitOfWork.DoctorSubscriptions
-                .GetAll(ds => ds.Doctor, ds => ds.Subscription)
-                .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
+                .GetAll(ds => ds.Doctor, ds => ds.Subscription).ToList()
+                .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds)).AsQueryable();
         }
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
         {
@@ -38,21 +38,22 @@ namespace MediPlat.Service.Services
 
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
-
         public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
             var existingSubscription = await _unitOfWork.DoctorSubscriptions
-        .GetAsync(ds => ds.DoctorId == doctorId && ds.SubscriptionId == request.SubscriptionId);
+                .GetAsync(ds => ds.DoctorId == doctorId && ds.EndDate >= DateTime.Now);
 
             if (existingSubscription != null)
             {
-                throw new InvalidOperationException("Doctor already has an active subscription with this SubscriptionId.");
+                throw new InvalidOperationException("Doctor đã có một Subscription đang hoạt động. Không thể tạo mới.");
             }
+
             var subscription = await _unitOfWork.Subscriptions.GetAsync(s => s.Id == request.SubscriptionId);
             if (subscription == null)
             {
-                throw new KeyNotFoundException("Subscription not found.");
+                throw new KeyNotFoundException("Subscription không tồn tại.");
             }
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -78,6 +79,7 @@ namespace MediPlat.Service.Services
                 throw;
             }
         }
+
         public async Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId)
         {
             var existingSubscription = await _unitOfWork.DoctorSubscriptions.GetIdAsync(id);

@@ -28,7 +28,6 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorOrAdminPolicy")]
         public IQueryable<DoctorSubscriptionResponse> GetDoctorSubscriptions()
         {
-            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             return _doctorSubscriptionService.GetAllDoctorSubscriptions();
         }
 
@@ -37,7 +36,14 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> GetDoctorSubscriptionById(Guid id)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            return Ok(await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId));
+
+            var subscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+            if (subscription == null)
+            {
+                return NotFound($"Doctor subscription với ID {id} không tồn tại.");
+            }
+
+            return Ok(subscription);
         }
 
         [HttpPost]
@@ -52,10 +58,11 @@ namespace MediPlat.API.Controllers
             var doctorIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(doctorIdClaim) || !Guid.TryParse(doctorIdClaim, out var doctorId))
             {
-                return Unauthorized("Doctor ID is invalid.");
+                return Unauthorized("Doctor ID không hợp lệ.");
             }
+            var newSubscription = await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId);
+            return Ok(newSubscription);
 
-            return Ok(await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId));
         }
 
         [HttpPut("{id}")]

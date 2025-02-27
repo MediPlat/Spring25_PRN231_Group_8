@@ -17,6 +17,7 @@ using MediPlat.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using MediPlat.Model.ResponseObject;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -136,12 +137,17 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
     options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
-    options.AddPolicy("patientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
     options.AddPolicy("DoctorOrAdminPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin")))));
+    options.AddPolicy("DoctorOrpatientPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Patient")))));
     options.AddPolicy("DoctorOrAdminorPatientPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
@@ -158,6 +164,11 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader()
                .AllowCredentials();
     });
+});
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 });
 
 // Build the app
@@ -186,12 +197,15 @@ static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    builder.EntitySet<Patient>("Patients");
-    builder.EntitySet<Doctor>("Doctors");
-    builder.EntitySet<AppointmentSlot>("AppointmentSlots");
-    builder.EntitySet<Review>("Reviews");
-    builder.EntitySet<Transaction>("Transactions");
-
+    builder.EntitySet<DoctorResponse>("Doctors");
+    builder.EntitySet<AppointmentSlotResponse>("AppointmentSlots");
+    builder.EntitySet<ReviewResponse>("Reviews");
+    builder.EntitySet<TransactionResponse>("Transactions");
+    var medicineType = builder.AddEntityType(typeof(MedicineResponse));
+    builder.AddEntitySet("Medicines", medicineType);
+    builder.EntitySet<AppointmentSlotMedicineResponse>("AppointmentSlotMedicines");
+    builder.EntitySet<ExperienceResponse>("Experiences");
+    builder.EntitySet<DoctorSubscriptionResponse>("DoctorSubscriptions");
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()

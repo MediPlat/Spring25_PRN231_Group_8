@@ -7,7 +7,7 @@
 
 <h1>Edit</h1>
 
-<h4>Doctor Subscription</h4>
+<h4>DoctorSubscription</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -32,7 +32,7 @@
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
-        </form>
+</form>
     </div>
 </div>
 
@@ -42,21 +42,21 @@
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const additionalSlot = document.getElementById("additionalSlot");
-            const currentSlot = parseInt(document.getElementById("CurrentEnableSlot").value);
-            const errorText = document.getElementById("slotError");
+                          document.addEventListener("DOMContentLoaded", function () {
+                              const additionalSlot = document.getElementById("additionalSlot");
+                              const currentSlot = parseInt(document.getElementById("CurrentEnableSlot").value);
+                              const errorText = document.getElementById("slotError");
 
-            additionalSlot.addEventListener("input", function () {
-                const newSlot = parseInt(additionalSlot.value) || 0;
-                if (newSlot + currentSlot > 1000) {
-                    errorText.textContent = "Total EnableSlot cannot exceed 1000.";
-                    additionalSlot.setCustomValidity("Total EnableSlot cannot exceed 1000.");
-                } else {
-                    errorText.textContent = "";
-                    additionalSlot.setCustomValidity("");
-                }
-            });
-        });
+                              additionalSlot.addEventListener("input", function () {
+                                  const newSlot = parseInt(additionalSlot.value) || 0;
+                                  if (newSlot + currentSlot > 1000) {
+                                      errorText.textContent = "Total EnableSlot cannot exceed 1000.";
+                                      additionalSlot.setCustomValidity("Total EnableSlot cannot exceed 1000.");
+                                  } else {
+                                      errorText.textContent = "";
+                                      additionalSlot.setCustomValidity("");
+                                  }
+                              });
+                          });
     </script>
 }

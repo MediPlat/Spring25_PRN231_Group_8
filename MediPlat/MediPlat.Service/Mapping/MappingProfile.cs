@@ -11,7 +11,9 @@ namespace MediPlat.Service.Mapping
         {
             CreateMap<DoctorSubscriptionRequest, DoctorSubscription>();
 
-            CreateMap<DoctorSubscription, DoctorSubscriptionResponse>();
+            CreateMap<DoctorSubscription, DoctorSubscriptionResponse>()
+            .ForMember(dest => dest.Subscription, opt => opt.MapFrom(src => src.Subscription))
+            .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor));
 
             CreateMap<SubscriptionRequest, Subscription>();
 

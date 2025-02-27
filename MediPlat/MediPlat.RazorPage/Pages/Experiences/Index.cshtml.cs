@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MediPlat.Model.Model;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -28,50 +29,70 @@ namespace MediPlat.RazorPage.Pages.Experiences
             _logger = logger;
         }
 
-        public IList<Experience> Experience { get; set; } = new List<Experience>();
+        public IList<ExperienceResponse> Experiences { get; set; } = new List<ExperienceResponse>();
         public string DoctorFullName { get; set; } = "Chưa có thông tin bác sĩ";
 
-        public async Task<IActionResult> OnGetAsync()
+        public int PageSize { get; set; } = 5;
+        public int CurrentPage { get; set; } = 1;
+        public int TotalItems { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(int page = 1)
         {
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
             if (token.StartsWith("Bearer "))
             {
                 token = token.Substring("Bearer ".Length);
             }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/Experiences?$expand=Doctor,Specialty"))
+                string apiUrl = $"https://localhost:7002/odata/Experiences?$top={PageSize}&$skip={(page - 1) * PageSize}&$expand=Doctor,Specialty";
+                HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    if (response.IsSuccessStatusCode)
+                    var apiResponse = await response.Content.ReadAsStringAsync();
+                    var experienceData = JsonSerializer.Deserialize<JsonElement>(apiResponse);
+
+                    if (experienceData.TryGetProperty("value", out JsonElement experiencesJson))
                     {
-                        var apiResponse = await response.Content.ReadAsStringAsync();
-                        Experience = JsonSerializer.Deserialize<List<Experience>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Experience>();
+                        // Xử lý từng phần tử để đảm bảo ánh xạ đúng dữ liệu
+                        var experiencesList = new List<ExperienceResponse>();
+
+                        foreach (var element in experiencesJson.EnumerateArray())
+                        {
+                            var experience = JsonSerializer.Deserialize<ExperienceResponse>(element.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                            if (element.TryGetProperty("Doctor", out JsonElement doctorJson) && doctorJson.ValueKind != JsonValueKind.Null)
+                            {
+                                experience.Doctor = JsonSerializer.Deserialize<DoctorResponse>(doctorJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            }
+
+                            if (element.TryGetProperty("Specialty", out JsonElement specialtyJson) && specialtyJson.ValueKind != JsonValueKind.Null)
+                            {
+                                experience.Specialty = JsonSerializer.Deserialize<SpecialtyResponse>(specialtyJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            }
+
+                            experiencesList.Add(experience);
+                        }
+
+                        Experiences = experiencesList;
                     }
                     else
                     {
-                        _logger.LogError("Lỗi khi tải danh sách Experience: " + response.ReasonPhrase);
+                        Experiences = new List<ExperienceResponse>();
                     }
+
+                    TotalItems = Experiences.Count;
                 }
-
-                DoctorFullName = Experience.FirstOrDefault()?.Doctor?.FullName ?? "Chưa có thông tin bác sĩ";
-
-                if (DoctorFullName == "Chưa có thông tin bác sĩ")
+                else
                 {
-                    var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
-                    if (doctorResponse.IsSuccessStatusCode)
-                    {
-                        var doctorJson = await doctorResponse.Content.ReadAsStringAsync();
-                        var doctor = JsonSerializer.Deserialize<Doctor>(doctorJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        DoctorFullName = doctor?.FullName ?? "Chưa có thông tin bác sĩ";
-                    }
+                    _logger.LogError($"Lỗi khi tải danh sách Experience: {response.ReasonPhrase}");
                 }
             }
             catch (Exception ex)
@@ -79,6 +100,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 _logger.LogError($"Lỗi khi tải dữ liệu Experience: {ex.Message}");
             }
 
+            CurrentPage = page;
             ViewData["Title"] = $"Danh sách Experience của {DoctorFullName}";
             return Page();
         }

@@ -19,7 +19,15 @@ public class MedicineService : IMedicineService
     {
         return _unitOfWork.Medicines.GetAll()
             .Where(m => m.Status == "Active")
-            .Select(m => _mapper.Map<MedicineResponse>(m));
+            .Select(m => new MedicineResponse
+            {
+                Id = m.Id,
+                Name = m.Name,
+                DosageForm = m.DosageForm,
+                Strength = m.Strength,
+                SideEffects = m.SideEffects,
+                Status = m.Status
+            }).AsQueryable();
     }
 
     public async Task<MedicineResponse?> GetMedicineByIdAsync(Guid id)
@@ -47,6 +55,7 @@ public class MedicineService : IMedicineService
 
         return _mapper.Map<MedicineResponse>(entity);
     }
+
     public async Task<MedicineResponse> UpdateMedicineAsync(Guid id, MedicineRequest request)
     {
         var entity = await _unitOfWork.Medicines.GetAsync(m => m.Id == id);
@@ -71,21 +80,13 @@ public class MedicineService : IMedicineService
         entity.Strength = request.Strength;
         entity.SideEffects = request.SideEffects;
 
-        await _unitOfWork.Medicines.UpdatePartialAsync(entity,
-            e => e.Name, e => e.DosageForm, e => e.Strength, e => e.SideEffects);
-
-        return _mapper.Map<MedicineResponse>(entity);
-    }
-    public async Task<MedicineResponse> DeactivateMedicineAsync(Guid id)
-    {
-        var entity = await _unitOfWork.Medicines.GetAsync(m => m.Id == id);
-        if (entity == null)
+        if (!string.IsNullOrEmpty(request.Status))
         {
-            throw new KeyNotFoundException("Không tìm thấy thuốc.");
+            entity.Status = request.Status;
         }
 
-        entity.Status = "Inactive";
-        await _unitOfWork.Medicines.UpdatePartialAsync(entity, e => e.Status);
+        await _unitOfWork.Medicines.UpdatePartialAsync(entity,
+            e => e.Name, e => e.DosageForm, e => e.Strength, e => e.SideEffects, e => e.Status);
 
         return _mapper.Map<MedicineResponse>(entity);
     }

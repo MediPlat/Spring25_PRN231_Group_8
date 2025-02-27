@@ -22,7 +22,7 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         public IQueryable<ExperienceResponse> GetExperiences()
         {
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -46,16 +46,11 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateExperience([FromBody] ExperienceRequest request)
         {
-            if (request.DoctorId != null && request.DoctorId != Guid.Empty)
-            {
-                return BadRequest("DoctorId should not be provided. It is assigned automatically.");
-            }
-
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             request.DoctorId = doctorId;
-
             var response = await _experienceService.AddExperienceAsync(request);
             return CreatedAtAction(nameof(GetExperience), new { id = response.Id }, response);
+
         }
 
         [HttpPut("{id}")]

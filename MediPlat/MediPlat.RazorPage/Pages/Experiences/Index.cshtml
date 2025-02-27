@@ -8,42 +8,65 @@
 <h1>@ViewData["Title"]</h1>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create" class="btn btn-primary">➕ Thêm mới</a>
 </p>
 
-@if (Model.Experience != null && Model.Experience.Any())
+@if (Model.Experiences.Any())
 {
-    <table class="table">
-        <thead>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
             <tr>
-                <th>@Html.DisplayNameFor(model => model.Experience[0].Title)</th>
-                <th>@Html.DisplayNameFor(model => model.Experience[0].Description)</th>
-                <th>@Html.DisplayNameFor(model => model.Experience[0].Certificate)</th>
-                <th>@Html.DisplayNameFor(model => model.Experience[0].Doctor)</th>
-                <th>@Html.DisplayNameFor(model => model.Experience[0].Specialty)</th>
-                <th></th>
+                <th>Tiêu đề</th>
+                <th>Mô tả</th>
+                <th>Chứng chỉ</th>
+                <th>Bác sĩ</th>
+                <th>Chuyên khoa</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Experience)
+            @foreach (var item in Model.Experiences)
             {
                 <tr>
                     <td>@Html.DisplayFor(modelItem => item.Title)</td>
                     <td>@Html.DisplayFor(modelItem => item.Description)</td>
                     <td>@Html.DisplayFor(modelItem => item.Certificate)</td>
-                    <td>@(item.Doctor != null ? item.Doctor.FullName : "N/A")</td>
-                    <td>@(item.Specialty != null ? item.Specialty.Name : "N/A")</td>
+                    <td>@(item.Doctor != null ? item.Doctor.FullName : "Không có thông tin")</td>
+                    <td>@(item.Specialty != null ? item.Specialty.Name : "Không có chuyên khoa")</td>
                     <td>
-                        <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                        <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">✏️ Sửa</a>
+                        <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">📄 Chi tiết</a>
+                        <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">🗑️ Xóa</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+
+    <!-- Điều hướng phân trang -->
+    <nav aria-label="Pagination">
+        <ul class="pagination">
+            @if (Model.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage - 1)">❮ Trước</a>
+                </li>
+            }
+
+            <li class="page-item active">
+                <span class="page-link">Trang @Model.CurrentPage</span>
+            </li>
+
+            @if (Model.CurrentPage * Model.PageSize < Model.TotalItems)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage + 1)">Tiếp ❯</a>
+                </li>
+            }
+        </ul>
+    </nav>
 }
 else
 {
-    <p>No Experiences available.</p>
+    <p class="alert alert-warning">🚨 Không có Experience nào.</p>
 }
