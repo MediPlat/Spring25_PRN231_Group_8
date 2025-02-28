@@ -1,11 +1,14 @@
 ﻿using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
+using MediPlat.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace MediPlat.API.Controllers
 {
@@ -14,10 +17,11 @@ namespace MediPlat.API.Controllers
     public class ExperienceController : ODataController
     {
         private readonly IExperienceService _experienceService;
-
-        public ExperienceController(IExperienceService experienceService)
+        private readonly ILogger<ExperienceService> _logger;
+        public ExperienceController(IExperienceService experienceService, ILogger<ExperienceService> logger)
         {
             _experienceService = experienceService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -32,25 +36,38 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [EnableQuery]
         [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
-        public async Task<IActionResult> GetExperience(Guid id)
+        public IActionResult GetExperience(Guid id)
         {
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             bool isPatient = userRole == "Patient";
+            var query = _experienceService.GetExperienceByIdQueryable(id, isPatient);
 
-            var experience = await _experienceService.GetExperienceByIdAsync(id, isPatient);
-            return experience != null ? Ok(experience) : NotFound($"Experience với ID {id} không tồn tại.");
+            return Ok(query);
         }
 
         [HttpPost]
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateExperience([FromBody] ExperienceRequest request)
         {
-            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            request.DoctorId = doctorId;
-            var response = await _experienceService.AddExperienceAsync(request);
-            return CreatedAtAction(nameof(GetExperience), new { id = response.Id }, response);
-
+            try
+            {
+                var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                request.DoctorId = doctorId;
+                var response = await _experienceService.AddExperienceAsync(request);
+                return CreatedAtAction(nameof(GetExperience), new { id = response.Id }, response);
+            }
+            catch (ApplicationException ex)
+            {
+                _logger.LogWarning($"Lỗi khi tạo Experience: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi hệ thống: {ex}");
+                return StatusCode(500, "Có lỗi xảy ra khi tạo Experience. Vui lòng thử lại.");
+            }
         }
 
         [HttpPut("{id}")]
@@ -61,7 +78,9 @@ namespace MediPlat.API.Controllers
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             var isAdmin = userRole == "Admin";
 
-            var existingExperience = await _experienceService.GetExperienceByIdAsync(id, isPatient);
+            var existingExperience = await _experienceService.GetExperienceByIdQueryable(id, isPatient)
+                .FirstOrDefaultAsync();
+
             if (existingExperience == null)
             {
                 return NotFound("Experience không tồn tại.");
@@ -92,7 +111,9 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> DeleteExperience(Guid id, bool inPatient)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var existingExperience = await _experienceService.GetExperienceByIdAsync(id, inPatient);
+
+            var existingExperience = await _experienceService.GetExperienceByIdQueryable(id, inPatient)
+                .FirstOrDefaultAsync();
 
             if (existingExperience == null || existingExperience.DoctorId != doctorId)
             {

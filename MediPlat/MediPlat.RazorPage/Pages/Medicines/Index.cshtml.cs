@@ -25,19 +25,14 @@ namespace MediPlat.RazorPage.Pages.Medicines
         public IList<MedicineResponse> Medicines { get; set; } = new List<MedicineResponse>();
         public int PageSize { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
-        public int TotalItems { get; set; }  // Lấy từ danh sách thuốc trả về
+        public int TotalItems { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int page = 1)
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
-            }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
             }
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

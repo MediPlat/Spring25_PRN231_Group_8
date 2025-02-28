@@ -1,12 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MediPlat.Service.Services
 {
@@ -14,15 +15,17 @@ namespace MediPlat.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<ExperienceService> _logger;
 
-        public ExperienceService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ExperienceService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExperienceService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
         public IQueryable<ExperienceResponse> GetAllExperiences(bool isPatient)
         {
-            var experiences = _unitOfWork.Experiences.GetAll(e => e.Doctor, e => e.Specialty);
+            var experiences = _unitOfWork.Experiences.GetAll(e => e.Doctor, e => e.Specialty).Where(e => e.Doctor != null); ;
 
             if (isPatient)
             {
@@ -53,22 +56,34 @@ namespace MediPlat.Service.Services
                 .AsQueryable();
         }
 
-        public async Task<ExperienceResponse> GetExperienceByIdAsync(Guid id, bool isPatient)
+        public IQueryable<ExperienceResponse> GetExperienceByIdQueryable(Guid id, bool isPatient)
         {
-            var experience = await _unitOfWork.Experiences.GetAsync(
-                e => e.Id == id,
-                e => e.Doctor, e => e.Specialty
-            );
-
-            if (experience == null)
-                throw new KeyNotFoundException("Experience không tồn tại.");
-
-            if (isPatient && experience.Status != "Active")
+            var query = _unitOfWork.Experiences.GetAll()
+                .Where(e => e.Id == id);
+            if (isPatient)
             {
-                throw new UnauthorizedAccessException("Bạn không có quyền xem Experience này.");
+                query = query.Where(e => e.Status == "Active");
             }
-
-            return _mapper.Map<ExperienceResponse>(experience);
+            return query.Select(e => new ExperienceResponse
+            {
+                Id = e.Id,
+                Title = e.Title,
+                Description = e.Description,
+                Certificate = e.Certificate,
+                Status = e.Status,
+                DoctorId = e.DoctorId,
+                SpecialtyId = e.SpecialtyId,
+                Doctor = e.Doctor != null ? new DoctorResponse
+                {
+                    Id = e.Doctor.Id,
+                    FullName = e.Doctor.FullName
+                } : null,
+                Specialty = e.Specialty != null ? new SpecialtyResponse
+                {
+                    Id = e.Specialty.Id,
+                    Name = e.Specialty.Name
+                } : null
+            });
         }
 
         public async Task<ExperienceResponse> AddExperienceAsync(ExperienceRequest request)
@@ -78,7 +93,8 @@ namespace MediPlat.Service.Services
 
             if (existingExperience != null)
             {
-                throw new InvalidOperationException("Bác sĩ đã có Experience với chuyên khoa này.");
+                _logger.LogWarning($"Bác sĩ {request.DoctorId} đã có Experience với chuyên khoa {request.SpecialtyId}.");
+                throw new ApplicationException("Bác sĩ đã có Experience với chuyên khoa này.");
             }
 
             var experience = _mapper.Map<Experience>(request);
@@ -104,26 +120,37 @@ namespace MediPlat.Service.Services
         }
         public async Task<ExperienceResponse> UpdateExperienceWithoutStatusAsync(Guid id, ExperienceRequest request, Guid doctorId)
         {
-            var existingExperience = await _unitOfWork.Experiences.GetAsync(
-                e => e.Id == id && e.DoctorId == doctorId && e.SpecialtyId == request.SpecialtyId,
-                e => e.Doctor, e => e.Specialty
-            );
+            var existingExperience = await _unitOfWork.Experiences
+                               .GetAll(e => e.Doctor, e => e.Specialty)
+                               .FirstOrDefaultAsync(e => e.Id == id && e.DoctorId == doctorId && e.SpecialtyId == request.SpecialtyId);
 
             if (existingExperience == null)
+            {
                 throw new KeyNotFoundException("Experience không tồn tại hoặc không thuộc về bác sĩ này.");
-
+            }
             _mapper.Map(request, existingExperience);
-            request.Status = existingExperience.Status;
+            if (request.DoctorId.HasValue)
+            {
+                existingExperience.DoctorId = request.DoctorId;
+            }
 
+            existingExperience.Status ??= "Active";
             await _unitOfWork.Experiences.UpdatePartialAsync(
                 existingExperience,
                 e => e.Title,
                 e => e.Description,
                 e => e.Certificate,
-                e => e.SpecialtyId
+                e => e.SpecialtyId,
+                e => e.DoctorId,
+                e => e.Status
             );
 
-            return _mapper.Map<ExperienceResponse>(existingExperience);
+            var response = _mapper.Map<ExperienceResponse>(existingExperience);
+
+            if (response.Doctor != null) response.Doctor.Experiences = null;
+            if (response.Specialty != null) response.Specialty.Experiences = null;
+
+            return response;
         }
 
         public async Task DeleteExperienceAsync(Guid id)

@@ -252,11 +252,3 @@ VALUES
     
     -- Cấp cứu - Hồi sức
     (NEWID(), N'Cấp cứu - Hồi sức', N'Cấp cứu bệnh nhân nguy kịch.');
-
-	INSERT INTO Experience (ID, SpecialtyID, Title, Description, Certificate, DoctorID, Status)
-VALUES 
-    (NEWID(), '7B70F254-DC7F-48F2-804D-30EE3C56E989', N'Chuyên gia Da liễu', N'Chuyên điều trị các bệnh ngoài da, dị ứng, mụn trứng cá.', N'Chứng nhận Da liễu cấp bởi Bộ Y Tế', 'B9593D05-DB30-4041-819C-46D3A93E4E56', N'Active'),
-
-    (NEWID(), 'AC24AE47-3247-4307-AB32-31751F7A2357', N'Chuyên gia Thận - Tiết niệu', N'Điều trị bệnh lý về thận, sỏi thận, viêm đường tiết niệu.', N'Chứng nhận chuyên khoa Thận - Tiết niệu', 'B9593D05-DB30-4041-819C-46D3A93E4E56', N'Active'),
-
-    (NEWID(), '14AAD688-F03F-42F9-AC35-3EEE82AFBB68', N'Chuyên gia Phục hồi chức năng', N'Thực hiện điều trị vật lý trị liệu cho bệnh nhân sau tai nạn, phẫu thuật.', N'Chứng nhận Phục hồi chức năng từ Hiệp hội Y học phục hồi Việt Nam', 'B9593D05-DB30-4041-819C-46D3A93E4E56', N'Active');

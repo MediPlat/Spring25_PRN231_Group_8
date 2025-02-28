@@ -25,10 +25,9 @@ public class SpecialtyController : ODataController
     [HttpGet]
     [EnableQuery]
     [Authorize(Policy = "DoctorOrAdminPolicy")]
-    public IActionResult GetAllSpecialties()
+    public IQueryable<SpecialtyResponse> GetSpecialties()
     {
-         var result = _specialtyService.GetAllSpecialties();
-         return Ok(result);
+        return _specialtyService.GetAllSpecialties();
     }
 
 

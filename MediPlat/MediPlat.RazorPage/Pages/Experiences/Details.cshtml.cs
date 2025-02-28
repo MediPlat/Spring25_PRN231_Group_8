@@ -1,14 +1,11 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
@@ -25,9 +22,12 @@ namespace MediPlat.RazorPage.Pages.Experiences
             _httpClient = httpClient;
             _logger = logger;
         }
-
-        public Experience Experience { get; set; } = default!;
-
+        public class ODataResponse<T>
+        {
+            public string? Context { get; set; }
+            public List<T> Value { get; set; } = new List<T>();
+        }
+        public ExperienceResponse Experience { get; set; } = default!;
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
@@ -35,34 +35,34 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 return NotFound("Experience ID is required.");
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
             try
             {
                 var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     return Forbid();
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                Experience = JsonSerializer.Deserialize<Experience>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                // Deserialize thành một đối tượng tạm thời để lấy mảng "value"
+                var odataResponse = JsonSerializer.Deserialize<ODataResponse<ExperienceResponse>>(jsonResponse,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                if (Experience == null)
-                {
-                    return NotFound("Experience không tồn tại.");
-                }
+                // Lấy đối tượng đầu tiên từ mảng "value"
+                Experience = odataResponse?.Value?.FirstOrDefault() ?? new ExperienceResponse();
+
+                // Không cần gán giá trị mặc định nữa, vì dữ liệu đã được deserialize đúng
+                // Experience.Doctor ??= new DoctorResponse { FullName = "Không có thông tin" };
+                // Experience.Specialty ??= new SpecialtyResponse { Name = "Không có chuyên khoa" };
+
+                _logger.LogInformation($"Experience: {JsonSerializer.Serialize(Experience, new JsonSerializerOptions { WriteIndented = true })}");
             }
             catch (Exception ex)
             {

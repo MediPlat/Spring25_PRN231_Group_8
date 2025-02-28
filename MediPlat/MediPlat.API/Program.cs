@@ -13,10 +13,7 @@ using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
-using MediPlat.Service;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using MediPlat.Model.ResponseObject;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +46,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
     })
     .AddOData(options =>
     {
@@ -170,7 +168,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 });
-
+builder.Services.AddLogging();
 // Build the app
 var app = builder.Build();
 
@@ -190,22 +188,36 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
-app.UseMiddleware<GlobalExceptionMiddleware>();
 app.Run();
 
 static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    builder.EntitySet<DoctorResponse>("Doctors");
     builder.EntitySet<AppointmentSlotResponse>("AppointmentSlots");
     builder.EntitySet<ReviewResponse>("Reviews");
     builder.EntitySet<TransactionResponse>("Transactions");
     var medicineType = builder.AddEntityType(typeof(MedicineResponse));
     builder.AddEntitySet("Medicines", medicineType);
     builder.EntitySet<AppointmentSlotMedicineResponse>("AppointmentSlotMedicines");
-    builder.EntitySet<ExperienceResponse>("Experiences");
     builder.EntitySet<DoctorSubscriptionResponse>("DoctorSubscriptions");
+    var experience = builder.EntitySet<ExperienceResponse>("Experiences");
+    var doctor = builder.EntitySet<DoctorResponse>("Doctors");
+    var specialty = builder.EntitySet<SpecialtyResponse>("Specialties");
+    
+    var experienceType = builder.EntityType<ExperienceResponse>();
+    experienceType.HasKey(e => e.Id);
+    experienceType.Property(e => e.DoctorId);
+    experienceType.Property(e => e.SpecialtyId);
+    experienceType.HasRequired(e => e.Doctor);
+    experienceType.HasRequired(e => e.Specialty);
+
+    var doctorType = builder.EntityType<DoctorResponse>();
+    doctorType.HasKey(d => d.Id);
+
+    var specialtyType = builder.EntityType<SpecialtyResponse>();
+    specialtyType.HasKey(s => s.Id);
+
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()

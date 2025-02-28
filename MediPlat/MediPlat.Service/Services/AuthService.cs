@@ -26,85 +26,45 @@ namespace MediPlat.Service.Services
         public AuthResult Login(LoginModel loginModel)
         {
             AuthResult result = new AuthResult();
-            var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
+            string userRole = string.Empty;
 
-            if (patient != null)
+            var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
+            if (patient != null && patient.Password == loginModel.Password)
             {
-                Console.WriteLine($"Patient found: {patient.Email}");
-                if (patient.Password == loginModel.Password)
-                {
-                    Console.WriteLine("Patient password is correct.");
-                    var token = GenerateJwtToken(patient.Id, "Patient");
-                    result = new AuthResult
-                    {
-                        Token = "Bearer " + token,
-                        ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
-                    };
-                    return result;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid patient password.");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Patient not found.");
+                userRole = "Patient";
             }
 
             var doctor = _unitOfWork.Doctors.Get(d => d.Email == loginModel.Email);
-
-            if (doctor != null)
+            if (doctor != null && doctor.Password == loginModel.Password)
             {
-                Console.WriteLine($"Doctor found: {doctor.Email}");
-                if (doctor.Password == loginModel.Password)
-                {
-                    Console.WriteLine("Doctor password is correct.");
-                    var token = GenerateJwtToken(doctor.Id, "Doctor");
-                    result = new AuthResult
-                    {
-                        Token = "Bearer " + token,
-                        ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
-                    };
-                    return result;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid doctor password.");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Doctor not found.");
+                userRole = "Doctor";
             }
 
             var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
-    .FirstOrDefault(a => a.Email == loginModel.Email);
+                        .FirstOrDefault(a => a.Email == loginModel.Email);
 
-            if (admin != null)
+            if (admin != null && admin.Password == loginModel.Password)
             {
-                Console.WriteLine($"Admin found: {admin.Email}");
-                if (admin.Password == loginModel.Password)
-                {
-                    Console.WriteLine("Admin password is correct.");
-                    var token = GenerateJwtToken(Guid.NewGuid(), "Admin");
-                    result = new AuthResult
-                    {
-                        Token = "Bearer " + token,
-                        ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
-                    };
-                    return result;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid admin password.");
-                }
+                userRole = "Admin";
             }
 
+            if (string.IsNullOrEmpty(userRole))
+            {
+                return result;
+            }
+
+            var token = GenerateJwtToken(Guid.NewGuid(), userRole);
+
+            result = new AuthResult
+            {
+                Token = "Bearer " + token,
+                ExpiresAt = DateTime.Now.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"])),
+                Role = userRole
+            };
 
             return result;
-
         }
+
 
         private string GenerateJwtToken(Guid userId, string role)
         {

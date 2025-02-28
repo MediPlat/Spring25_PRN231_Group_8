@@ -1,14 +1,10 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
-using MediPlat.Model.Model;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
+using static MediPlat.RazorPage.Pages.Experiences.DetailsModel;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
@@ -27,8 +23,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
         }
 
         [BindProperty]
-        public Experience Experience { get; set; } = default!;
-
+        public ExperienceResponse Experience { get; set; } = default!;
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
@@ -36,34 +31,34 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 return NotFound("Experience ID is required.");
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty");
+                _logger.LogInformation($"Fetching Experience with ID: {id}");
+                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Specialty,Doctor");
+                _logger.LogInformation($"API Request URL: https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty");
                 if (!response.IsSuccessStatusCode)
                 {
                     return NotFound("Experience không tồn tại.");
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                Experience = JsonSerializer.Deserialize<Experience>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                if (Experience == null)
+                _logger.LogInformation($"API Response: {jsonResponse}");
+                var experienceResponse = JsonSerializer.Deserialize<ODataResponse<ExperienceResponse>>
+                    (jsonResponse,new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Value?.FirstOrDefault();
+                _logger.LogInformation($"Experience sau khi Deserialize: {JsonSerializer.Serialize(experienceResponse)}");
+                if (experienceResponse == null)
                 {
                     return NotFound("Experience không tồn tại.");
                 }
+
+                Experience = experienceResponse;
             }
             catch (Exception ex)
             {
@@ -81,17 +76,11 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 return NotFound("Experience ID is required.");
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try

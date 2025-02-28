@@ -36,16 +36,11 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return NotFound("Subscription ID is required.");
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try

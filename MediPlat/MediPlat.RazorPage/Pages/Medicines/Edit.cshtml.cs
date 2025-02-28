@@ -1,16 +1,11 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace MediPlat.RazorPage.Pages.Medicines
 {
@@ -38,12 +33,11 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 return NotFound();
             }
 
-            var token = GetBearerToken();
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
@@ -85,12 +79,11 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 return Page();
             }
 
-            var token = GetBearerToken();
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
@@ -115,12 +108,6 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 ModelState.AddModelError("", "Lỗi khi cập nhật thuốc. Vui lòng thử lại.");
                 return Page();
             }
-        }
-
-        private string GetBearerToken()
-        {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
-            return string.IsNullOrEmpty(token) || !token.StartsWith("Bearer ") ? token : token.Substring("Bearer ".Length);
         }
     }
 }

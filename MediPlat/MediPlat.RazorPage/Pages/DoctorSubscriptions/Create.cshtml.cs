@@ -27,15 +27,10 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
-
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
-            }
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
             }
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -91,17 +86,11 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return Page();
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try

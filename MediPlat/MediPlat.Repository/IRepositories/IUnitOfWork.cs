@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
 using MediPlat.Model.Model;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MediPlat.Repository.IRepositories
 {

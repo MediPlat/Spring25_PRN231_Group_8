@@ -46,13 +46,34 @@ public class LoginModel : PageModel
                     SameSite = SameSiteMode.Strict,
                     Expires = authResult.ExpiresAt
                 });
-                return RedirectToPage("/Experiences/Index");
+
+                var token = authResult.Token;
+                if (token.StartsWith("Bearer "))
+                {
+                    token = token.Substring("Bearer ".Length);
+                }
+
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+                var userRole = roleClaim?.Value;
+
+                Console.WriteLine($"User logged in with role: {userRole}");
+
+                return userRole switch
+                {
+                    "Doctor" => RedirectToPage("/Experiences/Index"),
+                    "Admin" => RedirectToPage("/Medicines/Index"),
+                    "Patient" => RedirectToPage("/PatientPages/Index"),
+                    _ => RedirectToPage("/Index")
+                };
             }
         }
 
         ErrorMessage = "Invalid login credentials";
         return Page();
     }
+
 }
 
 public class LoginRequest

@@ -25,18 +25,14 @@ namespace MediPlat.RazorPage.Pages.Medicines
         }
 
         [BindProperty]
-        public Medicine Medicine { get; set; } = new Medicine { Status = "Active" };
+        public MedicineRequest Medicine { get; set; } = new MedicineRequest { Status = "Active" };
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
-            }
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
             }
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return Page();
@@ -48,16 +44,11 @@ namespace MediPlat.RazorPage.Pages.Medicines
             {
                 return Page();
             }
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try

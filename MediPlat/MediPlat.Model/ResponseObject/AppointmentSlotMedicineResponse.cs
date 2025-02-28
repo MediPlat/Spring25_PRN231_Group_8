@@ -12,7 +12,7 @@ namespace MediPlat.Model.ResponseObject
         public string Dosage { get; set; } = null!;
         public string? Instructions { get; set; }
         public short Quantity { get; set; }
-        public virtual MedicineResponse? Medicine { get; set; } = null!;
-        public virtual AppointmentSlotResponse? AppointmentSlot { get; set; } = null!;
+        public MedicineResponse? Medicine { get; set; } = null!;
+        public AppointmentSlotResponse? AppointmentSlot { get; set; } = null!;
     }
 }

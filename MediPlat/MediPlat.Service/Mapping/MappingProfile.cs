@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 
@@ -12,19 +11,29 @@ namespace MediPlat.Service.Mapping
             CreateMap<DoctorSubscriptionRequest, DoctorSubscription>();
 
             CreateMap<DoctorSubscription, DoctorSubscriptionResponse>()
-            .ForMember(dest => dest.Subscription, opt => opt.MapFrom(src => src.Subscription))
-            .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor));
+    .ForMember(dest => dest.Subscription, opt => opt.MapFrom(src => src.Subscription))
+    .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor));
 
             CreateMap<SubscriptionRequest, Subscription>();
 
             CreateMap<Subscription, SubscriptionResponse>();
 
-            CreateMap<ExperienceRequest, Experience>();
-
             CreateMap<ExperienceRequest, Experience>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+    .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.DoctorId));
 
-            CreateMap<Experience, ExperienceResponse>();
+            CreateMap<Experience, ExperienceResponse>()
+    .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor))
+    .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty));
+
+            CreateMap<DoctorRequest, Doctor>();
+
+            CreateMap<Doctor, DoctorResponse>()
+    .ForMember(dest => dest.Experiences, opt => opt.Ignore());
+
+            CreateMap<SpecialtyRequest, Specialty>();
+
+            CreateMap<Specialty, SpecialtyResponse>()
+    .ForMember(dest => dest.Experiences, opt => opt.Ignore());
 
             CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>();
 
@@ -47,10 +56,6 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<AppointmentSlot, AppointmentSlotResponse>();
 
-            CreateMap<DoctorRequest, Doctor>();
-
-            CreateMap<Doctor, DoctorResponse>();
-
             CreateMap<Model.Model.Service, ServiceResponse>();
 
             CreateMap<ServiceRequest, Model.Model.Service>();
@@ -59,9 +64,7 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<Review, ReviewResponse>();
 
-            CreateMap<SpecialtyRequest, Specialty>();
-
-            CreateMap<Specialty, SpecialtyResponse>();
+            
         }
     }
 }

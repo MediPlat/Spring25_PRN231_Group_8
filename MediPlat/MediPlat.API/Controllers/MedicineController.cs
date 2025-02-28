@@ -38,7 +38,6 @@ public class MedicineController : ODataController
     [Authorize(Policy = "AdminPolicy")]
     public async Task<IActionResult> Create([FromBody] MedicineRequest request)
     {
-        Console.WriteLine($"API nhận được request: {request.Name}");
         var result = await _medicineService.AddMedicineAsync(request);
         return Created($"odata/Medicines/{result.Id}", new { result.Id });
     }

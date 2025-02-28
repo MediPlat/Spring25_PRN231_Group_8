@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MediPlat.Model.Model;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace MediPlat.RazorPage.Pages.Medicines
             _logger = logger;
         }
 
-        public Medicine Medicine { get; set; } = default!;
+        public MedicineResponse Medicine { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -35,17 +36,11 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 return NotFound("Medicine ID is required.");
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
@@ -57,7 +52,7 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                Medicine = JsonSerializer.Deserialize<Medicine>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                Medicine = JsonSerializer.Deserialize<MedicineResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (Medicine == null)
                 {

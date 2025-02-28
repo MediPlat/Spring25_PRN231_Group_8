@@ -1,12 +1,4 @@
-﻿using MediPlat.Model.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-
-namespace MediPlat.Model.ResponseObject
+﻿namespace MediPlat.Model.ResponseObject
 {
     public class ExperienceResponse
     {
@@ -14,7 +6,7 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid? SpecialtyId { get; set; }
 
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         public string? Description { get; set; }
 
@@ -24,8 +16,8 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid? DoctorId { get; set; }
 
-        public virtual DoctorResponse Doctor { get; set; }
+        public DoctorResponse Doctor { get; set; } = null!;
 
-        public virtual SpecialtyResponse Specialty { get; set; }
+        public SpecialtyResponse Specialty { get; set; } = null!;
     }
 }

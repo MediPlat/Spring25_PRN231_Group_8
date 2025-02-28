@@ -18,11 +18,11 @@ namespace MediPlat.Model.ResponseObject
         public DateTime EndDate { get; set; }
 
         public DateTime? UpdateDate { get; set; }
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         public Guid DoctorId { get; set; }
 
-        public virtual DoctorResponse Doctor { get; set; }
-        public virtual SubscriptionResponse Subscription { get; set; }
+        public DoctorResponse Doctor { get; set; } = null!;
+        public SubscriptionResponse Subscription { get; set; } = null!;
     }
 }
