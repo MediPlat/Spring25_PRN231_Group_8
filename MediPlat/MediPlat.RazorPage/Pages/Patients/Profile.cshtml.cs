@@ -17,12 +17,14 @@ namespace MediPlat.RazorPage.Pages.Patients
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMapper _mapper;
+        private readonly string? _apiBaseUrl;
 
-        public ProfileModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, IMapper mapper)
+        public ProfileModel(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IMapper mapper, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
+            _apiBaseUrl = configuration["ApiBaseUrl"]; 
         }
 
         [BindProperty]
@@ -46,7 +48,7 @@ namespace MediPlat.RazorPage.Pages.Patients
             
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using (HttpResponseMessage response = await _httpClient.GetAsync($"https://localhost:7002/odata/patient/{HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value}"))
+            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/odata/Patients/{HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value}"))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -72,7 +74,7 @@ namespace MediPlat.RazorPage.Pages.Patients
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using (HttpResponseMessage response = await _httpClient.PutAsJsonAsync<PatientRequest>($"https://localhost:7002/odata/patient/{HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value}", _mapper.Map<PatientRequest>(Patient)))
+            using (HttpResponseMessage response = await _httpClient.PutAsJsonAsync<PatientRequest>($"{_apiBaseUrl}/odata/Patients/{HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value}", _mapper.Map<PatientRequest>(Patient)))
             {
                 if (response.IsSuccessStatusCode)
                 {

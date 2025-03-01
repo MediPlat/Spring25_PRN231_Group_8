@@ -5,6 +5,7 @@ using MediPlat.Model.RequestObject.Auth;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
 namespace MediPlat.Service.Services
@@ -94,12 +95,16 @@ namespace MediPlat.Service.Services
 
             var ProfileId = new Guid(pid);
             var Profile = await _unitOfWork.Profiles.GetAsync(p => p.Id == ProfileId);
-
             if (Profile == null)
             {
                 throw new KeyNotFoundException("Incorrect jwt token or Profile deleted");
             }
-            Profile = _mapper.Map<Model.Model.Profile>(ProfileModel);
+
+            Profile.FullName = ProfileModel.FullName.IsNullOrEmpty() ? Profile.FullName : ProfileModel.FullName;
+            Profile.Sex = ProfileModel.Sex.IsNullOrEmpty() ? Profile.Sex : ProfileModel.Sex;
+            Profile.Dob = ProfileModel.Dob is null ? Profile.Dob : ProfileModel.Dob;
+            Profile.Address = ProfileModel.Address.IsNullOrEmpty() ? Profile.Address : ProfileModel.Address;
+            Profile.PhoneNumber = ProfileModel.PhoneNumber.IsNullOrEmpty() ? Profile.PhoneNumber : ProfileModel.PhoneNumber;
 
             _unitOfWork.Profiles.Update(Profile);
             await _unitOfWork.SaveChangesAsync();
