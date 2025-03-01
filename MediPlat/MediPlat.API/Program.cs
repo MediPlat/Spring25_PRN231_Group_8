@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using MediPlat.Model.ResponseObject.Patient;
+using MediPlat.Model.ResponseObject;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -181,7 +182,7 @@ static IEdmModel GetEdmModel()
 
     builder.EntitySet<PatientResponse>("Patients");
     builder.EntitySet<Doctor>("Doctors");
-    builder.EntitySet<Profile>("Profiles");
+    builder.EntitySet<ProfileResponse>("Profiles");
     builder.EntitySet<Transaction>("Transactions");
 
     return builder.GetEdmModel();

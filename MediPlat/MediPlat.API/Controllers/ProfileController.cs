@@ -1,4 +1,5 @@
 ﻿using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 namespace MediPlat.API.Controllers
 {
     [ApiController]
-    [Route("odata/Profile")]
+    [Route("odata/Profiles")]
     public class ProfileController : ODataController
     {
         private readonly IProfileService _ProfileService;
@@ -21,9 +22,9 @@ namespace MediPlat.API.Controllers
         [Authorize(Roles = "Admin, Patient")]
         [EnableQuery]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IQueryable<ProfileResponse>> GetAll()
         {
-            return Ok(await _ProfileService.GetAll(HttpContext.User));
+            return (await _ProfileService.GetAll(HttpContext.User)).AsQueryable();
         }
 
         [Authorize(Roles = "Admin, Patient")]

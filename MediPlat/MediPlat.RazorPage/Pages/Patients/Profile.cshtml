@@ -1,4 +1,5 @@
 ﻿@page
+@using System.Security.Claims
 @model MediPlat.RazorPage.Pages.Patients.ProfileModel
 @{
     ViewData["Title"] = "Profile";
@@ -217,44 +218,44 @@
         confirmModal.show();
     }
 
-function loadProfiles() {
-    fetch(API_BASE_URL + "/odata/Profile", {
-        method: "GET",
-        headers: {
-            "Authorization": "Bearer @Model.JWTToken"
-        }
-    })
-    .then(response => response.json()) // Convert response to JSON
-    .then(data => {
-        console.log("API Response:", data); // Log full response
+    function loadProfiles() {
+        fetch(API_BASE_URL + "/odata/Profiles?$filter=patientId eq @HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value", {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer @Model.JWTToken"
+            }
+        })
+            .then(response => response.json()) // Convert response to JSON
+            .then(data => {
+                console.log("API Response:", data); // Log full response
 
-        // If data is not an array, log an error
-        if (!Array.isArray(data)) {
-            console.error("Error: API response is not an array.", data);
-            return;
-        }
+                // Ensure response contains a value array
+                if (!data.value || !Array.isArray(data.value)) {
+                    console.error("Error: API response is not an array.", data);
+                    return;
+                }
 
-        let table = document.getElementById("profilesTable");
-        table.innerHTML = "";
+                let table = document.getElementById("profilesTable");
+                table.innerHTML = "";
 
-        data.forEach(profile => { 
-            let dob = new Date(profile.dob).toLocaleDateString();
-            let row = `<tr>
-                <td>${profile.fullName}</td>
-                <td>${profile.sex}</td>
-                <td>${dob}</td>
-                <td>${profile.address}</td>
-                <td>${profile.phoneNumber}</td>
-                <td>
-                    <button class='btn btn-warning' onclick='editProfile(${JSON.stringify(profile)})'>Edit</button>
-                    <button class='btn btn-danger' onclick='deleteProfile("${profile.id}")'>Delete</button>
-                </td>
-            </tr>`;
-            table.innerHTML += row;
-        });
-    })
-    .catch(error => console.error("Fetch error:", error)); // Moved inside `.then()` chain
-}
+                data.value.forEach(profile => {
+                    let dob = profile.Dob ? new Date(profile.Dob).toLocaleDateString() : "N/A"; // Format date safely
+                    let row = `<tr>
+                    <td>${profile.FullName}</td>
+                    <td>${profile.Sex}</td>
+                    <td>${dob}</td>
+                    <td>${profile.Address}</td>
+                    <td>${profile.PhoneNumber}</td>
+                    <td>
+                        <button class='btn btn-warning' onclick='editProfile(${JSON.stringify(profile)})'>Edit</button>
+                        <button class='btn btn-danger' onclick='deleteProfile("${profile.Id}")'>Delete</button>
+                    </td>
+                </tr>`;
+                    table.innerHTML += row;
+                });
+            })
+            .catch(error => console.error("Fetch error:", error)); // Catch fetch errors
+    }
 
 
     function openProfileModal() {
@@ -268,12 +269,12 @@ function loadProfiles() {
     }
 
     function editProfile(profile) {
-        document.getElementById("profileId").value = profile.id;
-        document.getElementById("profileFullName").value = profile.fullName;
-        document.getElementById("profileSex").value = profile.sex;
-        document.getElementById("profileDob").value = profile.dob;
-        document.getElementById("profileAddress").value = profile.address;
-        document.getElementById("profilePhone").value = profile.phoneNumber;
+        document.getElementById("profileId").value = profile.Id;
+        document.getElementById("profileFullName").value = profile.FullName;
+        document.getElementById("profileSex").value = profile.Sex;
+        document.getElementById("profileDob").value = profile.Dob;
+        document.getElementById("profileAddress").value = profile.Address;
+        document.getElementById("profilePhone").value = profile.PhoneNumber;
         new bootstrap.Modal(document.getElementById("profileModal")).show();
     }
 
@@ -289,7 +290,7 @@ function loadProfiles() {
         };
 
         let method = id ? "PUT" : "POST";
-        let url = API_BASE_URL + (id ? `/odata/Profile/${id}` : "/odata/Profile");
+        let url = API_BASE_URL + (id ? `/odata/Profiles/${id}` : "/odata/Profiles");
 
         fetch(url, {
             method: method,
@@ -320,7 +321,7 @@ function loadProfiles() {
 
     function deleteProfile(id) {
     showConfirmation("Are you sure you want to delete this profile?", function () {
-        fetch(API_BASE_URL + `/odata/Profile/${id}`, {
+        fetch(API_BASE_URL + `/odata/Profiles/${id}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer @Html.Raw(Model.JWTToken)` }
         })
