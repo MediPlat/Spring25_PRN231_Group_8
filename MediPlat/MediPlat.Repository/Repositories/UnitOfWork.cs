@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MediPlat.Model;
 using MediPlat.Model.Model;
 using MediPlat.Repository.IRepositories;
 using Microsoft.EntityFrameworkCore;

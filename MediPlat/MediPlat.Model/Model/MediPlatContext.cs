@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediPlat.Model.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
