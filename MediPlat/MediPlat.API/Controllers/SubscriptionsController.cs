@@ -26,9 +26,8 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorOrAdminPolicy")]
         public IQueryable<SubscriptionResponse> GetSubscriptions()
         {
-            return _subscriptionService.GetAllSubscriptions();
+            return _subscriptionService.GetAllSubscriptions().OrderBy(s => s.Price);
         }
-
 
         [HttpGet("{id}")]
         [Authorize(Policy = "DoctorOrAdminPolicy")]

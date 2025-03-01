@@ -77,7 +77,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 _logger.LogInformation($"Lấy thành công {subscriptions.Count} gói Subscription.");
 
                 ViewData["SubscriptionId"] = new SelectList(subscriptions, "Id", "Name");
-                ViewData["Subscriptions"] = JsonSerializer.Serialize(subscriptions);
+                ViewData["Subscriptions"] = subscriptions;
             }
             catch (Exception ex)
             {
