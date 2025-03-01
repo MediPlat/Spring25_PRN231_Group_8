@@ -7,7 +7,7 @@ using Profile = AutoMapper.Profile;
 
 namespace MediPlat.Service.Mapping
 {
-    public class MappingProfile : AutoMapper.Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
@@ -37,9 +37,13 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<Specialty, SpecialtyResponse>();
 
-            CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>();
+            CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>()
+                .ForMember(dest => dest.AppointmentSlot, opt => opt.Ignore())
+                .ForMember(dest => dest.Medicine, opt => opt.Ignore()); ;
 
-            CreateMap<AppointmentSlotMedicine, AppointmentSlotMedicineResponse>();
+            CreateMap<AppointmentSlotMedicine, AppointmentSlotMedicineResponse>()
+                .ForMember(dest => dest.AppointmentSlot, opt => opt.MapFrom(src => src.AppointmentSlot))
+                .ForMember(dest => dest.Medicine, opt => opt.MapFrom(src => src.Medicine)); ;
 
             CreateMap<MedicineRequest, Medicine>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? "Active"));
