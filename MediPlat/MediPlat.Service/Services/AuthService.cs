@@ -31,6 +31,7 @@ namespace MediPlat.Service.Services
 
         public AuthResult Login(LoginModel loginModel)
         {
+
             AuthResult result = new AuthResult();
 
             var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
@@ -107,6 +108,28 @@ namespace MediPlat.Service.Services
                 Console.WriteLine("Doctor not found.");
             }
 
+            var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
+    .FirstOrDefault(a => a.Email == loginModel.Email);
+
+            if (admin != null)
+            {
+                Console.WriteLine($"Admin found: {admin.Email}");
+                if (admin.Password == loginModel.Password)
+                {
+                    Console.WriteLine("Admin password is correct.");
+                    var token = GenerateJwtToken(Guid.NewGuid(), "Admin");
+                    result = new AuthResult
+                    {
+                        Token = "Bearer " + token,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                    };
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid admin password.");
+                }
+            }
             return result;
         }
 
@@ -147,13 +170,8 @@ namespace MediPlat.Service.Services
             {
                 Id = Guid.NewGuid(),
                 UserName = registerModel.UserName,
-                FullName = registerModel.FullName,
                 Email = registerModel.Email,
                 Password = registerModel.Password,
-                PhoneNumber = registerModel.PhoneNumber,
-                JoinDate = DateTime.UtcNow,
-                Sex = registerModel.Sex,
-                Address = registerModel.Address,
                 Status = "Active"
             });
 

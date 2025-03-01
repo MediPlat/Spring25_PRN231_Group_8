@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MediPlat.Model.Model;
 
-namespace MediPlat.RazorPage.Pages.PatientPages
+namespace MediPlat.RazorPage.Pages.Patients
 {
     public class CreateModel : PageModel
     {

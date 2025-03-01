@@ -1,6 +1,9 @@
 ﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject;
+using MediPlat.Model.ResponseObject.Patient;
+using Profile = AutoMapper.Profile;
 
 namespace MediPlat.Service.Mapping
 {
@@ -63,7 +66,17 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<Review, ReviewResponse>();
 
-            
+            CreateMap<Patient, PatientRequest>();
+
+            CreateMap<PatientRequest, Patient>();
+
+            CreateMap<Patient, PatientResponse>();
+
+            CreateMap<Model.Model.Profile, ProfileRequest>();
+
+            CreateMap<ProfileRequest, Model.Model.Profile>();
+
+            CreateMap<Model.Model.Profile, ProfileResponse>();
         }
     }
 }

@@ -63,59 +63,55 @@ namespace MediPlat.Service.Services
                 UserName = patientModel.UserName,
                 Email = patientModel.Email,
                 Balance = patientModel.Balance,
-                Status = patientModel.Status,
+                Status = "Active",
                 Password = patientModel.Password,
             });
             await _unitOfWork.SaveChangesAsync();
-            return new PatientResponse
-            {
-                Id = guid,
-                UserName = patientModel.UserName,
-                Email = patientModel.Email,
-                Balance = patientModel.Balance,
-                Status = patientModel.Status
-            };
+            return _mapper?.Map<PatientResponse?>(await _unitOfWork.Patients.GetAsync(p => p.Id.Equals(guid)));
         }
 
-        public async Task<PatientResponse?> DeleteById(ClaimsPrincipal claims)
+        public async Task<PatientResponse?> DeleteById(string id, ClaimsPrincipal claims)
         {
-            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var patientId = new Guid(id);
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId);
+            string pid = string.Empty;
+            if(claims.FindFirst(ClaimTypes.Role)?.Value is "Admin")
+            {
+                pid = id;
+            }
+            else
+            {
+                pid = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
 
+            var patientId = new Guid(pid);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId, p => p.Profiles);
             if (patient == null)
             {
                 throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
-            _unitOfWork.Patients.Remove(patient);
+            patient.Status = "Suspended";
+            _unitOfWork.Patients.Update(patient);
             await _unitOfWork.SaveChangesAsync();
-
-            return new PatientResponse
-            {
-                Id = patient.Id,
-                UserName = patient.UserName,
-                Email = patient.Email,
-                Balance = patient.Balance,
-                Status = patient.Status
-            };
+            return _mapper.Map<PatientResponse>(patient);
         }
 
         public async Task<List<PatientResponse>> GetAll(ClaimsPrincipal claims)
         {
-            var patients = await _unitOfWork.Patients.GetAllAsync().ToListAsync();
-            List<PatientResponse> result = new List<PatientResponse>();
-            foreach (var item in patients)
-            {
-                result.Add(new PatientResponse
-                {
-                    Id = item.Id,
-                    UserName = item.UserName,
-                    Balance = item.Balance,
-                    Email = item.Email,
-                    Status = item.Status
-                });
-            }
-            return result;
+            var patients = await _unitOfWork.Patients.GetAllAsync(p => p.Profiles);
+            //List<PatientResponse> result = new List<PatientResponse>();
+            //foreach (var item in patients)
+            //{
+            //    result.Add(new PatientResponse
+            //    {
+            //        Id = item.Id,
+            //        UserName = item.UserName,
+            //        Balance = item.Balance,
+            //        Email = item.Email,
+            //        Status = item.Status
+            //    });
+            //}
+            //return result;
+
+            return _mapper.Map<List<PatientResponse>>(patients);
         }
 
         public async Task<PatientResponse?> GetById(string code)
@@ -126,31 +122,34 @@ namespace MediPlat.Service.Services
                 throw new ArgumentException("Incorrect GUID format.");
             }
 
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == guid, p => p.Profiles);
             if (patient == null)
             {
                 throw new KeyNotFoundException("Patient not found.");
             }
-            return new PatientResponse
-            {
-                Id = patient.Id,
-                UserName = patient.UserName,
-                Email = patient.Email,
-                Balance = patient.Balance,
-                Status = patient.Status
-            };
+            return _mapper.Map<PatientResponse>(patient);
         }
 
-        public async Task<PatientResponse?> Update(PatientRequest patientModel, ClaimsPrincipal claims)
+        public async Task<PatientResponse?> Update(string id, PatientRequest patientModel, ClaimsPrincipal claims)
         {
-            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var patientId = new Guid(id);
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId && p.Status.Equals("Active"));
+            string pid = string.Empty;
+            if (claims.FindFirst(ClaimTypes.Role)?.Value is "Admin")
+            {
+                pid = id;
+            }
+            else
+            {
+                pid = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
+
+            var patientId = new Guid(pid);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId && p.Status.Equals("Active"), p => p.Profiles);
 
             if (patient == null)
             {
                 throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
+
             patient.UserName = patientModel.UserName.IsNullOrEmpty() ? patient.UserName : patientModel.UserName;
             patient.Email = patientModel.Email.IsNullOrEmpty() ? patient.Email : patientModel.Email;
             patient.Balance = patientModel.Balance == null || patientModel.Balance <= 0 ? patient.Balance : patientModel.Balance;
@@ -159,14 +158,12 @@ namespace MediPlat.Service.Services
             _unitOfWork.Patients.Update(patient);
             await _unitOfWork.SaveChangesAsync();
 
-            return new PatientResponse
-            {
-                Id = patient.Id,
-                UserName = patient.UserName,
-                Email = patient.Email,
-                Balance = patient.Balance,
-                Status = patient.Status
-            };
+            return _mapper.Map<PatientResponse>(patient);
+        }
+        public IQueryable<PatientResponse> GetAllAsQueryable(ClaimsPrincipal claims)
+        {
+            var patients = _unitOfWork.Patients.GetAll().ToList();
+            return _mapper.Map<List<PatientResponse>>(patients).AsQueryable();
         }
     }
 }

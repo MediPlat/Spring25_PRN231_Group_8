@@ -1,5 +1,4 @@
-﻿using MediPlat.Model;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
@@ -74,9 +73,7 @@ namespace MediPlat.Service.Services
         }
         public IQueryable<Doctor> GetAllDoctor()
         {
-            var doctorsQueryable = await _unitOfWork.Doctors.GetAllAsync();
-            var doctorsList = doctorsQueryable.ToList();
-            return doctorsList;
+            return _unitOfWork.Doctors.GetAll();
         }
 
         public async Task<Doctor> GetByID(Guid id)

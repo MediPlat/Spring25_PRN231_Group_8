@@ -1,14 +1,19 @@
 ﻿using MediPlat.Model.Model;
+using MediPlat.Service.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Đăng ký AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddDbContext<MediPlatContext>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -61,6 +66,8 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
+
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
 
 var app = builder.Build();
 

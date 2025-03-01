@@ -14,6 +14,9 @@ using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Model.ResponseObject;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +34,7 @@ builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // Đăng ký Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -151,6 +155,7 @@ builder.Services.AddAuthorization(options =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin" || c.Value == "Patient")))));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
 
 builder.Services.AddCors(options =>
@@ -204,7 +209,7 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<DoctorResponse>("Doctors");
     builder.EntitySet<SpecialtyResponse>("Specialties");
     builder.EntitySet<SubscriptionResponse>("Subscriptions");
-
+    builder.EntitySet<ProfileResponse>("Profiles");
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()
