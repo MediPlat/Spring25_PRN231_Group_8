@@ -69,12 +69,20 @@ namespace MediPlat.Service.Services
             return _mapper?.Map<PatientResponse?>(await _unitOfWork.Patients.GetAsync(p => p.Id.Equals(guid)));
         }
 
-        public async Task<PatientResponse?> DeleteById(ClaimsPrincipal claims)
+        public async Task<PatientResponse?> DeleteById(string id, ClaimsPrincipal claims)
         {
-            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var patientId = new Guid(id);
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId, p => p.Profiles);
+            string pid = string.Empty;
+            if(claims.FindFirst(ClaimTypes.Role)?.Value is "Admin")
+            {
+                pid = id;
+            }
+            else
+            {
+                pid = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
 
+            var patientId = new Guid(pid);
+            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId, p => p.Profiles);
             if (patient == null)
             {
                 throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
@@ -122,16 +130,26 @@ namespace MediPlat.Service.Services
             return _mapper.Map<PatientResponse>(patient);
         }
 
-        public async Task<PatientResponse?> Update(PatientRequest patientModel, ClaimsPrincipal claims)
+        public async Task<PatientResponse?> Update(string id, PatientRequest patientModel, ClaimsPrincipal claims)
         {
-            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var patientId = new Guid(id);
+            string pid = string.Empty;
+            if (claims.FindFirst(ClaimTypes.Role)?.Value is "Admin")
+            {
+                pid = id;
+            }
+            else
+            {
+                pid = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
+
+            var patientId = new Guid(pid);
             var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId && p.Status.Equals("Active"), p => p.Profiles);
 
             if (patient == null)
             {
                 throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
             }
+
             patient.UserName = patientModel.UserName.IsNullOrEmpty() ? patient.UserName : patientModel.UserName;
             patient.Email = patientModel.Email.IsNullOrEmpty() ? patient.Email : patientModel.Email;
             patient.Balance = patientModel.Balance == null || patientModel.Balance <= 0 ? patient.Balance : patientModel.Balance;
@@ -141,6 +159,11 @@ namespace MediPlat.Service.Services
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<PatientResponse>(patient);
+        }
+        public IQueryable<PatientResponse> GetAllAsQueryable(ClaimsPrincipal claims)
+        {
+            var patients = _unitOfWork.Patients.GetAll().ToList();
+            return _mapper.Map<List<PatientResponse>>(patients).AsQueryable();
         }
     }
 }

@@ -129,6 +129,7 @@
                     <th>Full Name</th>
                     <th>Sex</th>
                     <th>DoB</th>
+                    <th>Address</th>
                     <th>Phone</th>
                     <th>Actions</th>
                 </tr>
@@ -153,9 +154,16 @@
                 <label>Full Name</label>
                 <input type="text" id="profileFullName" class="form-control mb-2">
                 <label>Sex</label>
-                <input type="text" id="profileSex" class="form-control mb-2">
+                <select class="form-control" id="sex" name="Sex">
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>                
                 <label>DoB</label>
                 <input type="date" id="profileDob" class="form-control mb-2">
+                <label>Address</label>
+                <input type="text" id="profileAddress" class="form-control mb-2">
                 <label>Phone</label>
                 <input type="text" id="profilePhone" class="form-control mb-2">
             </div>
@@ -179,61 +187,63 @@
         document.getElementById(field + "Input").classList.toggle("d-none");
     }
 
-    function loadProfiles() {
-        fetch(API_BASE_URL + "/odata/Profile", {
-    method: "GET",
-    headers: {
-        "Authorization": "Bearer @Model.JWTToken"
-    }
-})
-.then(response => response.json()) // Convert to JSON
-.then(data => {
-    console.log("API Response:", data); // Log full response
+function loadProfiles() {
+    fetch(API_BASE_URL + "/odata/Profile", {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer @Model.JWTToken"
+        }
+    })
+    .then(response => response.json()) // Convert response to JSON
+    .then(data => {
+        console.log("API Response:", data); // Log full response
 
-    // If data is not an array, log an error
-    if (!Array.isArray(data)) {
-        console.error("Error: API response is not an array.", data);
-        return;
-    }
+        // If data is not an array, log an error
+        if (!Array.isArray(data)) {
+            console.error("Error: API response is not an array.", data);
+            return;
+        }
 
-    let table = document.getElementById("profilesTable");
-    table.innerHTML = "";
-    
-    data.forEach(profile => { 
-        let dob = new Date(profile.dob).toLocaleDateString();
-        let row = `<tr>
-            <td>${profile.fullName}</td>
-            <td>${profile.sex}</td>
-            <td>${dob}</td>
-            <td>${profile.phoneNumber}</td>
-            <td>
-                <button class='btn btn-warning' onclick='editProfile(${JSON.stringify(profile)})'>Edit</button>
-                <button class='btn btn-danger' onclick='deleteProfile("${profile.id}")'>Delete</button>
-            </td>
-        </tr>`;
-        table.innerHTML += row;
-    });
-})
-.catch(error => console.error("Fetch error:", error));
+        let table = document.getElementById("profilesTable");
+        table.innerHTML = "";
 
+        data.forEach(profile => { 
+            let dob = new Date(profile.dob).toLocaleDateString();
+            let row = `<tr>
+                <td>${profile.fullName}</td>
+                <td>${profile.sex}</td>
+                <td>${dob}</td>
+                <td>${profile.address}</td>
+                <td>${profile.phoneNumber}</td>
+                <td>
+                    <button class='btn btn-warning' onclick='editProfile(${JSON.stringify(profile)})'>Edit</button>
+                    <button class='btn btn-danger' onclick='deleteProfile("${profile.id}")'>Delete</button>
+                </td>
+            </tr>`;
+            table.innerHTML += row;
+        });
+    })
+    .catch(error => console.error("Fetch error:", error)); // Moved inside `.then()` chain
+}
 
-    }
 
     function openProfileModal() {
         document.getElementById("profileId").value = "";
         document.getElementById("profileFullName").value = "";
         document.getElementById("profileSex").value = "";
         document.getElementById("profileDob").value = "";
+        document.getElementById("profileAddress").value = "";
         document.getElementById("profilePhone").value = "";
         new bootstrap.Modal(document.getElementById("profileModal")).show();
     }
 
     function editProfile(profile) {
-        document.getElementById("profileId").value = profile.Id;
-        document.getElementById("profileFullName").value = profile.FullName;
-        document.getElementById("profileSex").value = profile.Sex;
-        document.getElementById("profileDob").value = profile.Dob;
-        document.getElementById("profilePhone").value = profile.PhoneNumber;
+        document.getElementById("profileId").value = profile.id;
+        document.getElementById("profileFullName").value = profile.fullName;
+        document.getElementById("profileSex").value = profile.sex;
+        document.getElementById("profileDob").value = profile.dob;
+        document.getElementById("profileAddress").value = profile.address;
+        document.getElementById("profilePhone").value = profile.phoneNumber;
         new bootstrap.Modal(document.getElementById("profileModal")).show();
     }
 
@@ -243,6 +253,7 @@
             FullName: document.getElementById("profileFullName").value,
             Sex: document.getElementById("profileSex").value,
             Dob: document.getElementById("profileDob").value,
+            Address: document.getElementById("profileAddress").value,
             PhoneNumber: document.getElementById("profilePhone").value
         };
         

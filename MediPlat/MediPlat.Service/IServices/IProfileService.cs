@@ -9,7 +9,7 @@ namespace MediPlat.Service.IServices
         Task<ProfileResponse?> GetById(string code);
         Task<List<ProfileResponse>> GetAll(ClaimsPrincipal claims);
         Task<ProfileResponse?> Create(ProfileRequest ProductModel, ClaimsPrincipal claims);
-        Task<ProfileResponse?> Update(ProfileRequest ProductModel, ClaimsPrincipal claims);
-        Task<ProfileResponse?> DeleteById(ClaimsPrincipal claims);
+        Task<ProfileResponse?> Update(string id, ProfileRequest ProductModel, ClaimsPrincipal claims);
+        Task<ProfileResponse?> DeleteById(string id, ClaimsPrincipal claims);
     }
 }

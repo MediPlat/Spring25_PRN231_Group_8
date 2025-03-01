@@ -35,26 +35,26 @@ namespace MediPlat.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin, Patient")]
+        [Authorize(Roles = "Patient")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProfileRequest ProfileModel)
         {
             return Ok(await _ProfileService.Create(ProfileModel, HttpContext.User));
         }
 
-        [Authorize(Roles = "Admin, Patient")]
+        [Authorize(Roles = "Patient")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] ProfileRequest ProfileModel)
+        public async Task<IActionResult> Update(string id, [FromBody] ProfileRequest ProfileModel)
         {
-            var result = await _ProfileService.Update(ProfileModel, HttpContext.User);
+            var result = await _ProfileService.Update(id, ProfileModel, HttpContext.User);
             return Ok(result);
         }
 
         [Authorize(Roles = "Admin, Patient")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete()
+        public async Task<IActionResult> Delete(string id)
         {
-            var result = await _ProfileService.DeleteById(HttpContext.User);
+            var result = await _ProfileService.DeleteById(id, HttpContext.User);
             return Ok(result);
         }
     }

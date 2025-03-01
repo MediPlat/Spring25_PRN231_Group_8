@@ -22,19 +22,33 @@ namespace MediPlat.Service.Services
         }
         public async Task<ProfileResponse?> Create(ProfileRequest ProfileModel, ClaimsPrincipal claims)
         {
+            string pid = string.Empty;
+            var patientId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (patientId is null)
+            {
+                throw new Exception("Unauthorized!");
+            }
+
             Guid guid = Guid.NewGuid();
             var profile = _mapper.Map<Model.Model.Profile>(ProfileModel);
             profile.Id = guid;
-            profile.PatientId = new Guid(claims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            profile.PatientId = new Guid(patientId);
+            profile.JoinDate = DateTime.UtcNow;
             _unitOfWork.Profiles.Add(profile);
             await _unitOfWork.SaveChangesAsync();
             return _mapper?.Map<ProfileResponse?>(await _unitOfWork.Profiles.GetAsync(p => p.Id.Equals(guid)));
         }
 
-        public async Task<ProfileResponse?> DeleteById(ClaimsPrincipal claims)
+        public async Task<ProfileResponse?> DeleteById(string id, ClaimsPrincipal claims)
         {
-            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var ProfileId = new Guid(id);
+            string pid = string.Empty;
+            var patientId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (patientId is not null)
+            {
+                pid = id;
+            }
+
+            var ProfileId = new Guid(pid);
             var Profile = await _unitOfWork.Profiles.GetAsync(p => p.Id == ProfileId);
 
             if (Profile == null)
@@ -69,10 +83,16 @@ namespace MediPlat.Service.Services
             return _mapper.Map<ProfileResponse>(Profile);
         }
 
-        public async Task<ProfileResponse?> Update(ProfileRequest ProfileModel, ClaimsPrincipal claims)
+        public async Task<ProfileResponse?> Update(string id, ProfileRequest ProfileModel, ClaimsPrincipal claims)
         {
-            var id = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var ProfileId = new Guid(id);
+            string pid = string.Empty;
+            var patientId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (patientId is not null)
+            {
+                pid = id;
+            }
+
+            var ProfileId = new Guid(pid);
             var Profile = await _unitOfWork.Profiles.GetAsync(p => p.Id == ProfileId);
 
             if (Profile == null)

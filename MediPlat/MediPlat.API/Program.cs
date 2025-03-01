@@ -17,6 +17,7 @@ using MediPlat.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using MediPlat.Model.ResponseObject.Patient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -178,19 +179,10 @@ static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    builder.EntitySet<Patient>("Patient");
-    builder.EntitySet<Doctor>("Doctor");
-    builder.EntitySet<Profile>("Profile");
-    builder.EntitySet<Transaction>("Transaction");
-
-
-    // Định nghĩa các mối quan hệ nếu cần thiết
-    // builder.EntitySet<EntityName>("EntitySetName");
-
-    builder.EntityType<Patient>()
-        .HasMany(p => p.Profiles);
-    builder.EntityType<Patient>()
-        .HasMany(p => p.Transactions);
+    builder.EntitySet<PatientResponse>("Patients");
+    builder.EntitySet<Doctor>("Doctors");
+    builder.EntitySet<Profile>("Profiles");
+    builder.EntitySet<Transaction>("Transactions");
 
     return builder.GetEdmModel();
 }
