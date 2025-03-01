@@ -27,7 +27,13 @@ namespace MediPlat.RazorPage.Pages.Experiences
         public int PageSize { get; set; } = 5;
         public int CurrentPage { get; set; } = 1;
         public int TotalItems { get; set; }
-        
+
+        public class ODataResponse<T>
+        {
+            public List<T>? Value { get; set; }
+            public int? Count { get; set; }
+        }
+
         public async Task<IActionResult> OnGetAsync(int page = 1)
         {
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
@@ -39,56 +45,29 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             try
             {
-                string apiUrl = $"https://localhost:7002/odata/Experiences?$top={PageSize}&$skip={(page - 1) * PageSize}&$expand=Doctor,Specialty";
+                string apiUrl = $"https://localhost:7002/odata/Experiences?$count=true&$top={PageSize}&$skip={(page - 1) * PageSize}&$expand=Doctor,Specialty";
+                _logger.LogInformation($"Fetching data from: {apiUrl}");
+
                 HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
 
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var apiResponse = await response.Content.ReadAsStringAsync();
-                    var experienceData = JsonSerializer.Deserialize<JsonElement>(apiResponse);
-
-                    if (experienceData.TryGetProperty("value", out JsonElement experiencesJson))
-                    {
-                        var experiencesList = new List<ExperienceResponse>();
-
-                        foreach (var element in experiencesJson.EnumerateArray())
-                        {
-                            var experience = JsonSerializer.Deserialize<ExperienceResponse>(element.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                            if (element.TryGetProperty("Doctor", out JsonElement doctorJson) && doctorJson.ValueKind != JsonValueKind.Null)
-                            {
-                                experience.Doctor = JsonSerializer.Deserialize<DoctorResponse>(doctorJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                            }
-                            else
-                            {
-                                experience.Doctor = new DoctorResponse { FullName = "Không có thông tin" };
-                            }
-
-                            if (element.TryGetProperty("Specialty", out JsonElement specialtyJson) && specialtyJson.ValueKind != JsonValueKind.Null)
-                            {
-                                experience.Specialty = JsonSerializer.Deserialize<SpecialtyResponse>(specialtyJson.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                            }
-
-                            experiencesList.Add(experience);
-                        }
-
-                        Experiences = experiencesList;
-                    }
-                    else
-                    {
-                        Experiences = new List<ExperienceResponse>();
-                    }
-
-                    TotalItems = Experiences.Count;
+                    _logger.LogError($"API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                    return StatusCode((int)response.StatusCode, "Lỗi khi tải danh sách Experience.");
                 }
-                else
-                {
-                    _logger.LogError($"Lỗi khi tải danh sách Experience: {response.ReasonPhrase}");
-                }
+
+                var apiResponse = await response.Content.ReadAsStringAsync();
+                var experienceData = JsonSerializer.Deserialize<ODataResponse<ExperienceResponse>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                Experiences = experienceData?.Value ?? new List<ExperienceResponse>();
+                TotalItems = experienceData?.Count ?? Experiences.Count;
+
+                _logger.LogInformation($"Loaded {Experiences.Count} Experiences, TotalItems: {TotalItems}");
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Lỗi khi tải dữ liệu Experience: {ex.Message}");
+                return StatusCode(500, "Lỗi máy chủ khi tải danh sách Experience.");
             }
 
             CurrentPage = page;

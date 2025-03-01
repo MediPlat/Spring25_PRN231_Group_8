@@ -1,15 +1,12 @@
-﻿
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using NuGet.Common;
+
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
@@ -28,7 +25,9 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
         }
 
         [BindProperty]
-        public DoctorSubscription DoctorSubscription { get; set; } = default!;
+        public DoctorSubscriptionResponse DoctorSubscription { get; set; } = default!;
+        [BindProperty]
+        public DoctorSubscriptionRequest DoctorSubscriptionss { get; set; } = default!;
 
         [BindProperty]
         public short AdditionalEnableSlot { get; set; }
@@ -55,30 +54,45 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                DoctorSubscription = JsonSerializer.Deserialize<DoctorSubscription>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var doctorSubscriptionResponse = JsonSerializer.Deserialize<DoctorSubscriptionResponse>(
+                    jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                if (DoctorSubscription.SubscriptionId == null || DoctorSubscription.SubscriptionId == Guid.Empty)
+                if (doctorSubscriptionResponse == null || doctorSubscriptionResponse.SubscriptionId == Guid.Empty)
                 {
-                    _logger.LogError("SubscriptionId is null after fetching data for DoctorSubscription {Id}", DoctorSubscription.Id);
                     ModelState.AddModelError("", "Failed to load SubscriptionId.");
                     return Page();
                 }
+
+                DoctorSubscription = doctorSubscriptionResponse;
+
+                DoctorSubscriptionss = new DoctorSubscriptionRequest
+                {
+                    SubscriptionId = doctorSubscriptionResponse.SubscriptionId,
+                    EnableSlot = doctorSubscriptionResponse.EnableSlot ?? (short)0,
+                    Status = doctorSubscriptionResponse.Status ?? "Active",
+                    DoctorId = doctorSubscriptionResponse.DoctorId
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching subscription details for ID {SubscriptionId}", id);
                 return StatusCode(500, "An error occurred while fetching the subscription details.");
             }
 
             return Page();
         }
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
-            _logger.LogInformation("Received AdditionalEnableSlot: {AdditionalEnableSlot}", AdditionalEnableSlot);
+
+            if (DoctorSubscriptionss.SubscriptionId == Guid.Empty)
+            {
+                ModelState.AddModelError("", "SubscriptionId is required.");
+                return Page();
+            }
 
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
@@ -89,41 +103,35 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 
             try
             {
-                if (DoctorSubscription.SubscriptionId == null || DoctorSubscription.SubscriptionId == Guid.Empty)
+                if (DoctorSubscriptionss.SubscriptionId == Guid.Empty)
                 {
-                    _logger.LogError("SubscriptionId is null or empty for DoctorSubscription {Id}", DoctorSubscription.Id);
                     ModelState.AddModelError("", "SubscriptionId is required.");
                     return Page();
                 }
-                short newEnableSlot = (short)(DoctorSubscription.EnableSlot + AdditionalEnableSlot);
 
-                _logger.LogInformation("Before sending request: Current EnableSlot: {EnableSlot}, AdditionalEnableSlot: {AdditionalEnableSlot}, New EnableSlot: {NewEnableSlot}",
-                    DoctorSubscription.EnableSlot, AdditionalEnableSlot, newEnableSlot);
-
+                short newEnableSlot = (short)(DoctorSubscriptionss.EnableSlot + AdditionalEnableSlot);
                 if (newEnableSlot > 1000)
                 {
                     ModelState.AddModelError("", "Total EnableSlot cannot exceed 1000.");
                     return Page();
                 }
-                var requestData = new
+
+                var requestData = new DoctorSubscriptionRequest
                 {
-                    SubscriptionId = DoctorSubscription.SubscriptionId,
+                    SubscriptionId = DoctorSubscriptionss.SubscriptionId,
                     EnableSlot = newEnableSlot,
                     UpdateDate = DateTime.UtcNow,
-                    Status = DoctorSubscription.Status
+                    Status = DoctorSubscriptionss.Status,
+                    DoctorId = DoctorSubscriptionss.DoctorId
                 };
 
-                var jsonContent = JsonSerializer.Serialize(requestData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-
-                _logger.LogInformation("Sending request to API: {JsonContent}", jsonContent);
-
+                var jsonContent = JsonSerializer.Serialize(requestData);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PutAsync($"https://localhost:7002/odata/DoctorSubscriptions/{DoctorSubscription.Id}", content);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     string errorResponse = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Update failed: {Error}", errorResponse);
                     ModelState.AddModelError("", $"Update failed: {errorResponse}");
                     return Page();
                 }
@@ -132,7 +140,6 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating DoctorSubscription for ID {SubscriptionId}", DoctorSubscription.Id);
                 ModelState.AddModelError("", "An error occurred while updating the subscription.");
                 return Page();
             }

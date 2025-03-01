@@ -1,11 +1,9 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using MediPlat.Model.Model;
-using Microsoft.AspNetCore.Authorization;
 using MediPlat.Model.ResponseObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
@@ -22,17 +20,14 @@ namespace MediPlat.RazorPage.Pages.Experiences
             _httpClient = httpClient;
             _logger = logger;
         }
-        public class ODataResponse<T>
-        {
-            public string? Context { get; set; }
-            public List<T> Value { get; set; } = new List<T>();
-        }
-        public ExperienceResponse Experience { get; set; } = default!;
+
+        public ExperienceResponse? Experience { get; set; }
+
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
-                return NotFound("Experience ID is required.");
+                return NotFound("Experience ID không hợp lệ.");
             }
 
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
@@ -41,33 +36,47 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 return RedirectToPage("/Auth/Login");
             }
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
             try
             {
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty");
+                string apiUrl = $"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty";
+                _logger.LogInformation($"Fetching Experience details from: {apiUrl}");
 
+                var response = await _httpClient.GetAsync(apiUrl);
                 if (!response.IsSuccessStatusCode)
                 {
-                    return Forbid();
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"API Error: {response.StatusCode} - {errorResponse}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return NotFound("Experience không tồn tại.");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        return RedirectToPage("/Auth/Login");
+                    }
+                    return StatusCode((int)response.StatusCode, "Lỗi khi tải chi tiết Experience.");
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                // Deserialize thành một đối tượng tạm thời để lấy mảng "value"
-                var odataResponse = JsonSerializer.Deserialize<ODataResponse<ExperienceResponse>>(jsonResponse,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                Experience = JsonSerializer.Deserialize<ExperienceResponse>(jsonResponse, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
-                // Lấy đối tượng đầu tiên từ mảng "value"
-                Experience = odataResponse?.Value?.FirstOrDefault() ?? new ExperienceResponse();
+                if (Experience == null)
+                {
+                    _logger.LogWarning($"Experience với ID {id} không có dữ liệu hợp lệ.");
+                    return NotFound("Experience không có dữ liệu hợp lệ.");
+                }
 
-                // Không cần gán giá trị mặc định nữa, vì dữ liệu đã được deserialize đúng
-                // Experience.Doctor ??= new DoctorResponse { FullName = "Không có thông tin" };
-                // Experience.Specialty ??= new SpecialtyResponse { Name = "Không có chuyên khoa" };
-
-                _logger.LogInformation($"Experience: {JsonSerializer.Serialize(Experience, new JsonSerializerOptions { WriteIndented = true })}");
+                _logger.LogInformation($"Loaded Experience: ID={Experience.Id}, Title={Experience.Title}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Lỗi khi tải dữ liệu Experience: {ex.Message}");
-                return StatusCode(500, "Lỗi máy chủ khi lấy dữ liệu Experience.");
+                _logger.LogError($"Lỗi khi tải Experience: {ex.Message}");
+                return StatusCode(500, "Lỗi máy chủ khi tải chi tiết Experience.");
             }
 
             return Page();

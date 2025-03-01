@@ -6,8 +6,6 @@ using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace MediPlat.Service.Services
 {
@@ -25,65 +23,29 @@ namespace MediPlat.Service.Services
         }
         public IQueryable<ExperienceResponse> GetAllExperiences(bool isPatient)
         {
-            var experiences = _unitOfWork.Experiences.GetAll(e => e.Doctor, e => e.Specialty).Where(e => e.Doctor != null); ;
+            var experiences = _unitOfWork.Experiences.GetAll(e => e.Doctor, e => e.Specialty);
 
             if (isPatient)
             {
                 experiences = experiences.Where(e => e.Status == "Active");
             }
 
-            return experiences
-                .Select(exp => new ExperienceResponse
-                {
-                    Id = exp.Id,
-                    Title = exp.Title,
-                    Description = exp.Description,
-                    Certificate = exp.Certificate,
-                    Status = exp.Status,
-                    DoctorId = exp.DoctorId,
-                    SpecialtyId = exp.SpecialtyId,
-                    Doctor = exp.Doctor != null ? new DoctorResponse
-                    {
-                        Id = exp.Doctor.Id,
-                        FullName = exp.Doctor.FullName ?? "Không có thông tin"
-                    } : null,
-                    Specialty = exp.Specialty != null ? new SpecialtyResponse
-                    {
-                        Id = exp.Specialty.Id,
-                        Name = exp.Specialty.Name ?? "Không có chuyên khoa"
-                    } : null
-                })
-                .AsQueryable();
+            var experienceList = experiences.ToList();
+            return experienceList.Select(e => _mapper.Map<ExperienceResponse>(e)).AsQueryable();
         }
 
-        public IQueryable<ExperienceResponse> GetExperienceByIdQueryable(Guid id, bool isPatient)
+        public async Task<ExperienceResponse> GetExperienceByIdAsync(Guid id, Guid doctorId, bool isPatient)
         {
-            var query = _unitOfWork.Experiences.GetAll()
-                .Where(e => e.Id == id);
-            if (isPatient)
+            var experience = await _unitOfWork.Experiences
+                .GetAll(e => e.Doctor, e => e.Specialty)  // 🔥 Đảm bảo lấy đầy đủ thông tin
+                .FirstOrDefaultAsync(e => e.Id == id && (!isPatient || e.Status == "Active"));
+
+            if (experience == null)
             {
-                query = query.Where(e => e.Status == "Active");
+                throw new KeyNotFoundException($"Experience with ID {id} not found.");
             }
-            return query.Select(e => new ExperienceResponse
-            {
-                Id = e.Id,
-                Title = e.Title,
-                Description = e.Description,
-                Certificate = e.Certificate,
-                Status = e.Status,
-                DoctorId = e.DoctorId,
-                SpecialtyId = e.SpecialtyId,
-                Doctor = e.Doctor != null ? new DoctorResponse
-                {
-                    Id = e.Doctor.Id,
-                    FullName = e.Doctor.FullName
-                } : null,
-                Specialty = e.Specialty != null ? new SpecialtyResponse
-                {
-                    Id = e.Specialty.Id,
-                    Name = e.Specialty.Name
-                } : null
-            });
+
+            return _mapper.Map<ExperienceResponse>(experience);
         }
 
         public async Task<ExperienceResponse> AddExperienceAsync(ExperienceRequest request)
@@ -93,7 +55,6 @@ namespace MediPlat.Service.Services
 
             if (existingExperience != null)
             {
-                _logger.LogWarning($"Bác sĩ {request.DoctorId} đã có Experience với chuyên khoa {request.SpecialtyId}.");
                 throw new ApplicationException("Bác sĩ đã có Experience với chuyên khoa này.");
             }
 

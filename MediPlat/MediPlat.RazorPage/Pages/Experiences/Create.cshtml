@@ -16,7 +16,7 @@
 
                 <div class="mb-3">
                     <label asp-for="Experience.SpecialtyId" class="form-label"></label>
-                    <select asp-for="Experience.SpecialtyId" class="form-select" asp-items="ViewBag.SpecialtyId">
+                    <select asp-for="Experience.SpecialtyId" class="form-select" asp-items="Model.SpecialtyList">
                         <option value="">-- Chọn Chuyên Khoa --</option>
                     </select>
                     <span asp-validation-for="Experience.SpecialtyId" class="text-danger"></span>

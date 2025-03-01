@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediPlat.Model.RequestObject;
+﻿using MediPlat.Model.RequestObject;
 using MediPlat.Repository.IRepositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,9 +24,9 @@ public class DoctorSubscriptionCleanupService : BackgroundService
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-                    var expiredSubscriptions = unitOfWork.DoctorSubscriptions
-                        .GetList(ds => ds.EndDate.HasValue && ds.EndDate.Value < DateTime.Now && ds.Status != "Expired")
-                        .ToList();
+                    var expiredSubscriptions = await unitOfWork.DoctorSubscriptions
+                        .GetListAsync(ds => ds.EndDate.HasValue && ds.EndDate.Value < DateTime.Now && ds.Status != "Expired");
+
 
                     if (expiredSubscriptions.Any())
                     {

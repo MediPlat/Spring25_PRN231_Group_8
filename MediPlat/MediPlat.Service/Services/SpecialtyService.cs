@@ -19,8 +19,8 @@ public class SpecialtyService : ISpecialtyService
     }
     public IQueryable<SpecialtyResponse> GetAllSpecialties()
     {
-        var specialties = _unitOfWork.Specialties.GetAll();
-        return specialties.Select(s => _mapper.Map<SpecialtyResponse>(s));
+        var specialties = _unitOfWork.Specialties.GetAll().ToList();
+        return specialties.Select(s => _mapper.Map<SpecialtyResponse>(s)).AsQueryable();
     }
 
     public async Task<SpecialtyResponse?> GetSpecialtyByIdAsync(Guid id)

@@ -44,7 +44,7 @@ namespace MediPlat.Repository.Repositories
             return await query.FirstOrDefaultAsync(predicate);
         }
 
-        public IQueryable<T> GetList(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<List<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _dbSet;
 
@@ -53,12 +53,7 @@ namespace MediPlat.Repository.Repositories
                 query = query.Include(includeProperty);
             }
 
-            return query.Where(predicate);
-        }
-
-        public async Task<List<T>> GetListAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
-        {
-            return await GetList(predicate, includeProperties).ToListAsync();
+            return await query.Where(predicate).ToListAsync();
         }
 
         public IQueryable<T> GetAll(params Expression<Func<T, object>>[] includeProperties)

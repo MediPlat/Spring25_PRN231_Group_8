@@ -1,15 +1,10 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
-using MediPlat.Model.Model;
+using MediPlat.Model.ResponseObject;
+using System.Text.Json.Serialization;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
@@ -27,7 +22,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             _logger = logger;
         }
 
-        public DoctorSubscription DoctorSubscription { get; set; } = default!;
+        public DoctorSubscriptionResponse DoctorSubscription { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -45,15 +40,36 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 
             try
             {
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}?$expand=Doctor,Subscription");
-                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var doctorsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                if (!doctorsResponse.IsSuccessStatusCode)
+                {
+                    return Forbid();
+                }
 
+                var doctorsJson = await doctorsResponse.Content.ReadAsStringAsync();
+                var doctor = JsonSerializer.Deserialize<DoctorResponse>(doctorsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (doctor == null)
+                {
+                    return Forbid();
+                }
+
+                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}");
                 if (!response.IsSuccessStatusCode)
                 {
                     return Forbid();
                 }
 
-                DoctorSubscription = JsonSerializer.Deserialize<DoctorSubscription>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var subscription = JsonSerializer.Deserialize<DoctorSubscriptionResponse>(jsonResponse, 
+                    new JsonSerializerOptions{PropertyNameCaseInsensitive = true,
+                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull});
+                if (subscription == null || subscription.DoctorId != doctor.Id)
+                {
+                    return Forbid();
+                }
+
+                DoctorSubscription = subscription;
             }
             catch (Exception ex)
             {

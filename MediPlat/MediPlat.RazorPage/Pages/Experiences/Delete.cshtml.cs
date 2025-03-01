@@ -4,7 +4,6 @@ using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using static MediPlat.RazorPage.Pages.Experiences.DetailsModel;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
@@ -23,12 +22,13 @@ namespace MediPlat.RazorPage.Pages.Experiences
         }
 
         [BindProperty]
-        public ExperienceResponse Experience { get; set; } = default!;
+        public ExperienceResponse? Experience { get; set; }
+
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
-                return NotFound("Experience ID is required.");
+                return NotFound("Experience ID không hợp lệ.");
             }
 
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
@@ -40,30 +40,47 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             try
             {
-                _logger.LogInformation($"Fetching Experience with ID: {id}");
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Specialty,Doctor");
-                _logger.LogInformation($"API Request URL: https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty");
+                string apiUrl = $"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty";
+                _logger.LogInformation($"Fetching Experience details before deletion: {apiUrl}");
+
+                var response = await _httpClient.GetAsync(apiUrl);
                 if (!response.IsSuccessStatusCode)
                 {
-                    return NotFound("Experience không tồn tại.");
+                    _logger.LogError($"API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return NotFound("Experience không tồn tại.");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        return RedirectToPage("/Auth/Login");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        return Forbid();
+                    }
+                    return StatusCode((int)response.StatusCode, "Lỗi khi tải chi tiết Experience.");
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation($"API Response: {jsonResponse}");
-                var experienceResponse = JsonSerializer.Deserialize<ODataResponse<ExperienceResponse>>
-                    (jsonResponse,new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Value?.FirstOrDefault();
-                _logger.LogInformation($"Experience sau khi Deserialize: {JsonSerializer.Serialize(experienceResponse)}");
-                if (experienceResponse == null)
+                Experience = JsonSerializer.Deserialize<ExperienceResponse>(jsonResponse, new JsonSerializerOptions
                 {
-                    return NotFound("Experience không tồn tại.");
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (Experience == null)
+                {
+                    _logger.LogWarning($"Experience với ID {id} không có dữ liệu hợp lệ.");
+                    return NotFound("Experience không có dữ liệu hợp lệ.");
                 }
 
-                Experience = experienceResponse;
+                _logger.LogInformation($"Loaded Experience for deletion: ID={Experience.Id}, Title={Experience.Title}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Lỗi khi tải dữ liệu Experience: {ex.Message}");
-                return StatusCode(500, "Lỗi máy chủ khi lấy dữ liệu Experience.");
+                _logger.LogError($"Lỗi khi tải Experience: {ex.Message}");
+                return StatusCode(500, "Lỗi máy chủ khi tải chi tiết Experience.");
             }
 
             return Page();
@@ -73,7 +90,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
         {
             if (id == null)
             {
-                return NotFound("Experience ID is required.");
+                return NotFound("Experience ID không hợp lệ.");
             }
 
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
@@ -85,23 +102,34 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             try
             {
-                var response = await _httpClient.DeleteAsync($"https://localhost:7002/odata/Experiences/{id}");
+                string apiUrl = $"https://localhost:7002/odata/Experiences/{id}";
+                _logger.LogInformation($"Attempting to delete Experience: {apiUrl}");
 
+                var response = await _httpClient.DeleteAsync(apiUrl);
                 if (!response.IsSuccessStatusCode)
                 {
                     string errorResponse = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError("", $"Không thể xóa Experience. Chi tiết lỗi: {errorResponse}");
-                    return Page();
+                    _logger.LogError($"Lỗi khi xóa Experience: {errorResponse}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return NotFound("Experience không tồn tại.");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        return Forbid();
+                    }
+                    return StatusCode((int)response.StatusCode, "Lỗi khi xóa Experience.");
                 }
+
+                _logger.LogInformation($"Experience với ID {id} đã được xóa thành công.");
+                return RedirectToPage("./Index");
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Lỗi khi xóa Experience: {ex.Message}");
-                ModelState.AddModelError("", "Lỗi khi xóa Experience. Vui lòng thử lại.");
-                return Page();
+                return StatusCode(500, "Lỗi máy chủ khi xóa Experience.");
             }
-
-            return RedirectToPage("./Index");
         }
     }
 }

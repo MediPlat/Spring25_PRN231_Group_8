@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace MediPlat.API.Controllers
@@ -37,13 +36,32 @@ namespace MediPlat.API.Controllers
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            var subscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
-            if (subscription == null)
+            var doctorSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+
+            if (doctorSubscription == null)
             {
                 return NotFound($"Doctor subscription với ID {id} không tồn tại.");
             }
 
-            return Ok(subscription);
+            var result = new
+            {
+                doctorSubscription.Id,
+                doctorSubscription.SubscriptionId,
+                doctorSubscription.EnableSlot,
+                doctorSubscription.StartDate,
+                doctorSubscription.EndDate,
+                doctorSubscription.UpdateDate,
+                doctorSubscription.Status,
+                doctorSubscription.DoctorId,
+                Doctor = doctorSubscription.Doctor != null
+                    ? new { doctorSubscription.Doctor.Id, doctorSubscription.Doctor.FullName }
+                    : null,
+                Subscription = doctorSubscription.Subscription != null
+                    ? new { doctorSubscription.Subscription.Id, doctorSubscription.Subscription.Name }
+                    : null
+            };
+
+            return Ok(result);
         }
 
         [HttpPost]
@@ -70,8 +88,9 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var result = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId);
+            _logger.LogInformation("Doctor ID from token: {DoctorId}", doctorId);
 
+            var result = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId);
             return Ok(result);
         }
 

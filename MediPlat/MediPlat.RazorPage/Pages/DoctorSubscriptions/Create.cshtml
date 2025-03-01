@@ -2,74 +2,85 @@
 @model MediPlat.RazorPage.Pages.DoctorSubscriptions.CreateModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Tạo Gói Đăng Ký";
 }
 
-<h1>Create</h1>
+<h1 class="text-primary text-center"><i class="bi bi-file-earmark-plus"></i> Tạo Gói Đăng Ký</h1>
 
-<h4>DoctorSubscription</h4>
+<h4 class="text-center">🔹 Vui lòng chọn gói đăng ký phù hợp 🔹</h4>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form method="post" class="shadow p-4 rounded bg-light">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
             <!-- Dropdown Subscription -->
             <div class="form-group">
-                <label asp-for="DoctorSubscription.SubscriptionId" class="control-label"></label>
-                <select id="subscriptionSelect" asp-for="DoctorSubscription.SubscriptionId" class="form-control" asp-items="ViewBag.SubscriptionId">
+                <label asp-for="DoctorSubscription.SubscriptionId" class="control-label"><i class="bi bi-box-seam"></i> Gói đăng ký</label>
+                <select id="subscriptionSelect" asp-for="DoctorSubscription.SubscriptionId" class="form-control border-primary" asp-items="@(ViewData["SubscriptionId"] as SelectList)">
                     <option value="">-- Chọn Subscription --</option>
                 </select>
             </div>
+
             <!-- Hiển thị thông tin Subscription -->
-            <div id="subscriptionInfo" class="mt-3" style="display: none;">
-                <h5>Thông tin Subscription</h5>
-                <p><strong>Name:</strong> <span id="subName"></span></p>
-                <p><strong>Price:</strong> <span id="subPrice"></span> VND</p>
-                <p><strong>Enable Slot:</strong> <span id="subEnableSlot"></span></p>
-                <p><strong>Description:</strong> <span id="subDescription"></span></p>
+            <div id="subscriptionInfo" class="mt-3 p-3 rounded border border-primary bg-white shadow-sm" style="display: none; opacity: 0; transform: translateY(10px); transition: all 0.3s ease-in-out;">
+                <h5 class="text-primary"><i class="bi bi-info-circle"></i> Thông tin Subscription</h5>
+                <p><strong>📌 Tên:</strong> <span id="subName"></span></p>
+                <p><strong>💰 Giá:</strong> <span id="subPrice"></span> VND</p>
+                <p><strong>🩺 Số slot:</strong> <span id="subEnableSlot"></span></p>
+                <p><strong>📖 Mô tả:</strong> <span id="subDescription"></span></p>
             </div>
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-page="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+                <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Tạo</button>
             </div>
-</form>
+        </form>
     </div>
-</div>
-
-<div>
-    <a asp-page="Index">Back to List</a>
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const subscriptions = @Html.Raw(Json.Serialize(ViewData["Subscriptions"]));
-            const select = document.getElementById("subscriptionSelect");
-            const infoDiv = document.getElementById("subscriptionInfo");
-            const subName = document.getElementById("subName");
-            const subPrice = document.getElementById("subPrice");
-            const subEnableSlot = document.getElementById("subEnableSlot");
-            const subDescription = document.getElementById("subDescription");
+            try {
+                const subscriptions = JSON.parse('@Html.Raw(ViewData["Subscriptions"])');
+                console.log("📌 Loaded subscriptions:", subscriptions);
 
-            select.addEventListener("change", function () {
-                const selectedId = select.value;
-                const subscription = subscriptions.find(s => s.id === selectedId);
+                const select = document.getElementById("subscriptionSelect");
+                const infoDiv = document.getElementById("subscriptionInfo");
+                const subName = document.getElementById("subName");
+                const subPrice = document.getElementById("subPrice");
+                const subEnableSlot = document.getElementById("subEnableSlot");
+                const subDescription = document.getElementById("subDescription");
 
-                if (subscription) {
-                    subName.textContent = subscription.name;
-                    subPrice.textContent = subscription.price.toLocaleString();
-                    subEnableSlot.textContent = subscription.enableSlot;
-                    subDescription.textContent = subscription.description;
-                    infoDiv.style.display = "block";
-                } else {
-                    infoDiv.style.display = "none";
-                }
-            });
+                select.addEventListener("change", function () {
+                    const selectedId = select.value;
+                    const subscription = subscriptions.find(s => s.id.toLowerCase() === selectedId.toLowerCase());
+
+                    if (subscription) {
+                        subName.textContent = subscription.name;
+                        subPrice.textContent = subscription.price.toLocaleString();
+                        subEnableSlot.textContent = subscription.enableSlot;
+                        subDescription.textContent = subscription.description;
+                        infoDiv.style.display = "block";
+                        setTimeout(() => {
+                            infoDiv.style.opacity = "1";
+                            infoDiv.style.transform = "translateY(0)";
+                        }, 50);
+                    } else {
+                        infoDiv.style.opacity = "0";
+                        infoDiv.style.transform = "translateY(10px)";
+                        setTimeout(() => {
+                            infoDiv.style.display = "none";
+                        }, 300);
+                    }
+                });
+            } catch (error) {
+                console.error("❌ Lỗi khi load subscriptions:", error);
+            }
         });
     </script>
 }

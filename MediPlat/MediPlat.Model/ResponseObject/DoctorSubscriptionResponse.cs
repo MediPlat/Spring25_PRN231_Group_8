@@ -11,7 +11,7 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid SubscriptionId { get; set; }
 
-        public short EnableSlot { get; set; }
+        public short? EnableSlot { get; set; }
 
         public DateTime StartDate { get; set; }
 
@@ -22,7 +22,7 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid DoctorId { get; set; }
 
-        public DoctorResponse Doctor { get; set; } = null!;
-        public SubscriptionResponse Subscription { get; set; } = null!;
+        public DoctorResponse? Doctor { get; set; }
+        public SubscriptionResponse? Subscription { get; set; }
     }
 }

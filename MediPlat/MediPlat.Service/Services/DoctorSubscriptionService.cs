@@ -34,10 +34,13 @@ namespace MediPlat.Service.Services
             );
 
             if (doctorSubscription == null)
+            {
                 throw new KeyNotFoundException("Doctor subscription not found.");
+            }
 
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
+
         public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
             var existingSubscription = await _unitOfWork.DoctorSubscriptions
@@ -90,8 +93,6 @@ namespace MediPlat.Service.Services
 
             if (request.EnableSlot.HasValue && request.EnableSlot.Value != existingSubscription.EnableSlot)
             {
-                _logger.LogInformation("EnableSlot has changed from {OldEnableSlot} to {NewEnableSlot}. Updating...",
-                    existingSubscription.EnableSlot, request.EnableSlot.Value);
                 existingSubscription.EnableSlot = request.EnableSlot.Value;
             }
             else

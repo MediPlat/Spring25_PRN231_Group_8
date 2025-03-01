@@ -3,12 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
-using System;
-using System.Threading.Tasks;
-using MediPlat.Model.Model;
-using MediPlat.Service.Services;
 
 [ApiController]
 [Route("odata/Specialties")]

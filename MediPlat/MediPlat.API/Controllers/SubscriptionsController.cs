@@ -23,7 +23,7 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Roles = "Admin,Doctor")]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         public IQueryable<SubscriptionResponse> GetSubscriptions()
         {
             return _subscriptionService.GetAllSubscriptions();
@@ -31,7 +31,7 @@ namespace MediPlat.API.Controllers
 
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Doctor")]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         public async Task<IActionResult> GetSubscription(Guid id)
         {
             var subscription = await _subscriptionService.GetSubscriptionByIdAsync(id);
@@ -39,7 +39,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> CreateSubscription([FromBody] SubscriptionRequest request)
         {
             if (!ModelState.IsValid)
@@ -51,7 +51,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> UpdateSubscription(Guid id, [FromBody] SubscriptionRequest request)
         {
             if (!ModelState.IsValid)
@@ -63,7 +63,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> DeleteSubscription(Guid id)
         {
             await _subscriptionService.DeleteSubscriptionAsync(id);

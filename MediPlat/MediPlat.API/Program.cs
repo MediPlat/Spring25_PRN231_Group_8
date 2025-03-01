@@ -197,26 +197,13 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<AppointmentSlotResponse>("AppointmentSlots");
     builder.EntitySet<ReviewResponse>("Reviews");
     builder.EntitySet<TransactionResponse>("Transactions");
-    var medicineType = builder.AddEntityType(typeof(MedicineResponse));
-    builder.AddEntitySet("Medicines", medicineType);
+    builder.EntitySet<MedicineResponse>("Medicines");
     builder.EntitySet<AppointmentSlotMedicineResponse>("AppointmentSlotMedicines");
     builder.EntitySet<DoctorSubscriptionResponse>("DoctorSubscriptions");
-    var experience = builder.EntitySet<ExperienceResponse>("Experiences");
-    var doctor = builder.EntitySet<DoctorResponse>("Doctors");
-    var specialty = builder.EntitySet<SpecialtyResponse>("Specialties");
-    
-    var experienceType = builder.EntityType<ExperienceResponse>();
-    experienceType.HasKey(e => e.Id);
-    experienceType.Property(e => e.DoctorId);
-    experienceType.Property(e => e.SpecialtyId);
-    experienceType.HasRequired(e => e.Doctor);
-    experienceType.HasRequired(e => e.Specialty);
-
-    var doctorType = builder.EntityType<DoctorResponse>();
-    doctorType.HasKey(d => d.Id);
-
-    var specialtyType = builder.EntityType<SpecialtyResponse>();
-    specialtyType.HasKey(s => s.Id);
+    builder.EntitySet<ExperienceResponse>("Experiences");
+    builder.EntitySet<DoctorResponse>("Doctors");
+    builder.EntitySet<SpecialtyResponse>("Specialties");
+    builder.EntitySet<SubscriptionResponse>("Subscriptions");
 
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
