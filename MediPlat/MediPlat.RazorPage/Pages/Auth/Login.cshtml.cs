@@ -64,7 +64,7 @@ public class LoginModel : PageModel
 
                 return userRole switch
                 {
-                    "Doctor" => RedirectToPage("/DoctorSubscriptions/Index"),
+                    "Doctor" => RedirectToPage("/Experiences/Index"),
                     "Admin" => RedirectToPage("/Medicines/Index"),
                     "Patient" => RedirectToPage("/PatientPages/Index"),
                     _ => RedirectToPage("/Index")

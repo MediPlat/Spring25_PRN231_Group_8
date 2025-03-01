@@ -68,7 +68,7 @@ namespace MediPlat.Repository.Repositories
             return query;
         }
 
-        public IQueryable<T> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
+        public async Task<List<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
         {
             IQueryable<T> query = _dbSet;
 
@@ -77,7 +77,7 @@ namespace MediPlat.Repository.Repositories
                 query = query.Include(includeProperty);
             }
 
-            return query;
+            return await query.ToListAsync();
         }
 
         public int Count() => _dbSet.Count();

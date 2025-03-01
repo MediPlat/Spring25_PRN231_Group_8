@@ -108,9 +108,6 @@ namespace MediPlat.Service.Services
                 Console.WriteLine("Doctor not found.");
             }
 
-            var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
-    .FirstOrDefault(a => a.Email == loginModel.Email);
-
             if (admin != null)
             {
                 Console.WriteLine($"Admin found: {admin.Email}");
