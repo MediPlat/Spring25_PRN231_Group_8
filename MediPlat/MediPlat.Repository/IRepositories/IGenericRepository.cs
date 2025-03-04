@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediPlat.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -28,6 +29,5 @@ namespace MediPlat.Repository.IRepositories
         Task UpdatePartialAsync(T objModel, params Expression<Func<T, object>>[] updatedProperties);
         void Remove(T objModel);
         void Dispose();
-        Task GetFirstOrDefaultAsync(Func<object, bool> value);
     }
 }
