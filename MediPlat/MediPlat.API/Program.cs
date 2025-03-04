@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
@@ -13,10 +11,6 @@ using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Model.ResponseObject;
 
 var builder = WebApplication.CreateBuilder(args);

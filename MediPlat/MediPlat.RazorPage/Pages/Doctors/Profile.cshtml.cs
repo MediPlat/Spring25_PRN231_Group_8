@@ -1,40 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
+
 namespace MediPlat.RazorPage.Pages.Doctors
 {
     [Authorize(Policy = "DoctorPolicy")]
     public class ProfileModel : PageModel
     {
         private readonly IHttpClientFactory _clientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProfileModel(IHttpClientFactory clientFactory)
+        public ProfileModel(IHttpClientFactory clientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _clientFactory = clientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public Doctor Doctor { get; set; }
 
-
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = HttpContext.Request.Cookies["AuthToken"];
+            // ✅ Sử dụng TokenHelper để lấy token
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
 
             if (string.IsNullOrEmpty(token))
             {
-                ModelState.AddModelError("", "Session expired, please login again!");
-                return Page();
+                return RedirectToPage("/Auth/Login");
             }
 
-            var client = _clientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
 
@@ -50,7 +48,5 @@ namespace MediPlat.RazorPage.Pages.Doctors
 
             return Page();
         }
-
-
     }
 }

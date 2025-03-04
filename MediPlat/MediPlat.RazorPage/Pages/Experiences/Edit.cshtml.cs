@@ -13,14 +13,14 @@ namespace MediPlat.RazorPage.Pages.Experiences
     [Authorize(Policy = "DoctorOrAdminPolicy")]
     public class EditModel : PageModel
     {
+        private readonly IHttpClientFactory _clientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
         private readonly ILogger<EditModel> _logger;
 
-        public EditModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<EditModel> logger)
+        public EditModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<EditModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -43,7 +43,8 @@ namespace MediPlat.RazorPage.Pages.Experiences
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             IsAdmin = userRole == "Admin";
@@ -52,7 +53,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             try
             {
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Specialty,Doctor");
+                var response = await client.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Specialty,Doctor");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -107,7 +108,8 @@ namespace MediPlat.RazorPage.Pages.Experiences
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             IsAdmin = userRole == "Admin";
@@ -139,7 +141,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 var jsonContent = JsonSerializer.Serialize(requestData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PutAsync($"https://localhost:7002/odata/Experiences/{id}", content);
+                var response = await client.PutAsync($"https://localhost:7002/odata/Experiences/{id}", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

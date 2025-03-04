@@ -10,14 +10,14 @@ namespace MediPlat.RazorPage.Pages.Experiences
     [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
     public class IndexModel : PageModel
     {
+        private readonly IHttpClientFactory _clientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
         private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<IndexModel> logger)
+        public IndexModel(IHttpClientFactory clientFactory, IHttpContextAccessor httpContextAccessor, ILogger<IndexModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -41,14 +41,14 @@ namespace MediPlat.RazorPage.Pages.Experiences
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 string apiUrl = $"https://localhost:7002/odata/Experiences?$count=true&$top={PageSize}&$skip={(page - 1) * PageSize}&$expand=Doctor,Specialty";
-                _logger.LogInformation($"Fetching data from: {apiUrl}");
 
-                HttpResponseMessage response = await _httpClient.GetAsync(apiUrl);
+                HttpResponseMessage response = await client.GetAsync(apiUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {

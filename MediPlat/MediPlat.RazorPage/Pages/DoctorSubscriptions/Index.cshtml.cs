@@ -12,13 +12,13 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
     public class IndexModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<IndexModel> logger)
+        public IndexModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -32,11 +32,13 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                var doctorResponse = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
 
                 if (doctorResponse.IsSuccessStatusCode)
                 {
@@ -54,7 +56,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                     _logger.LogWarning("Không thể lấy thông tin bác sĩ.");
                 }
 
-                var subscriptionsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/DoctorSubscriptions?$expand=Doctor,Subscription");
+                var subscriptionsResponse = await client.GetAsync("https://localhost:7002/odata/DoctorSubscriptions?$expand=Doctor,Subscription");
 
                 if (subscriptionsResponse.IsSuccessStatusCode)
                 {
