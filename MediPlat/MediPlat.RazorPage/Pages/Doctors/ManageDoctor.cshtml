@@ -1,0 +1,66 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Doctors.DoctorModel
+
+@{
+    ViewData["Title"] = "Manage Doctor";
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger text-center">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+        <script>
+            setTimeout(function () {
+                window.location.href = "/Auth/Login";
+            }, 3000);
+        </script>
+    </div>
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Manage Doctor</h2>
+    <div class="row">
+        @foreach (var doctor in Model.DoctorList)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4>@doctor.FullName</h4>
+                        <p>@doctor.AcademicTitle</p>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="@doctor.AvatarUrl" alt="Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px; border: 3px solid #007bff;">
+                        <p class="text-muted">@doctor.Email</p>
+                        <p><strong>Phone:</strong> @doctor.PhoneNumber</p>
+                        <p><strong>Degree:</strong> @doctor.Degree</p>
+                        <p>
+                            <strong>Status:</strong>
+                            @if (doctor.Status == "Active")
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Banned</span>
+                            }
+                        </p>
+                        <p><strong>Fee Per Hour:</strong> $@doctor.FeePerHour</p>
+                        <div class="mt-3">
+                            <form method="post" onsubmit="return confirm('Are you sure you want to change the status of this doctor?');">
+                                <input type="hidden" name="id" value="@doctor.Id" />
+                                <input type="hidden" name="status" value="@doctor.Status" />
+                                <button type="submit" asp-page-handler="ToggleStatus" class="btn btn-danger">
+                                    @(doctor.Status == "Active" ? "Ban" : "Unban")
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
