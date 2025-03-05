@@ -15,13 +15,13 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
     public class CreateModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<CreateModel> _logger;
 
-        public CreateModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<CreateModel> logger)
+        public CreateModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<CreateModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -35,11 +35,11 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             try
             {
-                var doctorsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                var doctorsResponse = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
                 if (!doctorsResponse.IsSuccessStatusCode)
                 {
                     _logger.LogError($"Lỗi khi lấy thông tin bác sĩ: {doctorsResponse.StatusCode}");
@@ -56,7 +56,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 }
                 DoctorSubscription.DoctorId = doctor.Id;
 
-                var subscriptionsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Subscriptions");
+                var subscriptionsResponse = await client.GetAsync("https://localhost:7002/odata/Subscriptions");
                 if (!subscriptionsResponse.IsSuccessStatusCode)
                 {
                     _logger.LogError($"Lỗi khi lấy danh sách Subscription: {subscriptionsResponse.StatusCode}");
@@ -99,14 +99,16 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 var jsonContent = JsonSerializer.Serialize(DoctorSubscription);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("https://localhost:7002/odata/DoctorSubscriptions", content);
+                var response = await client.PostAsync("https://localhost:7002/odata/DoctorSubscriptions", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

@@ -12,13 +12,13 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
     public class DetailsModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<DetailsModel> _logger;
 
-        public DetailsModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<DetailsModel> logger)
+        public DetailsModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<DetailsModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -36,11 +36,11 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             try
             {
-                var doctorsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                var doctorsResponse = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
                 if (!doctorsResponse.IsSuccessStatusCode)
                 {
                     return Forbid();
@@ -54,7 +54,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                     return Forbid();
                 }
 
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}");
+                var response = await client.GetAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}");
                 if (!response.IsSuccessStatusCode)
                 {
                     return Forbid();

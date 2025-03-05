@@ -42,7 +42,13 @@ namespace MediPlat.RazorPage.Pages.Patients
                 if (response.IsSuccessStatusCode)
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
-                    Patient = JsonConvert.DeserializeObject<List<Patient>>(apiResponse);
+                    var jsonObject = JObject.Parse(apiResponse); // Parse JSON response
+                    var patientsArray = jsonObject["value"]?.ToString(); // Extract "value" array
+
+                    if (!string.IsNullOrEmpty(patientsArray))
+                    {
+                        Patient = JsonConvert.DeserializeObject<List<Patient>>(patientsArray);
+                    }
                 }
 
             }
