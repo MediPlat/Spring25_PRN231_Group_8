@@ -4,6 +4,7 @@ using MediPlat.Model.Model;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http.Headers;
+using MediPlat.Model.ResponseObject;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
@@ -19,7 +20,7 @@ namespace MediPlat.RazorPage.Pages.Doctors
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public Doctor Doctor { get; set; }
+        public DoctorResponse Doctor { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -39,7 +40,7 @@ namespace MediPlat.RazorPage.Pages.Doctors
             if (response.IsSuccessStatusCode)
             {
                 string apiResponse = await response.Content.ReadAsStringAsync();
-                Doctor = JsonConvert.DeserializeObject<Doctor>(apiResponse);
+                Doctor = JsonConvert.DeserializeObject<DoctorResponse>(apiResponse);
             }
             else
             {

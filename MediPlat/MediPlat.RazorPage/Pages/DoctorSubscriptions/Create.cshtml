@@ -54,14 +54,11 @@
 
             cards.forEach(card => {
                 card.addEventListener("click", function () {
-                    // Xóa hiệu ứng chọn trên tất cả các thẻ
                     cards.forEach(c => c.classList.remove("border-success", "selected"));
 
-                    // Đánh dấu thẻ được chọn
                     this.classList.add("border-success", "selected");
                     selectedInput.value = this.getAttribute("data-subscription-id");
 
-                    // Kích hoạt nút submit
                     submitButton.disabled = false;
                 });
             });

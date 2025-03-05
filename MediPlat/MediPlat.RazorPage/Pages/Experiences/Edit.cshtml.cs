@@ -43,6 +43,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
             {
                 return RedirectToPage("/Auth/Login");
             }
+
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -117,21 +118,25 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
             try
             {
-                var requestData = new Dictionary<string, object>();
+                ExperienceRequest requestData;
 
                 if (IsAdmin)
                 {
-                    // Admin chỉ có thể sửa Status
-                    requestData["Status"] = Experience.Status;
+                    requestData = new ExperienceRequest
+                    {
+                        Status = Experience.Status
+                    };
                 }
                 else if (IsDoctor)
                 {
-                    // Doctor chỉ có thể sửa nội dung, không được chỉnh sửa Status
-                    requestData["Title"] = Experience.Title;
-                    requestData["Description"] = Experience.Description;
-                    requestData["Certificate"] = Experience.Certificate;
-                    requestData["SpecialtyId"] = Experience.SpecialtyId;
-                    requestData["DoctorId"] = Experience.DoctorId;
+                    requestData = new ExperienceRequest
+                    {
+                        Title = Experience.Title,
+                        Description = Experience.Description,
+                        Certificate = Experience.Certificate,
+                        SpecialtyId = Experience.SpecialtyId,
+                        DoctorId = Experience.DoctorId
+                    };
                 }
                 else
                 {
@@ -149,13 +154,10 @@ namespace MediPlat.RazorPage.Pages.Experiences
                     ModelState.AddModelError("", $"Update failed: {errorResponse}");
                     return Page();
                 }
-
-                _logger.LogInformation($"Experience '{Experience.Title}' đã được cập nhật thành công.");
                 return RedirectToPage("./Index");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi cập nhật Experience.");
                 ModelState.AddModelError("", "Đã xảy ra lỗi khi cập nhật.");
                 return Page();
             }

@@ -25,9 +25,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
         }
 
         [BindProperty]
-        public DoctorSubscriptionResponse DoctorSubscription { get; set; } = default!;
-        [BindProperty]
-        public DoctorSubscriptionRequest DoctorSubscriptionss { get; set; } = default!;
+        public DoctorSubscriptionRequest DoctorSubscriptionRequest { get; set; } = default!;
 
         [BindProperty]
         public short AdditionalEnableSlot { get; set; }
@@ -65,9 +63,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                     return Page();
                 }
 
-                DoctorSubscription = doctorSubscriptionResponse;
-
-                DoctorSubscriptionss = new DoctorSubscriptionRequest
+                DoctorSubscriptionRequest = new DoctorSubscriptionRequest
                 {
                     SubscriptionId = doctorSubscriptionResponse.SubscriptionId,
                     EnableSlot = doctorSubscriptionResponse.EnableSlot ?? (short)0,
@@ -83,14 +79,14 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            if (DoctorSubscriptionss.SubscriptionId == Guid.Empty)
+            if (DoctorSubscriptionRequest.SubscriptionId == Guid.Empty)
             {
                 ModelState.AddModelError("", "SubscriptionId is required.");
                 return Page();
@@ -103,15 +99,16 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             }
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
             try
             {
-                if (DoctorSubscriptionss.SubscriptionId == Guid.Empty)
+                if (DoctorSubscriptionRequest.SubscriptionId == Guid.Empty)
                 {
                     ModelState.AddModelError("", "SubscriptionId is required.");
                     return Page();
                 }
 
-                short newEnableSlot = (short)(DoctorSubscriptionss.EnableSlot + AdditionalEnableSlot);
+                short newEnableSlot = (short)(DoctorSubscriptionRequest.EnableSlot + AdditionalEnableSlot);
                 if (newEnableSlot > 1000)
                 {
                     ModelState.AddModelError("", "Total EnableSlot cannot exceed 1000.");
@@ -120,16 +117,16 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 
                 var requestData = new DoctorSubscriptionRequest
                 {
-                    SubscriptionId = DoctorSubscriptionss.SubscriptionId,
+                    SubscriptionId = DoctorSubscriptionRequest.SubscriptionId,
                     EnableSlot = newEnableSlot,
                     UpdateDate = DateTime.UtcNow,
-                    Status = DoctorSubscriptionss.Status,
-                    DoctorId = DoctorSubscriptionss.DoctorId
+                    Status = DoctorSubscriptionRequest.Status,
+                    DoctorId = DoctorSubscriptionRequest.DoctorId
                 };
 
                 var jsonContent = JsonSerializer.Serialize(requestData);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-                var response = await client.PutAsync($"https://localhost:7002/odata/DoctorSubscriptions/{DoctorSubscription.Id}", content);
+                var response = await client.PutAsync($"https://localhost:7002/odata/DoctorSubscriptions/{id}", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

@@ -22,7 +22,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             _logger = logger;
         }
 
-        public IList<DoctorSubscriptionResponse> DoctorSubscriptions { get; set; } = new List<DoctorSubscriptionResponse>();
+        public DoctorSubscriptionResponse DoctorSubscriptions { get; set; } = new DoctorSubscriptionResponse();
         public string DoctorFullName { get; set; } = "Chưa có thông tin bác sĩ";
 
         public async Task<IActionResult> OnGetAsync()
@@ -63,8 +63,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                     var jsonResponse = await subscriptionsResponse.Content.ReadAsStringAsync();
                     var odataResponse = JsonSerializer.Deserialize<ODataResponse<DoctorSubscriptionResponse>>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    DoctorSubscriptions = odataResponse?.Value ?? new List<DoctorSubscriptionResponse>();
-                    _logger.LogInformation($"Lấy thành công {DoctorSubscriptions.Count} gói đăng ký.");
+                    DoctorSubscriptions = odataResponse?.Value?.FirstOrDefault() ?? new DoctorSubscriptionResponse();
                 }
                 else
                 {

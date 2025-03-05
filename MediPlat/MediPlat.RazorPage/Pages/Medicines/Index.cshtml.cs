@@ -46,7 +46,6 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 if (response.IsSuccessStatusCode)
                 {
                     var apiResponse = await response.Content.ReadAsStringAsync();
-                    _logger.LogInformation($"📥 JSON API Response: {apiResponse}"); // Debug JSON từ API
 
                     var jsonDocument = JsonNode.Parse(apiResponse);
                     var medicinesArray = jsonDocument?["value"]?.AsArray();

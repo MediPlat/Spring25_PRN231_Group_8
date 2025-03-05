@@ -87,13 +87,8 @@ namespace MediPlat.RazorPage.Pages.Experiences
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid? id)
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
-            if (id == null)
-            {
-                return NotFound("Experience ID không hợp lệ.");
-            }
-
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
