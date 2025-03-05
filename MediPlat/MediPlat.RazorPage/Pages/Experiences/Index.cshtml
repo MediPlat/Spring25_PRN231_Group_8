@@ -2,59 +2,105 @@
 @model MediPlat.RazorPage.Pages.Experiences.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Danh sách Experience";
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded">
+        <div class="card-header bg-primary text-white text-center">
+            <h2><i class="bi bi-list-check"></i> Danh sách Experience</h2>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
 
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Certificate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Doctor)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Experience[0].Specialty)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Experience) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Certificate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Doctor.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Specialty.Name)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+            <div class="d-flex justify-content-between mb-3">
+                <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus-circle"></i> Thêm mới</a>
+            </div>
+
+            @if (Model.Experiences.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark text-center">
+                            <tr>
+                                <th>🏷️ Tiêu đề</th>
+                                <th>📜 Mô tả</th>
+                                <th>📜 Chứng chỉ</th>
+                                <th>👨‍⚕️ Bác sĩ</th>
+                                <th>🏥 Chuyên khoa</th>
+                                <th>⚠️ Trạng thái</th>
+                                <th>⚙️ Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            @foreach (var item in Model.Experiences)
+                            {
+                                <tr>
+                                    <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Certificate)</td>
+                                    <td>@(item.Doctor != null ? item.Doctor.FullName : "Không có thông tin")</td>
+                                    <td>@(item.Specialty != null ? item.Specialty.Name : "Không có chuyên khoa")</td>
+                                    <td>
+                                        <span class="badge @(item.Status == "Active" ? "bg-success" : "bg-danger")">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td class="d-flex justify-content-center gap-2">
+                                        <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
+                                            ✏️ Sửa
+                                        </a>
+                                        <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                            📄 Chi tiết
+                                        </a>
+                                        <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
+                                            🗑️ Xóa
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center mt-3">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage - 1)">
+                                    ❮ Trước
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item active">
+                            <span class="page-link">Trang @Model.CurrentPage</span>
+                        </li>
+
+                        @if (Model.CurrentPage * Model.PageSize < Model.TotalItems)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage + 1)">
+                                    Tiếp ❯
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+            else
+            {
+                <div class="alert alert-warning text-center">
+                    🚨 Không có Experience nào.
+                </div>
+            }
+        </div>
+    </div>
+</div>

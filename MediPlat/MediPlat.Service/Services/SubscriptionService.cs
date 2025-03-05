@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using AutoMapper;
+﻿using AutoMapper;
 using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
@@ -21,7 +20,7 @@ namespace MediPlat.Service.Services
 
         public IQueryable<SubscriptionResponse> GetAllSubscriptions()
         {
-            var subscriptions = _unitOfWork.Subscriptions.GetAll();
+            var subscriptions = _unitOfWork.Subscriptions.GetAll().ToList();
             return subscriptions.Select(sub => _mapper.Map<SubscriptionResponse>(sub)).AsQueryable();
         }
 
@@ -83,7 +82,7 @@ namespace MediPlat.Service.Services
             var subscription = await _unitOfWork.Subscriptions.GetIdAsync(id);
             if (subscription == null)
                 throw new KeyNotFoundException("Subscription not found.");
-            bool hasDoctorSubscriptions = _unitOfWork.DoctorSubscriptions.GetList(ds => ds.SubscriptionId == id).Any();
+            bool hasDoctorSubscriptions = (await _unitOfWork.DoctorSubscriptions.GetListAsync(ds => ds.SubscriptionId == id)).Any();
             if (hasDoctorSubscriptions)
                 throw new InvalidOperationException("Cannot delete this subscription as it is referenced by doctor subscriptions.");
             _unitOfWork.Subscriptions.Remove(subscription);

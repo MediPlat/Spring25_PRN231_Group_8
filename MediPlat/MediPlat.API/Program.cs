@@ -13,7 +13,6 @@ using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
-using MediPlat.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -34,6 +33,7 @@ builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
+builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // Đăng ký Repository
@@ -50,6 +50,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
     })
     .AddOData(options =>
     {
@@ -58,7 +59,10 @@ builder.Services.AddControllers()
     });
 
 // Add DbContext 
-builder.Services.AddDbContext<MediPlatContext>();
+builder.Services.AddDbContext<MediPlatContext>(/*options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
+}*/);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -135,11 +139,22 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("DoctorPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Doctor"));
     options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
     options.AddPolicy("DoctorOrAdminPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin")))));
+    options.AddPolicy("DoctorOrpatientPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Patient")))));
+    options.AddPolicy("DoctorOrAdminorPatientPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Admin" || c.Value == "Patient")))));
     options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
 
@@ -154,6 +169,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+});
+builder.Services.AddLogging();
 // Build the app
 var app = builder.Build();
 
@@ -173,17 +193,27 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
-app.UseMiddleware<GlobalExceptionMiddleware>();
 app.Run();
 
 static IEdmModel GetEdmModel()
 {
     var builder = new ODataConventionModelBuilder();
 
-    builder.EntitySet<PatientResponse>("Patients");
-    builder.EntitySet<Doctor>("Doctors");
+    builder.EntitySet<AppointmentSlotResponse>("AppointmentSlots");
+    builder.EntitySet<ReviewResponse>("Reviews");
+    builder.EntitySet<TransactionResponse>("Transactions");
+    builder.EntitySet<MedicineResponse>("Medicines");
+    builder.EntitySet<AppointmentSlotMedicineResponse>("AppointmentSlotMedicines");
+    builder.EntitySet<DoctorSubscriptionResponse>("DoctorSubscriptions");
+    builder.EntitySet<ExperienceResponse>("Experiences");
+    builder.EntitySet<DoctorResponse>("Doctors");
+    builder.EntitySet<SpecialtyResponse>("Specialties");
+    builder.EntitySet<SubscriptionResponse>("Subscriptions");
     builder.EntitySet<ProfileResponse>("Profiles");
-    builder.EntitySet<Transaction>("Transactions");
+    // Định nghĩa các mối quan hệ nếu cần thiết
+    // builder.EntitySet<EntityName>("EntitySetName");
+    builder.EntityType<Patient>()
+        .HasMany(p => p.Transactions);
 
     return builder.GetEdmModel();
 }

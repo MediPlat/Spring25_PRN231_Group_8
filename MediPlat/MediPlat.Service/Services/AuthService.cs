@@ -1,13 +1,19 @@
-﻿
-using MediPlat.Model.Authen_Athor;
+﻿using MediPlat.Model.Authen_Athor;
 using MediPlat.Service.IServices;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using MediPlat.Model.Model;
+using MediPlat.Repository.Repositories;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
+using MediPlat.Model;
+using MediPlat.Model.Model;
 using MediPlat.Model.Authen_Author;
 
 namespace MediPlat.Service.Services
@@ -27,9 +33,32 @@ namespace MediPlat.Service.Services
         {
 
             AuthResult result = new AuthResult();
-            var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
 
-            if (patient != null)
+            var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
+                .FirstOrDefault(a => a.Email == loginModel.Email);
+
+            if (admin != null)
+            {
+                Console.WriteLine($"Admin found: {admin.Email}");
+                if (admin.Password == loginModel.Password)
+                {
+                    Console.WriteLine("Admin password is correct.");
+                    var token = GenerateJwtToken(Guid.NewGuid(), "Admin");
+                    result = new AuthResult
+                    {
+                        Token = "Bearer " + token,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]))
+                    };
+                    return result;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid admin password.");
+                }
+            }
+                var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
+                
+            if (patient != null && patient.Status.Equals("Active"))
             {
                 Console.WriteLine($"Patient found: {patient.Email}");
                 if (patient.Password == loginModel.Password)
@@ -55,7 +84,7 @@ namespace MediPlat.Service.Services
 
             var doctor = _unitOfWork.Doctors.Get(d => d.Email == loginModel.Email);
 
-            if (doctor != null)
+            if (doctor != null && doctor.Status.Equals("Active"))
             {
                 Console.WriteLine($"Doctor found: {doctor.Email}");
                 if (doctor.Password == loginModel.Password)
@@ -79,9 +108,6 @@ namespace MediPlat.Service.Services
                 Console.WriteLine("Doctor not found.");
             }
 
-            var admin = _configuration.GetSection("Admins").Get<List<LoginModel>>()
-    .FirstOrDefault(a => a.Email == loginModel.Email);
-
             if (admin != null)
             {
                 Console.WriteLine($"Admin found: {admin.Email}");
@@ -102,8 +128,10 @@ namespace MediPlat.Service.Services
                 }
             }
             return result;
-
         }
+
+
+
 
         private string GenerateJwtToken(Guid userId, string role)
         {
@@ -111,10 +139,10 @@ namespace MediPlat.Service.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Role, role),
-            };
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Role, role)
+        };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
@@ -123,7 +151,7 @@ namespace MediPlat.Service.Services
                 expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"])),
                 signingCredentials: creds);
 
-            Console.WriteLine("Generated Token: Bearer " + new JwtSecurityTokenHandler().WriteToken(token));
+            Console.WriteLine("Generated Token: " + new JwtSecurityTokenHandler().WriteToken(token));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
@@ -146,5 +174,7 @@ namespace MediPlat.Service.Services
 
             await _unitOfWork.SaveChangesAsync();
         }
+
+
     }
 }

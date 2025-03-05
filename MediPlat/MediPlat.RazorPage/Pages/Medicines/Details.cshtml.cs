@@ -1,42 +1,70 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
+using MediPlat.Model.Model;
+using MediPlat.Model.ResponseObject;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace MediPlat.RazorPage.Pages.Medicines
 {
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
     public class DetailsModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<DetailsModel> _logger;
 
-        public DetailsModel(MediPlatContext context)
+        public DetailsModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<DetailsModel> logger)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
+            _logger = logger;
         }
 
-        public Medicine Medicine { get; set; } = default!;
+        public MedicineResponse Medicine { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
-                return NotFound();
+                return NotFound("Medicine ID is required.");
             }
 
-            var medicine = await _context.Medicines.FirstOrDefaultAsync(m => m.Id == id);
-            if (medicine == null)
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return RedirectToPage("/Auth/Login");
             }
-            else
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
             {
-                Medicine = medicine;
+                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Medicines/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Forbid();
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                Medicine = JsonSerializer.Deserialize<MedicineResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (Medicine == null)
+                {
+                    return NotFound("Medicine không tồn tại.");
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi tải dữ liệu Medicine: {ex.Message}");
+                return StatusCode(500, "Lỗi máy chủ khi lấy dữ liệu Medicine.");
+            }
+
             return Page();
         }
     }

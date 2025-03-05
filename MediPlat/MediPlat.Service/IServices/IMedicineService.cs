@@ -12,8 +12,7 @@ namespace MediPlat.Service.IServices
     {
         IQueryable<MedicineResponse> GetAllMedicines();
         Task<MedicineResponse?> GetMedicineByIdAsync(Guid id);
-        Task AddMedicineAsync(MedicineRequest request);
-        Task UpdateMedicineAsync(Guid id, MedicineRequest request);
-        Task DeleteMedicineAsync(Guid id);
+        Task<MedicineResponse> AddMedicineAsync(MedicineRequest request);
+        Task<MedicineResponse> UpdateMedicineAsync(Guid id, MedicineRequest request);
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
 using MediPlat.Model.Model;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MediPlat.Repository.IRepositories
 {
@@ -14,6 +12,7 @@ namespace MediPlat.Repository.IRepositories
         IGenericRepository<Experience> Experiences { get; }
         IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
         IGenericRepository<Medicine> Medicines { get; }
+        IGenericRepository<Specialty> Specialties { get; }
         IGenericRepository<Profile> Profiles { get; }
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();

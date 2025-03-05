@@ -2,60 +2,74 @@
 @model MediPlat.RazorPage.Pages.DoctorSubscriptions.DetailsModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi tiết Gói Đăng Ký";
 }
 
-<h1>Details</h1>
+<h1 class="text-primary text-center"><i class="bi bi-card-list"></i> Chi tiết Gói Đăng Ký</h1>
+<hr />
 
-<div>
-    <h4>DoctorSubscription</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.EnableSlot)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.EnableSlot)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.StartDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.StartDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.EndDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.EndDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.UpdateDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.UpdateDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.Status)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.Status)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.Doctor)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.Doctor.FullName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorSubscription.Subscription)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DoctorSubscription.Subscription.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.DoctorSubscription.Id">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
+<div class="container">
+    <div class="card shadow-lg border-0 rounded">
+        <div class="card-header bg-info text-white text-center">
+            <h2><i class="bi bi-file-earmark-text"></i> Thông tin Chi Tiết</h2>
+        </div>
+        <div class="card-body">
+            @if (Model.DoctorSubscription != null)
+            {
+                <h4 class="mb-3 text-primary">📑 Thông tin Đăng Ký</h4>
+                <hr />
+
+                <dl class="row">
+                    <dt class="col-sm-4">🎟️ Số lượng Slot:</dt>
+                    <dd class="col-sm-8">@Model.DoctorSubscription.EnableSlot</dd>
+
+                    <dt class="col-sm-4">📅 Ngày bắt đầu:</dt>
+                    <dd class="col-sm-8">@Model.DoctorSubscription.StartDate.ToShortDateString()</dd>
+
+                    <dt class="col-sm-4">📅 Ngày kết thúc:</dt>
+                    <dd class="col-sm-8">@Model.DoctorSubscription.EndDate.ToShortDateString()</dd>
+
+                    <dt class="col-sm-4">🕒 Cập nhật lần cuối:</dt>
+                    <dd class="col-sm-8">@(Model.DoctorSubscription.UpdateDate.HasValue ? Model.DoctorSubscription.UpdateDate.Value.ToShortDateString() : "Chưa cập nhật")</dd>
+
+                    <dt class="col-sm-4">⚠️ Trạng thái:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.DoctorSubscription.Status == "Active" ? "bg-success" : "bg-danger")">
+                            @Model.DoctorSubscription.Status
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">👨‍⚕️ Bác sĩ:</dt>
+                    <dd class="col-sm-8">
+                        @(Model.DoctorSubscription.Doctor != null ? Model.DoctorSubscription.Doctor.FullName : "Không có thông tin bác sĩ")
+                    </dd>
+
+                    <dt class="col-sm-4">📦 Gói đăng ký:</dt>
+                    <dd class="col-sm-8">
+                        @(Model.DoctorSubscription.Subscription != null ? Model.DoctorSubscription.Subscription.Name : "Không có thông tin gói đăng ký")
+                    </dd>
+                </dl>
+
+                <div class="mt-4 text-center">
+                    <a asp-page="./Edit" asp-route-id="@Model.DoctorSubscription.Id" class="btn btn-warning">
+                        ✏️ Chỉnh sửa
+                    </a>
+                    <a asp-page="./Index" class="btn btn-secondary">
+                        ⬅ Quay lại danh sách
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger text-center mt-3">
+                    🚨 Không tìm thấy thông tin Gói Đăng Ký.
+                </div>
+                <div class="text-center">
+                    <a asp-page="./Index" class="btn btn-secondary mt-2">
+                        ⬅ Quay lại danh sách
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
 </div>

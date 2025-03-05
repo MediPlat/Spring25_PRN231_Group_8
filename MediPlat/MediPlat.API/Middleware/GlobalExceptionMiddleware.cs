@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace MediPlat.API.Middleware
 {
@@ -37,6 +32,18 @@ namespace MediPlat.API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
+            if (context.Response.HasStarted)
+            {
+                return;
+            }
+
+            context.Response.Clear();
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+
+            var errorResponse = new { message = "An unexpected error occurred.", details = ex.Message };
+            await context.Response.WriteAsJsonAsync(errorResponse);
+
             _logger.LogError($"Exception occurred for {context.Request.Method} {context.Request.Path}: {ex.Message}");
             context.Response.ContentType = "application/json";
 

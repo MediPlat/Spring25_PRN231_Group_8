@@ -1,12 +1,13 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
@@ -24,52 +25,58 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             _logger = logger;
         }
 
+        [BindProperty]
+        public DoctorSubscriptionRequest DoctorSubscription { get; set; } = new DoctorSubscriptionRequest();
+        public List<SelectListItem> SubscriptionList { get; set; } = new List<SelectListItem>();
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
-
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
-            }
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
             }
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 var doctorsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
-                var subscriptionsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Subscriptions");
-
-                if (!doctorsResponse.IsSuccessStatusCode || !subscriptionsResponse.IsSuccessStatusCode)
+                if (!doctorsResponse.IsSuccessStatusCode)
                 {
+                    _logger.LogError($"Lỗi khi lấy thông tin bác sĩ: {doctorsResponse.StatusCode}");
                     return Page();
                 }
 
-                var doctorsJson = await doctorsResponse.Content.ReadAsStringAsync();
+                var doctorJson = await doctorsResponse.Content.ReadAsStringAsync();
+                var doctor = JsonSerializer.Deserialize<DoctorResponse>(doctorJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (doctor == null)
+                {
+                    _logger.LogError("Không thể lấy thông tin bác sĩ.");
+                    return Page();
+                }
+                DoctorSubscription.DoctorId = doctor.Id;
+
+                var subscriptionsResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Subscriptions");
+                if (!subscriptionsResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"Lỗi khi lấy danh sách Subscription: {subscriptionsResponse.StatusCode}");
+                    return Page();
+                }
+
                 var subscriptionsJson = await subscriptionsResponse.Content.ReadAsStringAsync();
 
-                var doctor = JsonSerializer.Deserialize<Doctor>(doctorsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var odataResponse = JsonSerializer.Deserialize<ODataResponse<SubscriptionResponse>>(subscriptionsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                if (doctor != null)
+                if (odataResponse == null || odataResponse.Value == null)
                 {
-                    ViewData["DoctorId"] = doctor.Id.ToString();
+                    _logger.LogError("Danh sách Subscription rỗng!");
+                    return Page();
                 }
 
-                if (DoctorSubscription == null)
-                {
-                    DoctorSubscription = new DoctorSubscription();
-                }
+                var subscriptions = odataResponse.Value;
+                _logger.LogInformation($"Lấy thành công {subscriptions.Count} gói Subscription.");
 
-                if (ViewData["DoctorId"] != null && Guid.TryParse(ViewData["DoctorId"].ToString(), out Guid parsedDoctorId))
-                {
-                    DoctorSubscription.DoctorId = parsedDoctorId;
-                }
-
-                var subscriptions = JsonSerializer.Deserialize<List<Subscription>>(subscriptionsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                ViewData["SubscriptionId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(subscriptions, "Id", "Name");
+                ViewData["SubscriptionId"] = new SelectList(subscriptions, "Id", "Name");
                 ViewData["Subscriptions"] = subscriptions;
             }
             catch (Exception ex)
@@ -80,9 +87,6 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             return Page();
         }
 
-        [BindProperty]
-        public DoctorSubscription DoctorSubscription { get; set; } = default!;
-
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
@@ -90,17 +94,11 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                 return Page();
             }
 
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-
-            if (token.StartsWith("Bearer "))
-            {
-                token = token.Substring("Bearer ".Length);
-            }
-
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
@@ -121,6 +119,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             }
             catch (Exception ex)
             {
+                _logger.LogError($"❌ Lỗi khi tạo gói đăng ký: {ex.Message}");
                 ModelState.AddModelError("", "Lỗi khi tạo gói đăng ký. Vui lòng thử lại.");
                 return Page();
             }

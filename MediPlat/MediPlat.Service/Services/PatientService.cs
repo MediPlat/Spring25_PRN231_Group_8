@@ -5,6 +5,7 @@ using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -90,7 +91,6 @@ namespace MediPlat.Service.Services
             patient.Status = "Suspended";
             _unitOfWork.Patients.Update(patient);
             await _unitOfWork.SaveChangesAsync();
-
             return _mapper.Map<PatientResponse>(patient);
         }
 

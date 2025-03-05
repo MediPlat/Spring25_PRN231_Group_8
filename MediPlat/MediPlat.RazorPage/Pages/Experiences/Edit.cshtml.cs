@@ -1,78 +1,162 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using MediPlat.Model.RequestObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+using MediPlat.Model.ResponseObject;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
     public class EditModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<EditModel> _logger;
 
-        public EditModel(MediPlatContext context)
+        public EditModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<EditModel> logger)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
+            _logger = logger;
         }
 
         [BindProperty]
-        public Experience Experience { get; set; } = default!;
+        public ExperienceRequest Experience { get; set; } = new ExperienceRequest();
+        public bool IsAdmin { get; private set; } = false;
+        public bool IsDoctor { get; private set; } = false;
+        public string DoctorFullName { get; set; } = string.Empty;
+        public string SpecialtyName { get; set; } = string.Empty;
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
-                return NotFound();
+                return NotFound("Experience ID không hợp lệ.");
             }
 
-            var experience =  await _context.Experiences.FirstOrDefaultAsync(m => m.Id == id);
-            if (experience == null)
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return RedirectToPage("/Auth/Login");
             }
-            Experience = experience;
-           ViewData["DoctorId"] = new SelectList(_context.Doctors, "Id", "Id");
-           ViewData["SpecialtyId"] = new SelectList(_context.Specialties, "Id", "Id");
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            IsAdmin = userRole == "Admin";
+            IsDoctor = userRole == "Doctor";
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Experiences/{id}?$expand=Specialty,Doctor");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Forbid();
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var experienceResponse = JsonSerializer.Deserialize<ExperienceResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (experienceResponse == null)
+                {
+                    return NotFound();
+                }
+
+                // Nếu là Doctor nhưng không phải chủ sở hữu của Experience → Không có quyền chỉnh sửa
+                if (IsDoctor && experienceResponse.DoctorId != userId)
+                {
+                    return Forbid();
+                }
+
+                Experience = new ExperienceRequest
+                {
+                    SpecialtyId = experienceResponse.SpecialtyId,
+                    Title = experienceResponse.Title,
+                    Description = experienceResponse.Description,
+                    Certificate = experienceResponse.Certificate,
+                    Status = experienceResponse.Status,
+                    DoctorId = experienceResponse.DoctorId
+                };
+
+                DoctorFullName = experienceResponse.Doctor?.FullName ?? "Không có thông tin";
+                SpecialtyName = experienceResponse.Specialty?.Name ?? "Không có chuyên khoa";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tải thông tin kinh nghiệm.");
+                return StatusCode(500, "Đã xảy ra lỗi khi tải dữ liệu.");
+            }
+
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var existingExperience = await _context.Experiences.FirstOrDefaultAsync(e => e.Id == Experience.Id && e.DoctorId == doctorId);
-
-            if (existingExperience == null)
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                return Forbid();
+                return RedirectToPage("/Auth/Login");
             }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            existingExperience.Title = Experience.Title;
-            existingExperience.Description = Experience.Description;
-            existingExperience.Certificate = Experience.Certificate;
-            existingExperience.SpecialtyId = Experience.SpecialtyId;
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            IsAdmin = userRole == "Admin";
+            IsDoctor = userRole == "Doctor";
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                var requestData = new Dictionary<string, object>();
 
-            return RedirectToPage("./Index");
-        }
+                if (IsAdmin)
+                {
+                    // Admin chỉ có thể sửa Status
+                    requestData["Status"] = Experience.Status;
+                }
+                else if (IsDoctor)
+                {
+                    // Doctor chỉ có thể sửa nội dung, không được chỉnh sửa Status
+                    requestData["Title"] = Experience.Title;
+                    requestData["Description"] = Experience.Description;
+                    requestData["Certificate"] = Experience.Certificate;
+                    requestData["SpecialtyId"] = Experience.SpecialtyId;
+                    requestData["DoctorId"] = Experience.DoctorId;
+                }
+                else
+                {
+                    return Forbid();
+                }
 
+                var jsonContent = JsonSerializer.Serialize(requestData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-        private bool ExperienceExists(Guid id)
-        {
-            return _context.Experiences.Any(e => e.Id == id);
+                var response = await _httpClient.PutAsync($"https://localhost:7002/odata/Experiences/{id}", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError("", $"Update failed: {errorResponse}");
+                    return Page();
+                }
+
+                _logger.LogInformation($"Experience '{Experience.Title}' đã được cập nhật thành công.");
+                return RedirectToPage("./Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cập nhật Experience.");
+                ModelState.AddModelError("", "Đã xảy ra lỗi khi cập nhật.");
+                return Page();
+            }
         }
     }
 }

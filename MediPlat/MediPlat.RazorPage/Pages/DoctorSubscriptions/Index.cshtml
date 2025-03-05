@@ -2,49 +2,63 @@
 @model MediPlat.RazorPage.Pages.DoctorSubscriptions.IndexModel
 
 @{
-    <h1>@ViewData["Title"]</h1>
+    ViewData["Title"] = "Danh sách Gói Đăng Ký";
 }
 
-<p>
-    <a asp-page="Create">Create New</a>
+<h1 class="text-primary text-center"><i class="bi bi-list-check"></i> Danh sách Gói Đăng Ký</h1>
+
+<p class="text-center">
+    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
 </p>
-@if (Model.DoctorSubscription != null && Model.DoctorSubscription.Any())
+
+@if (Model.DoctorSubscriptions != null && Model.DoctorSubscriptions.Any())
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].EnableSlot)</th>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].StartDate)</th>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].EndDate)</th>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].UpdateDate)</th>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].Status)</th>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].Doctor)</th>
-                <th>@Html.DisplayNameFor(model => model.DoctorSubscription[0].Subscription)</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.DoctorSubscription)
-            {
+    <div class="table-responsive">
+        <table class="table table-hover shadow-lg border rounded">
+            <thead class="table-dark text-center">
                 <tr>
-                    <td>@Html.DisplayFor(modelItem => item.EnableSlot)</td>
-                    <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
-                    <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
-                    <td>@Html.DisplayFor(modelItem => item.UpdateDate)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Status)</td>
-                    <td>@(item.Doctor != null ? item.Doctor.FullName : "N/A")</td>
-                    <td>@(item.Subscription != null ? item.Subscription.Name : "N/A")</td>
-                    <td>
-                        <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                    </td>
+                    <th>📌 Slot</th>
+                    <th>📅 Bắt đầu</th>
+                    <th>📅 Kết thúc</th>
+                    <th>🕒 Cập nhật</th>
+                    <th>⚠️ Trạng thái</th>
+                    <th>👨‍⚕️ Bác sĩ</th>
+                    <th>🏥 Gói đăng ký</th>
+                    <th>⚙️ Hành động</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody class="text-center">
+                @foreach (var item in Model.DoctorSubscriptions)
+                {
+                    <tr class="align-middle">
+                        <td>@Html.DisplayFor(modelItem => item.EnableSlot)</td>
+                        <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.UpdateDate)</td>
+                        <td>
+                            <span class="badge @(item.Status == "Active" ? "bg-success" : "bg-danger")">
+                                @item.Status
+                            </span>
+                        </td>
+                        <td>@(item.Doctor?.FullName ?? "N/A")</td>
+                        <td>@(item.Subscription?.Name ?? "N/A")</td>
+                        <td>
+                            <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil-square"></i> Sửa
+                            </a>
+                            <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i> Xem
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 else
 {
-    <p>No Doctor Subscriptions available.</p>
+    <div class="alert alert-warning text-center">
+        <i class="bi bi-exclamation-triangle"></i> Hiện tại không có Gói Đăng Ký nào.
+    </div>
 }
-

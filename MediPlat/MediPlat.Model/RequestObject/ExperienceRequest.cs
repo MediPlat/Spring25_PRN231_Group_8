@@ -9,10 +9,8 @@ namespace MediPlat.Model.RequestObject
 {
     public class ExperienceRequest
     {
-        [Required]
         public Guid? SpecialtyId { get; set; }
 
-        [Required]
         [MaxLength(255)]
         public string Title { get; set; }
 

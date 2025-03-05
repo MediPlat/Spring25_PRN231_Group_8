@@ -16,6 +16,6 @@ namespace MediPlat.Service.IServices
         public Doctor Update(DoctorSchema doctor, string id);
         public Task<bool> ChangePassword(ChangePassword change, Guid id);
         public Task<Doctor> Create(DoctorSchema doctor);
-        public Task<List<Doctor>> GetAllDoctor();
+        IQueryable<Doctor> GetAllDoctor();
     }
 }

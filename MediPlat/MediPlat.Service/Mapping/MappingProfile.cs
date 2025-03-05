@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.RequestObject.Patient;
 using MediPlat.Model.ResponseObject;
@@ -14,24 +13,40 @@ namespace MediPlat.Service.Mapping
         {
             CreateMap<DoctorSubscriptionRequest, DoctorSubscription>();
 
-            CreateMap<DoctorSubscription, DoctorSubscriptionResponse>();
+            CreateMap<DoctorSubscription, DoctorSubscriptionResponse>()
+                .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor))
+                .ForMember(dest => dest.Subscription, opt => opt.MapFrom(src => src.Subscription));
 
             CreateMap<SubscriptionRequest, Subscription>();
 
             CreateMap<Subscription, SubscriptionResponse>();
 
-            CreateMap<ExperienceRequest, Experience>();
-
             CreateMap<ExperienceRequest, Experience>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+                .ForMember(dest => dest.Doctor, opt => opt.Ignore())
+                .ForMember(dest => dest.Specialty, opt => opt.Ignore());
 
-            CreateMap<Experience, ExperienceResponse>();
+            CreateMap<Experience, ExperienceResponse>()
+                .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor))
+                .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty));
 
-            CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>();
+            CreateMap<DoctorRequest, Doctor>();
 
-            CreateMap<AppointmentSlotMedicine, AppointmentSlotMedicineResponse>();
+            CreateMap<Doctor, DoctorResponse>();
 
-            CreateMap<MedicineRequest, Medicine>();
+            CreateMap<SpecialtyRequest, Specialty>();
+
+            CreateMap<Specialty, SpecialtyResponse>();
+
+            CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>()
+                .ForMember(dest => dest.AppointmentSlot, opt => opt.Ignore())
+                .ForMember(dest => dest.Medicine, opt => opt.Ignore()); ;
+
+            CreateMap<AppointmentSlotMedicine, AppointmentSlotMedicineResponse>()
+                .ForMember(dest => dest.AppointmentSlot, opt => opt.MapFrom(src => src.AppointmentSlot))
+                .ForMember(dest => dest.Medicine, opt => opt.MapFrom(src => src.Medicine)); ;
+
+            CreateMap<MedicineRequest, Medicine>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? "Active"));
 
             CreateMap<Medicine, MedicineResponse>();
 
@@ -47,10 +62,6 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<AppointmentSlot, AppointmentSlotResponse>();
 
-            CreateMap<DoctorRequest, Doctor>();
-
-            CreateMap<Doctor, DoctorResponse>();
-
             CreateMap<Model.Model.Service, ServiceResponse>();
 
             CreateMap<ServiceRequest, Model.Model.Service>();
@@ -58,10 +69,6 @@ namespace MediPlat.Service.Mapping
             CreateMap<ReviewRequest, Review>();
 
             CreateMap<Review, ReviewResponse>();
-
-            CreateMap<SpecialtyRequest, Specialty>();
-
-            CreateMap<Specialty, SpecialtyResponse>();
 
             CreateMap<Patient, PatientRequest>();
 

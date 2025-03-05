@@ -1,44 +1,86 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using MediPlat.Model.Model;
-using Microsoft.AspNetCore.Authorization;
 
 namespace MediPlat.RazorPage.Pages.Medicines
 {
+    [Authorize(Policy = "AdminPolicy")]
     public class CreateModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<CreateModel> _logger;
 
-        public CreateModel(MediPlatContext context)
+        public CreateModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<CreateModel> logger)
         {
-            _context = context;
-        }
-
-        public IActionResult OnGet()
-        {
-            return Page();
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
+            _logger = logger;
         }
 
         [BindProperty]
-        public Medicine Medicine { get; set; } = default!;
+        public MedicineRequest Medicine { get; set; } = new MedicineRequest { Status = "Active" };
 
-        // For more information, see https://aka.ms/RazorPagesCRUD.
+        public async Task<IActionResult> OnGetAsync()
+        {
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            return Page();
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            _context.Medicines.Add(Medicine);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var medicineRequest = new MedicineRequest
+                {
+                    Name = Medicine.Name,
+                    DosageForm = Medicine.DosageForm,
+                    Strength = Medicine.Strength,
+                    SideEffects = Medicine.SideEffects,
+                    Status = Medicine.Status ?? "Active"
+                };
 
-            return RedirectToPage("./Index");
+                var jsonContent = JsonSerializer.Serialize(medicineRequest, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync("https://localhost:7002/odata/Medicines", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+
+                    ModelState.AddModelError("", $"Không thể tạo thuốc. API phản hồi: {errorResponse}");
+                    return Page();
+                }
+                return RedirectToPage("./Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Lỗi khi tạo thuốc. Vui lòng thử lại.");
+                return Page();
+            }
         }
     }
 }

@@ -12,8 +12,8 @@ namespace MediPlat.Service.IServices
     {
         IQueryable<AppointmentSlotMedicineResponse> GetAllAppointmentSlotMedicines();
         Task<AppointmentSlotMedicineResponse?> GetAppointmentSlotMedicineByIdAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId);
-        Task AddAppointmentSlotMedicineAsync(AppointmentSlotMedicineRequest request);
-        Task UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId, AppointmentSlotMedicineRequest request);
-        Task DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId);
+        Task<AppointmentSlotMedicineResponse> AddAppointmentSlotMedicineAsync(AppointmentSlotMedicineRequest request);
+        Task<AppointmentSlotMedicineResponse> UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId, AppointmentSlotMedicineRequest request);
+        Task<AppointmentSlotMedicineResponse> DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId);
     }
 }
