@@ -2,89 +2,76 @@
 @model MediPlat.RazorPage.Pages.Doctors.EditModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Profile";
 }
 
-<h1>Edit</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2>Edit Doctor Profile</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="doctorRequest.Id" />
 
-<h4>Doctor</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Doctor.Id" />
-            <div class="form-group">
-                <label asp-for="Doctor.UserName" class="control-label"></label>
-                <input asp-for="Doctor.UserName" class="form-control" />
-                <span asp-validation-for="Doctor.UserName" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.UserName" class="form-label">Username</label>
+                            <input asp-for="doctorRequest.UserName" class="form-control" placeholder="Enter username" />
+                            <span asp-validation-for="doctorRequest.UserName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.FullName" class="form-label">Full Name</label>
+                            <input asp-for="doctorRequest.FullName" class="form-control" placeholder="Enter full name" />
+                            <span asp-validation-for="doctorRequest.FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.Email" class="form-label">Email</label>
+                            <input asp-for="doctorRequest.Email" class="form-control" placeholder="Enter email" />
+                            <span asp-validation-for="doctorRequest.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="doctorRequest.PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                            <span asp-validation-for="doctorRequest.PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.FeePerHour" class="form-label">Fee Per Hour</label>
+                            <input asp-for="doctorRequest.FeePerHour" class="form-control" placeholder="Enter fee per hour" />
+                            <span asp-validation-for="doctorRequest.FeePerHour" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.Degree" class="form-label">Degree</label>
+                            <input asp-for="doctorRequest.Degree" class="form-control" placeholder="Enter degree" />
+                            <span asp-validation-for="doctorRequest.Degree" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="doctorRequest.AcademicTitle" class="form-label">Academic Title</label>
+                            <input asp-for="doctorRequest.AcademicTitle" class="form-control" placeholder="Enter academic title" />
+                            <span asp-validation-for="doctorRequest.AcademicTitle" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary px-4">Save</button>
+                            <a asp-page="./Profile" class="btn btn-secondary px-4">Back</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Doctor.FullName" class="control-label"></label>
-                <input asp-for="Doctor.FullName" class="form-control" />
-                <span asp-validation-for="Doctor.FullName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.Email" class="control-label"></label>
-                <input asp-for="Doctor.Email" class="form-control" />
-                <span asp-validation-for="Doctor.Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.Password" class="control-label"></label>
-                <input asp-for="Doctor.Password" class="form-control" />
-                <span asp-validation-for="Doctor.Password" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.AvatarUrl" class="control-label"></label>
-                <input asp-for="Doctor.AvatarUrl" class="form-control" />
-                <span asp-validation-for="Doctor.AvatarUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.Balance" class="control-label"></label>
-                <input asp-for="Doctor.Balance" class="form-control" />
-                <span asp-validation-for="Doctor.Balance" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.FeePerHour" class="control-label"></label>
-                <input asp-for="Doctor.FeePerHour" class="form-control" />
-                <span asp-validation-for="Doctor.FeePerHour" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.Degree" class="control-label"></label>
-                <input asp-for="Doctor.Degree" class="form-control" />
-                <span asp-validation-for="Doctor.Degree" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.AcademicTitle" class="control-label"></label>
-                <input asp-for="Doctor.AcademicTitle" class="form-control" />
-                <span asp-validation-for="Doctor.AcademicTitle" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.JoinDate" class="control-label"></label>
-                <input asp-for="Doctor.JoinDate" class="form-control" />
-                <span asp-validation-for="Doctor.JoinDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.PhoneNumber" class="control-label"></label>
-                <input asp-for="Doctor.PhoneNumber" class="form-control" />
-                <span asp-validation-for="Doctor.PhoneNumber" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Doctor.Status" class="control-label"></label>
-                <input asp-for="Doctor.Status" class="form-control" />
-                <span asp-validation-for="Doctor.Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-page="./Profile">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

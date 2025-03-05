@@ -1,5 +1,6 @@
 ﻿
 using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
 using MediPlat.Model.Schema;
 using System;
 using System.Collections.Generic;

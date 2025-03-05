@@ -1,26 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
+using System.Text;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
     public class EditModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ILogger<IndexModel> _logger;
 
-        public EditModel(MediPlat.Model.Model.MediPlatContext context)
+        public EditModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _clientFactory = clientFactory;
+            _logger = logger;
         }
 
         [BindProperty]
-        public Doctor Doctor { get; set; } = default!;
+        public DoctorRequest doctorRequest { get; set; } = default!;
+        [BindProperty]
+        public DoctorResponse doctorResponse { get; set; }
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -28,13 +32,42 @@ namespace MediPlat.RazorPage.Pages.Doctors
             {
                 return NotFound();
             }
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
 
-            var doctor =  await _context.Doctors.FirstOrDefaultAsync(m => m.Id == id);
-            if (doctor == null)
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return RedirectToPage("/Auth/Login");
             }
-            Doctor = doctor;
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
+
+            if (response.IsSuccessStatusCode)
+            {
+                string apiResponse = await response.Content.ReadAsStringAsync();
+                doctorResponse = JsonConvert.DeserializeObject<DoctorResponse>(apiResponse);
+
+                if (doctorResponse != null)
+                {
+                    doctorRequest = new DoctorRequest
+                    {
+                        Id = doctorResponse.Id,
+                        UserName = doctorResponse.UserName,
+                        FullName = doctorResponse.FullName,
+                        Email = doctorResponse.Email,
+                        FeePerHour = doctorResponse.FeePerHour,
+                        Degree = doctorResponse.Degree,
+                        AcademicTitle = doctorResponse.AcademicTitle,
+                        PhoneNumber = doctorResponse.PhoneNumber
+                    };
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("", "Failed to retrieve doctor profile.");
+            }
             return Page();
         }
 
@@ -42,35 +75,40 @@ namespace MediPlat.RazorPage.Pages.Doctors
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
+            if (string.IsNullOrEmpty(doctorRequest.Password))
+            {
+                ModelState.Remove("doctorRequest.Password");
+            }
+
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            _context.Attach(Doctor).State = EntityState.Modified;
-
-            try
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DoctorExists(Doctor.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return RedirectToPage("/Auth/Login");
             }
 
-            return RedirectToPage("./Index");
-        }
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        private bool DoctorExists(Guid id)
-        {
-            return _context.Doctors.Any(e => e.Id == id);
+            var jsonContent = JsonConvert.SerializeObject(doctorRequest);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await client.PatchAsync("https://localhost:7002/odata/Doctors/profile/update", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Update thành công!");
+                return RedirectToPage("/Doctors/Profile");
+            }
+            else
+            {
+                ModelState.AddModelError("", "Failed to update profile.");
+            }
+            return Page();
         }
     }
 }

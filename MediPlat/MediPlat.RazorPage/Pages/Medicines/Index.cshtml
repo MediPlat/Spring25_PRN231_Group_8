@@ -4,84 +4,100 @@
 @{
     ViewData["Title"] = "Danh sách thuốc";
 }
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="list-group shadow-lg rounded-4">
+                <a href="/Admin/Index" class="list-group-item list-group-item-action">Dashboard</a>
+                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">Manage Doctors</a>
+                <a href="/Medicines/Index" class="list-group-item list-group-item-action active">Manage Medicines</a>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2>Danh sách thuốc</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a class="btn btn-success" asp-page="Create">
+                            <i class="bi bi-plus-circle"></i> Thêm thuốc mới
+                        </a>
 
-<div class="container mt-4">
-    <h1 class="mb-4 text-primary">Danh sách thuốc</h1>
+                        <div class="input-group w-50">
+                            <input type="text" id="searchBox" class="form-control" placeholder="Tìm kiếm thuốc..." onkeyup="searchMedicine()">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.Medicines.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="medicineTable">
+                                <thead class="table-dark text-center">
+                                    <tr>
+                                        <th>Tên thuốc</th>
+                                        <th>Dạng</th>
+                                        <th>Hàm lượng</th>
+                                        <th>Tác dụng phụ</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Medicines)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.DosageForm</td>
+                                            <td>@item.Strength</td>
+                                            <td>@item.SideEffects</td>
+                                            <td class="text-center">
+                                                <a class="btn btn-info btn-sm mx-1" asp-page="./Details" asp-route-id="@item.Id">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a class="btn btn-warning btn-sm mx-1" asp-page="./Edit" asp-route-id="@item.Id">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage - 1)">❮ Trước</a>
+                                    </li>
+                                }
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a class="btn btn-success" asp-page="Create">
-            <i class="bi bi-plus-circle"></i> Thêm thuốc mới
-        </a>
+                                <li class="page-item disabled">
+                                    <span class="page-link">Trang @Model.CurrentPage</span>
+                                </li>
 
-        <!-- Ô tìm kiếm -->
-        <input type="text" id="searchBox" class="form-control w-25" placeholder="Tìm kiếm thuốc..." onkeyup="searchMedicine()">
+                                @if (Model.CurrentPage * Model.PageSize < Model.TotalItems)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage + 1)">Tiếp ❯</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning text-center">Không có thuốc nào được tìm thấy.</div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
-
-    @if (Model.Medicines.Any())
-    {
-        <table class="table table-bordered table-striped" id="medicineTable">
-            <thead class="table-dark">
-                <tr>
-                    <th>Tên thuốc</th>
-                    <th>Dạng</th>
-                    <th>Hàm lượng</th>
-                    <th>Tác dụng phụ</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Medicines)
-                {
-                    <tr>
-                        <td>@item.Name</td>
-                        <td>@item.DosageForm</td>
-                        <td>@item.Strength</td>
-                        <td>@item.SideEffects</td>
-                        <td>
-                            <a class="btn btn-info btn-sm" asp-page="./Details" asp-route-id="@item.Id">
-                                <i class="bi bi-eye"></i> Xem
-                            </a>
-                            <a class="btn btn-warning btn-sm" asp-page="./Edit" asp-route-id="@item.Id">
-                                <i class="bi bi-pencil"></i> Sửa
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <!-- Phân trang -->
-        <nav>
-            <ul class="pagination justify-content-center">
-                @if (Model.CurrentPage > 1)
-                {
-                    <li class="page-item">
-                        <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage - 1)">❮ Trước</a>
-                    </li>
-                }
-
-                <li class="page-item disabled">
-                    <span class="page-link">Trang @Model.CurrentPage</span>
-                </li>
-
-                @if (Model.CurrentPage * Model.PageSize < Model.TotalItems)
-                {
-                    <li class="page-item">
-                        <a class="page-link" asp-page="Index" asp-route-page="@(Model.CurrentPage + 1)">Tiếp ❯</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    }
-    else
-    {
-        <p class="alert alert-warning">Không có thuốc nào được tìm thấy.</p>
-    }
 </div>
-
-<!-- JavaScript để tìm kiếm thuốc -->
 <script>
-    function searchMedicine() {x
+    function searchMedicine() {
         let input = document.getElementById("searchBox").value.toLowerCase();
         let rows = document.querySelectorAll("#medicineTable tbody tr");
 
