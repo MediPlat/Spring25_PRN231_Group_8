@@ -60,7 +60,7 @@ public class LoginModel : PageModel
                 {
                     /*"doctorResponse" => RedirectToPage("/doctorResponses/Profile"),*/
                     "Doctor" => RedirectToPage("/Doctors/Profile"),
-                    "Admin" => RedirectToPage("/Doctors/ManageDoctor"),
+                    "Admin" => RedirectToPage("/Admin/Index"),
                     "Patient" => RedirectToPage("/PatientPages/Index"),
                     _ => RedirectToPage("/Index")
                 };
