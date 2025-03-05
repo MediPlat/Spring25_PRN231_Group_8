@@ -272,7 +272,7 @@
         document.getElementById("profileId").value = profile.Id;
         document.getElementById("profileFullName").value = profile.FullName;
         document.getElementById("profileSex").value = profile.Sex;
-        document.getElementById("profileDob").value = profile.Dob;
+        document.getElementById("profileDob").value = profile.Dob ? new Date(profile.Dob).toISOString().split('T')[0] : "";
         document.getElementById("profileAddress").value = profile.Address;
         document.getElementById("profilePhone").value = profile.PhoneNumber;
         new bootstrap.Modal(document.getElementById("profileModal")).show();
