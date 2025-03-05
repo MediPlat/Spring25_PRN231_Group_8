@@ -1,8 +1,7 @@
 ﻿using MediPlat.Model.Model;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Net.Http;
+using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 
 namespace MediPlat.RazorPage.Pages.Patients
