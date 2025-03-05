@@ -20,34 +20,50 @@
     </div>
 }
 
-<div class="container mt-5">
-    <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white text-center">
-            <h2>@Model.Doctor.FullName</h2>
-            <p>@Model.Doctor.AcademicTitle</p>
-        </div>
-        <div class="card-body text-center">
-            <img src="@Model.Doctor.AvatarUrl" alt="Avatar" class="rounded-circle mb-3" style="width: 150px; height: 150px; border: 3px solid #007bff;">
-            <h4>@Model.Doctor.UserName</h4>
-            <p class="text-muted">@Model.Doctor.Email</p>
-            <p><strong>Phone:</strong> @Model.Doctor.PhoneNumber</p>
-            <p><strong>Degree:</strong> @Model.Doctor.Degree</p>
-            <p><strong>Join Date:</strong> @Model.Doctor.JoinDate</p>
-            <p>
-                <strong>Status:</strong>
-                @if (Model.Doctor.Status == "Active")
-                {
-                    <span class="badge bg-success">Active</span>
-                }
-                else
-                {
-                    <span class="badge bg-danger">Inactive</span>
-                }
-            </p>
-            <p><strong>Fee Per Hour:</strong> $@Model.Doctor.FeePerHour</p>
-            <div class="mt-4">
-                <a asp-page="Edit" asp-route-id="@Model.Doctor.Id" class="btn btn-warning">Edit Profile</a>
-                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <div class="d-flex justify-content-center">
+                        <img src="@Model.doctor.AvatarUrl" alt="Avatar" class="rounded-circle mb-3" style="width: 150px; height: 150px; border: 3px solid #ffffff;">
+                    </div>
+                    <h2>@Model.doctor.FullName</h2>
+                    <p>@Model.doctor.AcademicTitle</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>Username:</strong> @Model.doctor.UserName</li>
+                                <li class="list-group-item"><strong>Email:</strong> @Model.doctor.Email</li>
+                                <li class="list-group-item"><strong>Phone:</strong> @Model.doctor.PhoneNumber</li>
+                                <li class="list-group-item"><strong>Degree:</strong> @Model.doctor.Degree</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>Join Date:</strong> @Model.doctor.JoinDate</li>
+                                <li class="list-group-item">
+                                    <strong>Status:</strong>
+                                    @if (Model.doctor.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </li>
+                                <li class="list-group-item"><strong>Fee Per Hour:</strong> $@Model.doctor.FeePerHour</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a asp-page="Edit" asp-route-id="@Model.doctor.Id" class="btn btn-outline-primary me-3 px-4 py-2 rounded-pill">Edit Profile</a>
+                        <a asp-page="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">Back to List</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

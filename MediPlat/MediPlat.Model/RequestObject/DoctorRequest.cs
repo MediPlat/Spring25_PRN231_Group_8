@@ -5,6 +5,7 @@ namespace MediPlat.Model.RequestObject
 {
     public class DoctorRequest
     {
+        public Guid Id { get; set; }
         [Required]
         [MaxLength(255, ErrorMessage = "UserName cannot exceed 255 characters.")]
         public string? UserName { get; set; }

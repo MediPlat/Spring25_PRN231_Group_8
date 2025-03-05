@@ -1,10 +1,7 @@
 ﻿using MediPlat.Model.Authen_Athor;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
-using NuGet.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -12,11 +9,11 @@ using System.Text;
 
 public class LoginModel : PageModel
 {
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public LoginModel()
+    public LoginModel(IHttpClientFactory httpClientFactory)
     {
-        _httpClient = new HttpClient();
+        _httpClientFactory = httpClientFactory;
     }
 
     [BindProperty]
@@ -31,29 +28,26 @@ public class LoginModel : PageModel
             return Page();
         }
 
+        var client = _httpClientFactory.CreateClient("UntrustedClient");
         var content = new StringContent(JsonConvert.SerializeObject(LoginRequestModel), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("https://localhost:7002/api/auth/login", content);
+        var response = await client.PostAsync("api/auth/login", content);
 
         if (response.IsSuccessStatusCode)
         {
             var apiResponse = await response.Content.ReadAsStringAsync();
             var authResult = JsonConvert.DeserializeObject<AuthResult>(apiResponse);
 
-            if (!string.IsNullOrEmpty(authResult.Token))
+            if (!string.IsNullOrEmpty(authResult?.Token))
             {
                 Response.Cookies.Append("AuthToken", authResult.Token, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
                     Expires = authResult.ExpiresAt
                 });
 
-                var token = authResult.Token;
-                if (token.StartsWith("Bearer "))
-                {
-                    token = token.Substring("Bearer ".Length);
-                }
+                var token = authResult.Token.StartsWith("Bearer ") ? authResult.Token.Substring("Bearer ".Length) : authResult.Token;
 
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
@@ -64,8 +58,9 @@ public class LoginModel : PageModel
 
                 return userRole switch
                 {
-                    "Doctor" => RedirectToPage("/DoctorSubscriptions/Index"),
-                    "Admin" => RedirectToPage("/Medicines/Index"),
+                    /*"doctorResponse" => RedirectToPage("/doctorResponses/Profile"),*/
+                    "Doctor" => RedirectToPage("/Doctors/Profile"),
+                    "Admin" => RedirectToPage("/Doctors/ManageDoctor"),
                     "Patient" => RedirectToPage("/PatientPages/Index"),
                     _ => RedirectToPage("/Index")
                 };
@@ -75,11 +70,10 @@ public class LoginModel : PageModel
         ErrorMessage = "Invalid login credentials";
         return Page();
     }
-
 }
 
 public class LoginRequest
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string? Email { get; set; }
+    public string? Password { get; set; }
 }

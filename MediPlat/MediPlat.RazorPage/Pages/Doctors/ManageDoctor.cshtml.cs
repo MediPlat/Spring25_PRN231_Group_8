@@ -1,75 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MediPlat.Model.Model;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
+using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
-    [Authorize(Roles = "Doctor, Admin")]
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
     public class DoctorModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public DoctorModel(IHttpClientFactory httpClientFactory)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ILogger<IndexModel> _logger;
+        public class ODataSingleResponse<T>
         {
-            _httpClientFactory = httpClientFactory;
+            public T? Value { get; set; }
+        }
+
+        public DoctorModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
+        {
+            _clientFactory = clientFactory;
+            _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         public IList<Doctor> DoctorList { get; set; } = new List<Doctor>();
-
+        public int PageSize { get; set; } = 10;
+        public int CurrentPage { get; set; } = 1;
+        public int TotalItems { get; set; }
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = HttpContext.Request.Cookies["AuthToken"];
-
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
-                ModelState.AddModelError("", "Session expired, please login again!");
-                return Page();
+                return RedirectToPage("/Auth/Login");
             }
 
-            var client = _httpClientFactory.CreateClient("UntrustedClient");
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await client.GetAsync("https://localhost:7002/odata/Doctors/all_doctor");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var apiResponse = await response.Content.ReadAsStringAsync();
-                DoctorList = JsonConvert.DeserializeObject<List<Doctor>>(apiResponse);
-            }
-            return Page();
-        }
-
-
-        public async Task<IActionResult> OnPostToggleStatusAsync(Guid id, string status)
-        {
             try
             {
-                var newStatus = status == "Active" ? "Banned" : "Active";
-                var payload = new { Status = newStatus };
-                var content = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
-                var client = _httpClientFactory.CreateClient("UntrustedClient");
-                var response = await client.PatchAsync($"https://localhost:7002/odata/Doctors/all_doctor", content);
+                string apiUrl = "https://localhost:7002/odata/Doctors/all_doctor";
+                var response = await client.GetAsync(apiUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToPage();
+                    var apiResponse = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation($"📥 JSON API Response: {apiResponse}");
+
+                    var odataResponse = JsonSerializer.Deserialize<ODataResponse<Doctor>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    DoctorList = odataResponse?.Value ?? new List<Doctor>();
+
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Failed to update doctor status.");
+                    _logger.LogError($"❌ Lỗi khi tải danh sách bác sĩ: {response.ReasonPhrase}");
                 }
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"An error occurred: {ex.Message}");
+                _logger.LogError($"❌ Lỗi khi tải dữ liệu DoctorList: {ex.Message}");
             }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostToggleStatusAsync(Guid id, string status)
+        {
             return Page();
         }
     }
