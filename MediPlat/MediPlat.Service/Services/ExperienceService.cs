@@ -37,7 +37,7 @@ namespace MediPlat.Service.Services
         public async Task<ExperienceResponse> GetExperienceByIdAsync(Guid id, Guid doctorId, bool isPatient)
         {
             var experience = await _unitOfWork.Experiences
-                .GetAll(e => e.Doctor, e => e.Specialty)  // 🔥 Đảm bảo lấy đầy đủ thông tin
+                .GetAll(e => e.Doctor, e => e.Specialty)
                 .FirstOrDefaultAsync(e => e.Id == id && (!isPatient || e.Status == "Active"));
 
             if (experience == null)

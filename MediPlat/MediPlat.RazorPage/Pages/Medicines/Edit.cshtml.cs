@@ -13,13 +13,13 @@ namespace MediPlat.RazorPage.Pages.Medicines
     public class EditModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<EditModel> _logger;
 
-        public EditModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<EditModel> logger)
+        public EditModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<EditModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -38,11 +38,13 @@ namespace MediPlat.RazorPage.Pages.Medicines
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                var response = await _httpClient.GetAsync($"https://localhost:7002/odata/Medicines/{id}");
+                var response = await client.GetAsync($"https://localhost:7002/odata/Medicines/{id}");
                 if (!response.IsSuccessStatusCode)
                 {
                     return NotFound();
@@ -84,14 +86,16 @@ namespace MediPlat.RazorPage.Pages.Medicines
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 var jsonContent = JsonSerializer.Serialize(Medicine, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PutAsync($"https://localhost:7002/odata/Medicines/{id}", content);
+                var response = await client.PutAsync($"https://localhost:7002/odata/Medicines/{id}", content);
 
                 if (!response.IsSuccessStatusCode)
                 {
