@@ -210,6 +210,8 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<SpecialtyResponse>("Specialties");
     builder.EntitySet<SubscriptionResponse>("Subscriptions");
     builder.EntitySet<ProfileResponse>("Profiles");
+    builder.EntitySet<PatientResponse>("Patients");
+
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()
