@@ -11,13 +11,13 @@ namespace MediPlat.RazorPage.Pages.Experiences
     public class DeleteModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<DeleteModel> _logger;
 
-        public DeleteModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<DeleteModel> logger)
+        public DeleteModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<DeleteModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -36,14 +36,15 @@ namespace MediPlat.RazorPage.Pages.Experiences
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 string apiUrl = $"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty";
                 _logger.LogInformation($"Fetching Experience details before deletion: {apiUrl}");
 
-                var response = await _httpClient.GetAsync(apiUrl);
+                var response = await client.GetAsync(apiUrl);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError($"API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
@@ -86,26 +87,22 @@ namespace MediPlat.RazorPage.Pages.Experiences
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid? id)
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
-            if (id == null)
-            {
-                return NotFound("Experience ID không hợp lệ.");
-            }
-
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 string apiUrl = $"https://localhost:7002/odata/Experiences/{id}";
                 _logger.LogInformation($"Attempting to delete Experience: {apiUrl}");
 
-                var response = await _httpClient.DeleteAsync(apiUrl);
+                var response = await client.DeleteAsync(apiUrl);
                 if (!response.IsSuccessStatusCode)
                 {
                     string errorResponse = await response.Content.ReadAsStringAsync();

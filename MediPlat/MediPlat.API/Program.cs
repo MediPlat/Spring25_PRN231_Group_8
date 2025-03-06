@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
 using MediPlat.Service.IServices;
@@ -13,11 +11,8 @@ using MediPlat.Model.Model;
 using MediPlat.Service.Mapping;
 using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using MediPlat.Model.ResponseObject.Patient;
 using MediPlat.Model.ResponseObject;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,10 +54,17 @@ builder.Services.AddControllers()
     });
 
 // Add DbContext 
-builder.Services.AddDbContext<MediPlatContext>(/*options =>
+builder.Services.AddDbContext<MediPlatContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DB"));
-}*/);
+    var connectionString = builder.Configuration.GetConnectionString("DB");
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new Exception("⚠️ ConnectionString is missing in appsettings.json!");
+    }
+
+    options.UseSqlServer(connectionString);
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

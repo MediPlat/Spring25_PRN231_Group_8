@@ -13,18 +13,18 @@
             <h2><i class="bi bi-pencil"></i> Thông tin Đăng Ký</h2>
         </div>
         <div class="card-body">
-            @if (Model.DoctorSubscription != null)
+            @if (Model.DoctorSubscriptionRequest != null)
             {
                 <form method="post">
-                    <input type="hidden" asp-for="DoctorSubscriptionss.SubscriptionId" />
-                    <input type="hidden" asp-for="DoctorSubscriptionss.DoctorId" />
-                    <input type="hidden" asp-for="DoctorSubscriptionss.EnableSlot" />
+                    <input type="hidden" asp-for="DoctorSubscriptionRequest.SubscriptionId" />
+                    <input type="hidden" asp-for="DoctorSubscriptionRequest.DoctorId" />
+                    <input type="hidden" asp-for="DoctorSubscriptionRequest.EnableSlot" />
 
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                     <div class="mb-3">
                         <label class="form-label">📟 Hiện tại có:</label>
-                        <input class="form-control" value="@Model.DoctorSubscription.EnableSlot Slots" disabled />
+                        <input class="form-control" value="@Model.DoctorSubscriptionRequest.EnableSlot Slots" disabled />
                     </div>
 
                     <div class="mb-3">
@@ -60,7 +60,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const additionalSlot = document.getElementById("AdditionalEnableSlot");
-            const currentSlot = @Model.DoctorSubscription.EnableSlot;
+            const currentSlot = @Model.DoctorSubscriptionRequest.EnableSlot;
             const slotWarning = document.getElementById("slotWarning");
 
             additionalSlot.addEventListener("input", function () {

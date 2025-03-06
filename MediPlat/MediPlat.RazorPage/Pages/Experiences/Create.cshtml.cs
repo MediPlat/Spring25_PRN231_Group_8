@@ -15,13 +15,13 @@ namespace MediPlat.RazorPage.Pages.Experiences
     public class CreateModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<CreateModel> _logger;
 
-        public CreateModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<CreateModel> logger)
+        public CreateModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<CreateModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -38,11 +38,12 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 return RedirectToPage("/Auth/Login");
             }
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                var specialtyResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Specialties");
+                var specialtyResponse = await client.GetAsync("https://localhost:7002/odata/Specialties");
 
                 if (!specialtyResponse.IsSuccessStatusCode)
                 {
@@ -59,7 +60,7 @@ namespace MediPlat.RazorPage.Pages.Experiences
                     Text = s.Name
                 }).ToList() ?? new List<SelectListItem>();
 
-                var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
+                var doctorResponse = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
 
                 if (!doctorResponse.IsSuccessStatusCode)
                 {
@@ -97,14 +98,14 @@ namespace MediPlat.RazorPage.Pages.Experiences
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             try
             {
                 var jsonContent = JsonSerializer.Serialize(Experience);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync("https://localhost:7002/odata/Experiences", content);
+                var response = await client.PostAsync("https://localhost:7002/odata/Experiences", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

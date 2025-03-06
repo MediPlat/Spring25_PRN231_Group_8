@@ -12,13 +12,13 @@ namespace MediPlat.RazorPage.Pages.Medicines
     public class IndexModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, ILogger<IndexModel> logger)
+        public IndexModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -34,17 +34,18 @@ namespace MediPlat.RazorPage.Pages.Medicines
             {
                 return RedirectToPage("/Auth/Login");
             }
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
                 string apiUrl = $"https://localhost:7002/odata/Medicines?$top={PageSize}&$skip={(page - 1) * PageSize}";
-                var response = await _httpClient.GetAsync(apiUrl);
+                var response = await client.GetAsync(apiUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var apiResponse = await response.Content.ReadAsStringAsync();
-                    _logger.LogInformation($"📥 JSON API Response: {apiResponse}"); // Debug JSON từ API
 
                     var jsonDocument = JsonNode.Parse(apiResponse);
                     var medicinesArray = jsonDocument?["value"]?.AsArray();
@@ -52,7 +53,7 @@ namespace MediPlat.RazorPage.Pages.Medicines
                     if (medicinesArray != null)
                     {
                         Medicines = medicinesArray.Deserialize<List<MedicineResponse>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<MedicineResponse>();
-                        TotalItems = Medicines.Count; // Lấy tổng số thuốc từ danh sách trả về
+                        TotalItems = Medicines.Count;
                     }
                     else
                     {

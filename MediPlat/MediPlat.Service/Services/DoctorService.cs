@@ -69,6 +69,7 @@ namespace MediPlat.Service.Services
             d.AvatarUrl = null;
             d.Status = "Active";
             _unitOfWork.Doctors.Add(d);
+            await _unitOfWork.SaveChangesAsync();
             return d;
         }
         public IQueryable<Doctor> GetAllDoctor()

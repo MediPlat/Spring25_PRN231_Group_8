@@ -1,18 +1,11 @@
 ﻿using MediPlat.Model.Authen_Athor;
 using MediPlat.Service.IServices;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using MediPlat.Repository.Repositories;
 using Microsoft.Extensions.Configuration;
 using MediPlat.Repository.IRepositories;
-using MediPlat.Model;
 using MediPlat.Model.Model;
 using MediPlat.Model.Authen_Author;
 
