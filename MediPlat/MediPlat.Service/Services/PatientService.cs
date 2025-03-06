@@ -76,22 +76,33 @@ namespace MediPlat.Service.Services
             if(claims.FindFirst(ClaimTypes.Role)?.Value is "Admin")
             {
                 pid = id;
+
+                var patientId = new Guid(pid);
+                var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId, p => p.Profiles);
+                if (patient == null)
+                {
+                    throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
+                }
+                patient.Status = "Suspended";
+                _unitOfWork.Patients.Update(patient);
+                await _unitOfWork.SaveChangesAsync();
+                return _mapper.Map<PatientResponse>(patient);
             }
             else
             {
                 pid = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            }
 
-            var patientId = new Guid(pid);
-            var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId, p => p.Profiles);
-            if (patient == null)
-            {
-                throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
+                var patientId = new Guid(pid);
+                var patient = await _unitOfWork.Patients.GetAsync(p => p.Id == patientId, p => p.Profiles);
+                if (patient == null)
+                {
+                    throw new KeyNotFoundException("Incorrect jwt token or patient deleted");
+                }
+                patient.Status = "Deleted";
+                _unitOfWork.Patients.Update(patient);
+                await _unitOfWork.SaveChangesAsync();
+                return _mapper.Map<PatientResponse>(patient);
             }
-            patient.Status = "Suspended";
-            _unitOfWork.Patients.Update(patient);
-            await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<PatientResponse>(patient);
         }
 
         public async Task<List<PatientResponse>> GetAll(ClaimsPrincipal claims)
