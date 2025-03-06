@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using MediPlat.Model.ResponseObject;
+using MediPlat.Model.RequestObject;
 
 [ApiController]
 [Route("odata/Specialties")]
@@ -25,12 +26,70 @@ public class SpecialtyController : ODataController
         return _specialtyService.GetAllSpecialties();
     }
 
-
     [HttpGet("{id}")]
     [Authorize(Policy = "DoctorOrAdminPolicy")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _specialtyService.GetSpecialtyByIdAsync(id);
         return result != null ? Ok(result) : NotFound();
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
+    public async Task<IActionResult> Insert([FromBody] SpecialtyRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _specialtyService.AddSpecialtyAsync(request);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] SpecialtyRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _specialtyService.UpdateSpecialtyAsync(id, request);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            var result = await _specialtyService.DeleteSpecialtyAsync(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 }
