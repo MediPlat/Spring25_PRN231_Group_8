@@ -6,16 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
+using System.Net.Http.Headers;
 
 namespace MediPlat.RazorPage.Pages.Subscriptions
 {
     public class DeleteModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ILogger<IndexModel> _logger;
 
-        public DeleteModel(MediPlat.Model.Model.MediPlatContext context)
+        public DeleteModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
-            _context = context;
+            _clientFactory = clientFactory;
+            _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -23,40 +28,44 @@ namespace MediPlat.RazorPage.Pages.Subscriptions
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var subscription = await _context.Subscriptions.FirstOrDefaultAsync(m => m.Id == id);
-
-            if (subscription == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Subscription = subscription;
-            }
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid? id)
+
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> OnPostDeleteAsync(Guid id)
+
         {
-            if (id == null)
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return new JsonResult(new { success = false, message = "Unauthorized" });
             }
 
-            var subscription = await _context.Subscriptions.FindAsync(id);
-            if (subscription != null)
+            try
             {
-                Subscription = subscription;
-                _context.Subscriptions.Remove(Subscription);
-                await _context.SaveChangesAsync();
-            }
+                var client = _clientFactory.CreateClient("UntrustedClient");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            return RedirectToPage("./Index");
+                string apiUrl = $"https://localhost:7002/odata/Subscriptions({id})";
+                var response = await client.DeleteAsync(apiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return new JsonResult(new { success = true });
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"Lỗi chi tiết: {error}");
+                    return new JsonResult(new { success = false });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi xóa Subscription: {ex.Message}");
+                return new JsonResult(new { success = false });
+            }
         }
     }
 }

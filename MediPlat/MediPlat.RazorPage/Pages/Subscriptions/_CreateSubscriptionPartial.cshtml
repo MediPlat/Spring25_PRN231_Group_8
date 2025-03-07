@@ -1,0 +1,66 @@
+﻿@model MediPlat.RazorPage.Pages.Subscriptions.CreateModel
+
+<div class="modal-header">
+    <h5 class="modal-title">Thêm mới Subsription</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="container py-4">
+        <div class="card-body">
+            <form method="post" id="createSubscriptionForm" asp-page="/Subscriptions/Create" asp-page-handler="Create">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Subscription.Name" class="control-label"></label>
+                    <input asp-for="Subscription.Name" class="form-control" />
+                    <span asp-validation-for="Subscription.Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Subscription.Price" class="control-label"></label>
+                    <input asp-for="Subscription.Price" class="form-control" />
+                    <span asp-validation-for="Subscription.Price" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Subscription.EnableSlot" class="control-label"></label>
+                    <input asp-for="Subscription.EnableSlot" class="form-control" />
+                    <span asp-validation-for="Subscription.EnableSlot" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Subscription.Description" class="control-label"></label>
+                    <input asp-for="Subscription.Description" class="form-control" />
+                    <span asp-validation-for="Subscription.Description" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Subscription.UpdateDate" class="control-label"></label>
+                    <input asp-for="Subscription.UpdateDate" class="form-control" />
+                    <span asp-validation-for="Subscription.UpdateDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#createSubscriptionForm").submit(function (e) {
+            e.preventDefault(); // Ngăn form reload trang
+            var form = $(this);
+
+            $.post(form.attr("action"), form.serialize())
+                .done(function (data) {
+                    if (data.success) {
+                        alert(data.message); // Hiển thị thông báo thành công
+                        location.reload(); // Tải lại trang để cập nhật danh sách
+                    } else {
+                        alert("Lỗi: " + data.message);
+                    }
+                })
+                .fail(function () {
+                    alert("Lỗi kết nối tới server!");
+                });
+        });
+    });
+</script>

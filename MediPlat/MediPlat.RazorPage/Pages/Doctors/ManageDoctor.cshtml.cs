@@ -9,7 +9,7 @@ using MediPlat.Model.Schema;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
-    [Authorize(Policy = "DoctorOrAdminPolicy")]
+    [Authorize(Policy = "AdminPolicy")]
     public class DoctorModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -23,6 +23,7 @@ namespace MediPlat.RazorPage.Pages.Doctors
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
+
 
         public IList<Doctor> DoctorList { get; set; } = new List<Doctor>();
         public int PageSize { get; set; } = 10;
