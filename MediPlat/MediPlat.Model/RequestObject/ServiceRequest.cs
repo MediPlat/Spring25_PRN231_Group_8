@@ -5,6 +5,8 @@ namespace MediPlat.Model.RequestObject
 {
     public class ServiceRequest
     {
+        public Guid Id { get; set; }
+
         [Required]
         public Guid SpecialtyId { get; set; }
 
