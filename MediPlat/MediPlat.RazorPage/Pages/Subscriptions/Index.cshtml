@@ -49,62 +49,71 @@
 
 <div class="container py-5">
     <div class="row">
+        <!-- Sidebar -->
         <div class="col-lg-3">
             <div class="list-group shadow-lg rounded-4">
-                <a href="/Admin/Index" class="list-group-item list-group-item-action">Dashboard</a>
-                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">Manage Doctors</a>
-                <a href="/Medicines/Index" class="list-group-item list-group-item-action">Manage Medicines</a>
-                <a href="/Subscriptions/Index" class="list-group-item list-group-item-action active">Manage Subscriptions</a>
+                <a href="/Admin/Index" class="list-group-item list-group-item-action">🏠 Dashboard</a>
+                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">👨‍⚕️ Manage Doctors</a>
+                <a href="/Medicines/Index" class="list-group-item list-group-item-action">💊 Manage Medicines</a>
+                <a href="/Subscriptions/Index" class="list-group-item list-group-item-action active bg-primary text-white fw-bold">📄 Manage Subscriptions</a>
             </div>
         </div>
+
+        <!-- Main Content -->
         <div class="col-lg-9">
             <div class="card shadow-lg rounded-4">
-                <div class="card-header bg-primary text-white text-center">
-                    <h2>Danh sách Subscription</h2>
+                <div class="card-header bg-primary text-white text-center rounded-top-4">
+                    <h2 class="mb-0">Danh sách Subscription</h2>
                 </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <input type="text" id="searchInput" class="form-control w-25 rounded-4" placeholder="🔍 Tìm kiếm Subscription">
-                    <button id="btnAddSubscription" class="btn btn-success rounded-4">
-                        <i class="bi bi-plus-circle"></i> Tạo Subscription
-                    </button>
-                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <input type="text" id="searchInput" class="form-control w-50 rounded-pill shadow-sm" placeholder="🔍 Tìm kiếm Subscription...">
+                        <button id="btnAddSubscription" class="btn btn-success rounded-pill">
+                            <i class="bi bi-plus-circle"></i> Tạo Subscription
+                        </button>
+                    </div>
 
-                <div class="row" id="subscriptionList">
-                    @foreach (var subscription in Model.Subscription)
-                    {
-                        <div class="col-md-4 mb-4">
-                            <div class="card shadow-lg text-center">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0">@subscription.Name</h5>
-                                    <small>@subscription.Description</small>
-                                    <p><strong>Price:</strong> @subscription.Price VND</p>
-                                </div>
-                                <div class="card-body">
-                                    <p class="text-muted mb-1"><strong>Slot:</strong> @subscription.EnableSlot</p>
-                                    <p><strong>Ngày tạo:</strong> @subscription.CreatedDate?.ToString("dd/MM/yyyy")</p>
-                                    <p><strong>Cập nhật:</strong> @subscription.UpdateDate?.ToString("dd/MM/yyyy")</p>
-                                </div>
-                                <div class="card-footer d-flex justify-content-between">
-                                    <a asp-page="/Subscriptions/Edit" asp-route-id="@subscription.Id" class="btn btn-info btn-sm">Sửa</a>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteSubscription('@subscription.Id')">Xóa</button>
+                    <div class="row g-4" id="subscriptionList">
+                        @foreach (var subscription in Model.Subscription)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card shadow-lg border-0 rounded-4 hover-zoom">
+                                    <div class="card-header bg-gradient text-white text-center rounded-top-4" style="background: linear-gradient(135deg, #6D5BBA, #8D58BF);">
+                                        <h5>@subscription.Name</h5>
+                                        <small>@subscription.Description</small>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <p><strong>Price:</strong> @subscription.Price VND</p>
+                                        <p><strong>Slot:</strong> @subscription.EnableSlot</p>
+                                        <p><strong>Ngày tạo:</strong> @subscription.CreatedDate?.ToString("dd/MM/yyyy")</p>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between">
+                                        <a asp-page="/Subscriptions/Edit" asp-route-id="@subscription.Id" class="btn btn-outline-primary btn-sm rounded-pill">
+                                            ✏️ Sửa
+                                        </a>
+                                        <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="deleteSubscription('@subscription.Id')">
+                                            🗑️ Xóa
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
+
                 <nav aria-label="Pagination">
                     <ul class="pagination justify-content-center">
-                        <li class="page-item"><a class="page-link" href="#">Trước</a></li>
-                        <li class="page-item"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Sau</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">Trước</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">Sau</a></li>
                     </ul>
                 </nav>
-                </div>
             </div>
         </div>
     </div>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const modal = new bootstrap.Modal(document.getElementById("createSubscriptionModal"));
@@ -123,39 +132,12 @@
                 .then(html => {
                     contentDiv.innerHTML = html;
                     modal.show();
-
-                    // Gắn sự kiện submit sau khi nội dung đã được load
-                    document.querySelector("#createSubscriptionForm").addEventListener("submit", async function (e) {
-                        e.preventDefault(); // Chặn hành vi mặc định
-
-                        const form = e.target;
-                        const formData = new FormData(form);
-
-                        const actionUrl = form.getAttribute("action");
-                        const response = await fetch(actionUrl, {
-                            method: "POST",
-                            body: formData
-                        });
-
-                        if (response.ok) {
-                            const result = await response.json();
-                            if (result.success) {
-                                alert("Thêm subscription thành công!");
-                                modal.hide();
-                                location.reload();
-                            }
-                        } else {
-                            contentDiv.innerHTML = await response.text(); // Load lại nội dung có lỗi
-                        }
-                    });
                 })
                 .catch(() => {
                     contentDiv.innerHTML = '<div class="text-danger text-center">Không thể tải nội dung!</div>';
                 });
         });
     });
-
-
 
     document.getElementById("searchInput").addEventListener("input", function () {
         let keyword = this.value.toLowerCase();
@@ -172,12 +154,27 @@
             const form = document.getElementById("deleteForm");
             document.getElementById("subscriptionId").value = id;
             form.action = `/Subscriptions/Index?handler=Delete&id=${id}`;
-            form.submit(); // Gửi form để gọi OnPostDeleteAsync
+            form.submit();
         }
     }
-    function editSubscription(id) {
-        window.location.href = `/Subscriptions/Edit?id=${id}`;
+</script>
+
+<style>
+    .hover-zoom {
+        transition: transform 0.3s ease-in-out;
     }
 
+        .hover-zoom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
 
-</script>
+    .pagination .page-link {
+        transition: background 0.3s;
+    }
+
+        .pagination .page-link:hover {
+            background: #6D5BBA;
+            color: white;
+        }
+</style>

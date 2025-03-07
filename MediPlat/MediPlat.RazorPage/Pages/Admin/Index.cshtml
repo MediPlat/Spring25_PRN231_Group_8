@@ -9,39 +9,39 @@
     <div class="row">
         <div class="col-lg-3">
             <div class="list-group shadow-lg rounded-4">
-                <a href="/Admin/Index" class="list-group-item list-group-item-action active">Dashboard</a>
-                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">Manage Doctors</a>
-                <a href="/Medicines/Index" class="list-group-item list-group-item-action">Manage Medicines</a>
-                <a href="/Subscriptions/Index" class="list-group-item list-group-item-action">Manage Subscriptions</a>
+                <a href="/Admin/Index" class="list-group-item list-group-item-action active bg-primary text-white">🏠 Dashboard</a>
+                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">👨‍⚕️ Manage Doctors</a>
+                <a href="/Medicines/Index" class="list-group-item list-group-item-action">💊 Manage Medicines</a>
+                <a href="/Subscriptions/Index" class="list-group-item list-group-item-action">📄 Manage Subscriptions</a>
             </div>
         </div>
         <div class="col-lg-9">
             <div class="card shadow-lg rounded-4">
-                <div class="card-header bg-primary text-white text-center">
-                    <h2>Admin Dashboard</h2>
+                <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(135deg, #6D5BBA, #8D58BF);">
+                    <h2 class="mb-0">Admin Dashboard</h2>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
-                        <div class="col-md-6 mb-3">
-                            <div class="card border-info">
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-lg border-info rounded-4 hover-zoom">
                                 <div class="card-body">
-                                    <h5 class="card-title">Statistics</h5>
+                                    <h5 class="card-title">📊 Statistics</h5>
                                     <canvas id="statisticsChart"></canvas>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="card border-success">
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-lg border-success rounded-4 hover-zoom">
                                 <div class="card-body">
-                                    <h5 class="card-title">Growth Percentage</h5>
+                                    <h5 class="card-title">📈 Growth Percentage</h5>
                                     <canvas id="growthChart"></canvas>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12 mb-3">
-                            <div class="card border-warning">
+                        <div class="col-md-12 mb-4">
+                            <div class="card shadow-lg border-warning rounded-4 hover-zoom">
                                 <div class="card-body">
-                                    <h5 class="card-title">Patient Growth</h5>
+                                    <h5 class="card-title">👥 Patient Growth</h5>
                                     <canvas id="lineChart"></canvas>
                                 </div>
                             </div>
@@ -56,8 +56,18 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        var ctxBar = document.getElementById('statisticsChart').getContext('2d');
-        var myBarChart = new Chart(ctxBar, {
+        const chartOptions = {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        };
+
+        new Chart(document.getElementById('statisticsChart').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: ['Doctors', 'Medicines', 'Patients'],
@@ -69,15 +79,10 @@
                     borderWidth: 1
                 }]
             },
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            options: chartOptions
         });
 
-        var ctxLine = document.getElementById('lineChart').getContext('2d');
-        var myLineChart = new Chart(ctxLine, {
+        new Chart(document.getElementById('lineChart').getContext('2d'), {
             type: 'line',
             data: {
                 labels: ['January', 'February', 'March', 'April', 'May'],
@@ -89,15 +94,10 @@
                     borderWidth: 2
                 }]
             },
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+            options: chartOptions
         });
 
-        var ctxGrowth = document.getElementById('growthChart').getContext('2d');
-        var myGrowthChart = new Chart(ctxGrowth, {
+        new Chart(document.getElementById('growthChart').getContext('2d'), {
             type: 'pie',
             data: {
                 labels: ['Doctors', 'Medicines', 'Patients'],
@@ -111,3 +111,13 @@
     </script>
 }
 
+<style>
+    .hover-zoom {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+    }
+
+        .hover-zoom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+</style>

@@ -57,7 +57,7 @@ namespace MediPlat.RazorPage.Pages.Subscriptions
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return new JsonResult(new { success = true, message = "Thêm mới Subscription thành công!" });
+                    return RedirectToPage("/Subscriptions/Index");
                 }
                 else
                 {
