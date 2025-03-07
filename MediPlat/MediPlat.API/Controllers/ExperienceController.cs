@@ -1,4 +1,4 @@
-﻿using MediPlat.Service.IServices;
+using MediPlat.Service.IServices;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Mvc;
@@ -49,7 +49,8 @@ namespace MediPlat.API.Controllers
                 experience.Status,
                 experience.DoctorId,
                 Doctor = experience.Doctor != null ? new { experience.Doctor.Id, experience.Doctor.FullName } : null,
-                Specialty = experience.Specialty != null? new { experience.Specialty.Id, experience.Specialty.Name }: null};
+                Specialty = experience.Specialty != null ? new { experience.Specialty.Id, experience.Specialty.Name } : null
+            };
 
             return Ok(result);
 

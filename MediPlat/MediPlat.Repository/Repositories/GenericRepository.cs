@@ -13,7 +13,6 @@ namespace MediPlat.Repository.Repositories
     {
         private readonly MediPlatContext _mediPlatDBContext;
         protected readonly DbSet<T> _dbSet;
-
         public GenericRepository(MediPlatContext mediPlatDBContext)
         {
             _mediPlatDBContext = mediPlatDBContext;

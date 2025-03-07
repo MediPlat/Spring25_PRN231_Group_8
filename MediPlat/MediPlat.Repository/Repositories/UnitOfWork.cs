@@ -22,6 +22,8 @@ namespace MediPlat.Repository.Repositories
         public IGenericRepository<Experience> Experiences { get; }
         public IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
         public IGenericRepository<Medicine> Medicines { get; }
+        public IGenericRepository<Slot> Slots { get; }
+        public IGenericRepository<AppointmentSlot> AppointmentSlot { get; }
         public IGenericRepository<Specialty> Specialties { get; }
         public IGenericRepository<Profile> Profiles { get; }
         public IGenericRepository<Service> Services { get; }
@@ -37,6 +39,8 @@ namespace MediPlat.Repository.Repositories
             Experiences = new GenericRepository<Experience>(context);
             AppointmentSlotMedicines = new GenericRepository<AppointmentSlotMedicine>(context);
             Medicines = new GenericRepository<Medicine>(context);
+            Slots = new GenericRepository<Slot>(context);
+            AppointmentSlot = new GenericRepository<AppointmentSlot>(context);
             Specialties = new GenericRepository<Specialty>(context);
             Profiles = new GenericRepository<Profile>(context);
             Services = new GenericRepository<Service>(context);

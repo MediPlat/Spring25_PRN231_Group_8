@@ -37,7 +37,7 @@ namespace MediPlat.RazorPage.Pages.Patients
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/patient"))
+            using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/Patients"))
             {
                 if (response.IsSuccessStatusCode)
                 {
