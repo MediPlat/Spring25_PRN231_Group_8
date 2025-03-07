@@ -85,7 +85,7 @@
                                     <p><strong>Cập nhật:</strong> @subscription.UpdateDate?.ToString("dd/MM/yyyy")</p>
                                 </div>
                                 <div class="card-footer d-flex justify-content-between">
-                                    <button class="btn btn-info btn-sm" onclick="editSubscription('@subscription.Id')">Sửa</button>
+                                    <a asp-page="/Subscriptions/Edit" asp-route-id="@subscription.Id" class="btn btn-info btn-sm">Sửa</a>
                                     <button class="btn btn-danger btn-sm" onclick="deleteSubscription('@subscription.Id')">Xóa</button>
                                 </div>
                             </div>
@@ -176,7 +176,8 @@
         }
     }
     function editSubscription(id) {
-        alert("Sửa Subscription có ID: " + id);
+        window.location.href = `/Subscriptions/Edit?id=${id}`;
     }
+
 
 </script>

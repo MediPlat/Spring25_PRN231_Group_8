@@ -17,8 +17,7 @@ namespace MediPlat.Model.RequestObject
         [MaxLength(1000)]
         public string? Description { get; set; }
 
-        public DateTime? CreatedDate { get; set; } = DateTime.Now;
-
-        public DateTime? UpdateDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? UpdateDate { get; set; } 
     }
 }
