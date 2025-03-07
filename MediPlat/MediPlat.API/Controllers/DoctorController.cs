@@ -89,7 +89,7 @@ namespace MediPlat.API.Controllers
             bool check = await _service.Banned(Guid.Parse(id));
             if (check)
             {
-                return Ok();
+                return Ok("Thành công");
             }
             return BadRequest();
         }

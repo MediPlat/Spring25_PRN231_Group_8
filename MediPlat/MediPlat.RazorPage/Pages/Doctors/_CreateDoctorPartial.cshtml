@@ -1,0 +1,88 @@
+﻿@model MediPlat.RazorPage.Pages.Doctors.CreateModel
+
+<div class="modal-header">
+    <h5 class="modal-title">Thêm mới bác sĩ</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="container py-4">
+        <div class="card-body">
+            <form method="post" id="createDoctorForm" asp-page="/Doctors/Create" asp-page-handler="Create">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.UserName" class="form-label">Tên đăng nhập</label>
+                        <input asp-for="Doctor.UserName" class="form-control rounded-3" placeholder="Nhập tên đăng nhập" />
+                        <span asp-validation-for="Doctor.UserName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.FullName" class="form-label">Họ và tên</label>
+                        <input asp-for="Doctor.FullName" class="form-control rounded-3" placeholder="Nhập họ và tên" />
+                        <span asp-validation-for="Doctor.FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.Email" class="form-label">Email</label>
+                        <input asp-for="Doctor.Email" type="email" class="form-control rounded-3" placeholder="Nhập email" />
+                        <span asp-validation-for="Doctor.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.PhoneNumber" class="form-label">Số điện thoại</label>
+                        <input asp-for="Doctor.PhoneNumber" class="form-control rounded-3" placeholder="Nhập số điện thoại" />
+                        <span asp-validation-for="Doctor.PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.Degree" class="form-label">Bằng cấp</label>
+                        <input asp-for="Doctor.Degree" class="form-control rounded-3" placeholder="VD: Thạc sĩ, Tiến sĩ" />
+                        <span asp-validation-for="Doctor.Degree" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.AcademicTitle" class="form-label">Học hàm</label>
+                        <input asp-for="Doctor.AcademicTitle" class="form-control rounded-3" placeholder="VD: Giáo sư, Phó giáo sư" />
+                        <span asp-validation-for="Doctor.AcademicTitle" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Doctor.FeePerHour" class="form-label">Phí mỗi giờ</label>
+                        <input asp-for="Doctor.FeePerHour" type="number" class="form-control rounded-3" placeholder="Nhập phí mỗi giờ" />
+                        <span asp-validation-for="Doctor.FeePerHour" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary rounded-4 px-4" id="btnSave">
+                        <span class="spinner-border spinner-border-sm d-none" id="loadingIcon"></span>
+                        Lưu thông tin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#createDoctorForm").submit(function (e) {
+            e.preventDefault(); // Ngăn form reload trang
+            var form = $(this);
+
+            $.post(form.attr("action"), form.serialize())
+                .done(function (data) {
+                    if (data.success) {
+                        alert(data.message); // Hiển thị thông báo thành công
+                        location.reload(); // Tải lại trang để cập nhật danh sách
+                    } else {
+                        alert("Lỗi: " + data.message);
+                    }
+                })
+                .fail(function () {
+                    alert("Lỗi kết nối tới server!");
+                });
+        });
+    });
+</script>

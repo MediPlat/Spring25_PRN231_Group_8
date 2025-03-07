@@ -4,6 +4,18 @@
 @{
     ViewData["Title"] = "Danh sách bác sĩ";
 }
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
 @if (!ViewData.ModelState.IsValid)
 {
@@ -20,6 +32,15 @@
     </div>
 }
 
+<div class="modal fade" id="createDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="createDoctorContent"></div>
+        </div>
+    </div>
+</div>
+
+
 <div class="container py-5">
     <div class="row">
         <div class="col-lg-3">
@@ -35,6 +56,10 @@
                     <h2>Danh sách bác sĩ</h2>
                 </div>
                 <div class="card-body">
+                    <button id="btnAddDoctor" class="btn  bi bi-plus-circle btn-success">
+                        Thêm Bác Sĩ
+                    </button>
+
                     <div class="row">
                         @foreach (var doctor in Model.DoctorList)
                         {
@@ -61,10 +86,10 @@
                                             }
                                         </p>
                                         <p><strong>Fee Per Hour:</strong> $@doctor.FeePerHour</p>
-                                        <form method="post" onsubmit="return confirm('Are you sure you want to change the status of this doctor?');">
+                                        <form method="post" asp-page-handler="ToggleStatus" onsubmit="return confirm('Are you sure you want to change the status of this doctor?');">
                                             <input type="hidden" name="id" value="@doctor.Id" />
                                             <input type="hidden" name="status" value="@doctor.Status" />
-                                            <button type="submit" asp-page-handler="ToggleStatus" class="btn @(doctor.Status == "Active" ? "btn-danger" : "btn-success")">
+                                            <button type="submit" class="btn @(doctor.Status == "Active" ? "btn-danger" : "btn-success")">
                                                 @(doctor.Status == "Active" ? "Ban" : "Unban")
                                             </button>
                                         </form>
@@ -78,4 +103,58 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = new bootstrap.Modal(document.getElementById("createDoctorModal"));
+
+        document.querySelector("#btnAddDoctor").addEventListener("click", function () {
+            const contentDiv = document.getElementById("createDoctorContent");
+            contentDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+            fetch("/Doctors/Create?handler=CreateModal", {
+                headers: {
+                    "Accept": "text/html",
+                    "Cache-Control": "no-cache"
+                }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    contentDiv.innerHTML = html;
+                    modal.show();
+
+                    // Gắn sự kiện submit sau khi nội dung đã được load
+                    document.querySelector("#createDoctorForm").addEventListener("submit", async function (e) {
+                        e.preventDefault(); // Chặn hành vi mặc định
+
+                        const form = e.target;
+                        const formData = new FormData(form);
+
+                        const actionUrl = form.getAttribute("action");
+                        const response = await fetch(actionUrl, {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.success) {
+                                alert("Thêm bác sĩ thành công!");
+                                modal.hide();
+                                location.reload();
+                            }
+                        } else {
+                            contentDiv.innerHTML = await response.text(); // Load lại nội dung có lỗi
+                        }
+                    });
+                })
+                .catch(() => {
+                    contentDiv.innerHTML = '<div class="text-danger text-center">Không thể tải nội dung!</div>';
+                });
+        });
+    });
+
+
+</script>
+
 

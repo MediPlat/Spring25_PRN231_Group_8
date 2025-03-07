@@ -10,6 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Đăng ký AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
+
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 // Cấu hình HttpClient cho API Backend
@@ -17,6 +23,7 @@ builder.Services.AddHttpClient("UntrustedClient", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7002/");
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 // Đăng ký DbContext
