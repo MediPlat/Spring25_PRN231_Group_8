@@ -21,6 +21,7 @@ namespace MediPlat.Repository.Repositories
         public IGenericRepository<Doctor> Doctors { get; }
         public IGenericRepository<Experience> Experiences { get; }
         public IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
+        public IGenericRepository<Service> Services { get; }
         public IGenericRepository<Medicine> Medicines { get; }
         public IGenericRepository<Specialty> Specialties { get; }
         public IGenericRepository<Profile> Profiles { get; }
@@ -38,6 +39,7 @@ namespace MediPlat.Repository.Repositories
             Medicines = new GenericRepository<Medicine>(context);
             Specialties = new GenericRepository<Specialty>(context);
             Profiles = new GenericRepository<Profile>(context);
+            Services = new GenericRepository<Service>(context);
         }
 
         public async Task<int> SaveChangesAsync()

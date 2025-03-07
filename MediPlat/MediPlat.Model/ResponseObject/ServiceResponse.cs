@@ -8,7 +8,8 @@ namespace MediPlat.Model.ResponseObject
     {
         public Guid Id { get; set; }
 
-        public Guid SpecialtyId { get; set; }
+        public Guid? SpecialtyId { get; set; }
+        public string? SpecialtyName { get; set; }
 
         public string? Title { get; set; }
 
