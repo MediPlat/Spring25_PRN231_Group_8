@@ -18,5 +18,9 @@ namespace MediPlat.Model.RequestObject
 
         [MaxLength(1000, ErrorMessage = "Tác dụng phụ không được vượt quá 1000 ký tự.")]
         public string? SideEffects { get; set; }
+
+        [Required(ErrorMessage = "Trạng thái là bắt buộc.")]
+        [RegularExpression(@"^(Active|Inactive)$", ErrorMessage = "Trạng thái chỉ có thể là 'Active' hoặc 'Inactive'.")]
+        public string Status { get; set; } = "Active";
     }
 }

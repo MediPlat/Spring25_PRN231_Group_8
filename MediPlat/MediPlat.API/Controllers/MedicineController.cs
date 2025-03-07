@@ -1,4 +1,6 @@
-﻿using MediPlat.Model.RequestObject;
+using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +9,6 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 [ApiController]
 [Route("odata/Medicines")]
-
 public class MedicineController : ODataController
 {
     private readonly IMedicineService _medicineService;
@@ -19,14 +20,14 @@ public class MedicineController : ODataController
 
     [HttpGet]
     [EnableQuery]
-    [Authorize(Roles = "Admin,Doctor")]
-    public IActionResult Get()
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
+    public IQueryable<MedicineResponse> GetAllMedicines()
     {
-        return Ok(_medicineService.GetAllMedicines());
+        return _medicineService.GetAllMedicines();
     }
 
     [HttpGet("{id}")]
-    [Authorize(Roles = "Admin,Doctor")]
+    [Authorize(Policy = "DoctorOrAdminPolicy")]
     public async Task<IActionResult> GetById(Guid id)
     {
         var result = await _medicineService.GetMedicineByIdAsync(id);
@@ -34,30 +35,18 @@ public class MedicineController : ODataController
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminPolicy")]
     public async Task<IActionResult> Create([FromBody] MedicineRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        await _medicineService.AddMedicineAsync(request);
-        return Created("odata/Medicines", request);
+        var result = await _medicineService.AddMedicineAsync(request);
+        return Created($"odata/Medicines/{result.Id}", new { result.Id });
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminPolicy")]
     public async Task<IActionResult> Update(Guid id, [FromBody] MedicineRequest request)
     {
-        await _medicineService.UpdateMedicineAsync(id, request);
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        await _medicineService.DeleteMedicineAsync(id);
-        return NoContent();
+        var result = await _medicineService.UpdateMedicineAsync(id, request);
+        return result != null ? Ok(result) : NotFound();
     }
 }

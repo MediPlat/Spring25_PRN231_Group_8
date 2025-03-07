@@ -2,48 +2,64 @@
 @model MediPlat.RazorPage.Pages.Experiences.DetailsModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi tiết Experience";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded">
+        <div class="card-header bg-info text-white text-center">
+            <h2><i class="bi bi-file-earmark-text"></i> Chi tiết Experience</h2>
+        </div>
+        <div class="card-body">
+            @if (Model.Experience != null)
+            {
+                <h4 class="mb-3">📑 Thông tin Experience</h4>
+                <hr />
 
-<div>
-    <h4>Experience</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Experience.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Title)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Experience.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Description)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Experience.Certificate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Certificate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Experience.Doctor)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Doctor.FullName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Experience.Specialty)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Experience.Specialty.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Experience.Id">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
+                <dl class="row">
+                    <dt class="col-sm-4">🏷️ Tiêu đề:</dt>
+                    <dd class="col-sm-8">@Model.Experience.Title</dd>
+
+                    <dt class="col-sm-4">📜 Mô tả:</dt>
+                    <dd class="col-sm-8">@Model.Experience.Description</dd>
+
+                    <dt class="col-sm-4">🎓 Chứng chỉ:</dt>
+                    <dd class="col-sm-8">@Model.Experience.Certificate</dd>
+
+                    <dt class="col-sm-4">👨‍⚕️ Bác sĩ:</dt>
+                    <dd class="col-sm-8">@(Model.Experience.Doctor?.FullName ?? "Không có thông tin bác sĩ")</dd>
+
+                    <dt class="col-sm-4">🏥 Chuyên khoa:</dt>
+                    <dd class="col-sm-8">@(Model.Experience.Specialty?.Name ?? "Không có chuyên khoa")</dd>
+
+                    <dt class="col-sm-4">⚠️ Trạng thái:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.Experience.Status == "Active" ? "bg-success" : "bg-danger")">
+                            @Model.Experience.Status
+                        </span>
+                    </dd>
+                </dl>
+
+                <div class="mt-4 text-center">
+                    <a asp-page="./Edit" asp-route-id="@Model.Experience.Id" class="btn btn-warning">
+                        ✏️ Chỉnh sửa
+                    </a>
+                    <a asp-page="./Index" class="btn btn-secondary">
+                        ⬅ Quay lại danh sách
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger text-center mt-3">
+                    🚨 Không tìm thấy thông tin Experience.
+                </div>
+                <div class="text-center">
+                    <a asp-page="./Index" class="btn btn-secondary mt-2">
+                        ⬅ Quay lại danh sách
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
 </div>

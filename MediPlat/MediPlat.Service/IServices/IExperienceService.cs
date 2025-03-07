@@ -10,12 +10,11 @@ namespace MediPlat.Service.IServices
 {
     public interface IExperienceService
     {
-        IQueryable<ExperienceResponse> GetAllExperiences();
-        Task<ExperienceResponse> GetExperienceByIdAsync(Guid id);
+        IQueryable<ExperienceResponse> GetAllExperiences(bool isPatient);
+        Task<ExperienceResponse> GetExperienceByIdAsync(Guid id, Guid doctorId, bool isPatient);
         Task<ExperienceResponse> AddExperienceAsync(ExperienceRequest request);
-        Task<ExperienceResponse> UpdateExperienceAsync(Guid id, ExperienceRequest request, bool isAdmin);
         Task DeleteExperienceAsync(Guid id);
         Task<ExperienceResponse> UpdateExperienceStatusAsync(Guid id, string status);
-        Task<ExperienceResponse> UpdateExperienceWithoutStatusAsync(Guid id, ExperienceRequest request);
+        Task<ExperienceResponse> UpdateExperienceWithoutStatusAsync(Guid id, ExperienceRequest request, Guid doctorId);
     }
 }

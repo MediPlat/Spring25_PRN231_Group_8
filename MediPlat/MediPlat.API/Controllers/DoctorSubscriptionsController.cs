@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace MediPlat.API.Controllers
@@ -28,8 +27,7 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorOrAdminPolicy")]
         public IQueryable<DoctorSubscriptionResponse> GetDoctorSubscriptions()
         {
-            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            return _doctorSubscriptionService.GetAllDoctorSubscriptions(doctorId);
+            return _doctorSubscriptionService.GetAllDoctorSubscriptions();
         }
 
         [HttpGet("{id}")]
@@ -37,45 +35,62 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> GetDoctorSubscriptionById(Guid id)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            return Ok(await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId));
+
+            var doctorSubscription = await _doctorSubscriptionService.GetDoctorSubscriptionByIdAsync(id, doctorId);
+
+            if (doctorSubscription == null)
+            {
+                return NotFound($"Doctor subscription với ID {id} không tồn tại.");
+            }
+
+            var result = new
+            {
+                doctorSubscription.Id,
+                doctorSubscription.SubscriptionId,
+                doctorSubscription.EnableSlot,
+                doctorSubscription.StartDate,
+                doctorSubscription.EndDate,
+                doctorSubscription.UpdateDate,
+                doctorSubscription.Status,
+                doctorSubscription.DoctorId,
+                Doctor = doctorSubscription.Doctor != null
+                    ? new { doctorSubscription.Doctor.Id, doctorSubscription.Doctor.FullName }
+                    : null,
+                Subscription = doctorSubscription.Subscription != null
+                    ? new { doctorSubscription.Subscription.Id, doctorSubscription.Subscription.Name }
+                    : null
+            };
+
+            return Ok(result);
         }
 
         [HttpPost]
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateDoctorSubscription([FromBody] DoctorSubscriptionRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (string.IsNullOrEmpty(request.Status))
             {
                 request.Status = "Active";
             }
 
-            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var doctorIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(doctorIdClaim) || !Guid.TryParse(doctorIdClaim, out var doctorId))
+            {
+                return Unauthorized("Doctor ID không hợp lệ.");
+            }
+            var newSubscription = await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId);
+            return Ok(newSubscription);
 
-            return Ok(await _doctorSubscriptionService.AddDoctorSubscriptionAsync(request, doctorId));
         }
+
         [HttpPut("{id}")]
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> UpdateDoctorSubscription(Guid id, [FromBody] DoctorSubscriptionRequest request)
         {
-            _logger.LogInformation("Received UpdateDoctorSubscription request - ID: {Id}, SubscriptionId: {SubscriptionId}, EnableSlot: {EnableSlot}",
-                id, request.SubscriptionId, request.EnableSlot);
-
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Model validation failed: {Errors}", ModelState);
-                return BadRequest(ModelState);
-            }
-
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            _logger.LogInformation("Doctor ID from token: {DoctorId}", doctorId);
+
             var result = await _doctorSubscriptionService.UpdateDoctorSubscriptionAsync(id, request, doctorId);
-
-            _logger.LogInformation("Update successful for {Id} - New EnableSlot: {EnableSlot}", id, result.EnableSlot);
-
             return Ok(result);
         }
 

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,14 +21,14 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Roles = "Doctor,Patient")]
-        public IActionResult Get()
+        [Authorize(Policy = "DoctorOrPatientPolicy")]
+        public IQueryable<AppointmentSlotMedicineResponse> GetAllAppointmentSlotMedicines()
         {
-            return Ok(_appointmentSlotMedicineService.GetAllAppointmentSlotMedicines());
+            return _appointmentSlotMedicineService.GetAllAppointmentSlotMedicines();
         }
 
         [HttpGet("{appointmentSlotId}/{medicineId}")]
-        [Authorize(Roles = "Doctor,Patient")]
+        [Authorize(Policy = "DoctorOrPatientPolicy")]
         public async Task<IActionResult> GetById(Guid appointmentSlotId, Guid medicineId, Guid patientId)
         {
             var result = await _appointmentSlotMedicineService.GetAppointmentSlotMedicineByIdAsync(appointmentSlotId, medicineId, patientId);
@@ -39,27 +36,23 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> Create([FromBody] AppointmentSlotMedicineRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            await _appointmentSlotMedicineService.AddAppointmentSlotMedicineAsync(request);
-            return Created("odata/AppointmentSlotMedicines", request);
+            var result = await _appointmentSlotMedicineService.AddAppointmentSlotMedicineAsync(request);
+            return Created($"odata/AppointmentSlotMedicines/{result.AppointmentSlotMedicineId}", new { result.AppointmentSlotMedicineId });
         }
 
         [HttpPut("{appointmentSlotId}/{medicineId}")]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> Update(Guid appointmentSlotId, Guid medicineId, Guid patientId, [FromBody] AppointmentSlotMedicineRequest request)
         {
-            await _appointmentSlotMedicineService.UpdateAppointmentSlotMedicineAsync(appointmentSlotId, medicineId, patientId, request);
-            return NoContent();
+            var result = await _appointmentSlotMedicineService.UpdateAppointmentSlotMedicineAsync(appointmentSlotId, medicineId, patientId, request);
+            return result != null ? Ok(result) : NotFound();
         }
 
         [HttpDelete("{appointmentSlotId}/{medicineId}")]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> Delete(Guid appointmentSlotId, Guid medicineId, Guid patientId)
         {
             await _appointmentSlotMedicineService.DeleteAppointmentSlotMedicineAsync(appointmentSlotId, medicineId, patientId);

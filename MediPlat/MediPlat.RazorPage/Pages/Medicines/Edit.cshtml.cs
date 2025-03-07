@@ -1,27 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
-using Microsoft.AspNetCore.Authorization;
 
 namespace MediPlat.RazorPage.Pages.Medicines
 {
+    [Authorize(Policy = "AdminPolicy")]
     public class EditModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ILogger<EditModel> _logger;
 
-        public EditModel(MediPlatContext context)
+        public EditModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<EditModel> logger)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _clientFactory = clientFactory;
+            _logger = logger;
         }
 
         [BindProperty]
-        public Medicine Medicine { get; set; } = default!;
+        public MedicineRequest Medicine { get; set; } = new MedicineRequest();
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
@@ -30,48 +33,85 @@ namespace MediPlat.RazorPage.Pages.Medicines
                 return NotFound();
             }
 
-            var medicine =  await _context.Medicines.FirstOrDefaultAsync(m => m.Id == id);
-            if (medicine == null)
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return RedirectToPage("/Auth/Login");
             }
-            Medicine = medicine;
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
+            {
+                var response = await client.GetAsync($"https://localhost:7002/odata/Medicines/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return NotFound();
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var medicineResponse = JsonSerializer.Deserialize<MedicineResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (medicineResponse != null)
+                {
+                    Medicine = new MedicineRequest
+                    {
+                        Name = medicineResponse.Name,
+                        DosageForm = medicineResponse.DosageForm,
+                        Strength = medicineResponse.Strength,
+                        SideEffects = medicineResponse.SideEffects,
+                        Status = medicineResponse.Status
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi tải dữ liệu thuốc: {ex.Message}");
+                return StatusCode(500, "Lỗi khi tải dữ liệu.");
+            }
+
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            _context.Attach(Medicine).State = EntityState.Modified;
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             try
             {
-                await _context.SaveChangesAsync();
+                var jsonContent = JsonSerializer.Serialize(Medicine, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await client.PutAsync($"https://localhost:7002/odata/Medicines/{id}", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError("", $"Không thể cập nhật thuốc. Chi tiết lỗi: {errorResponse}");
+                    return Page();
+                }
+
+                return RedirectToPage("./Index");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!MedicineExists(Medicine.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                _logger.LogError($"Lỗi khi cập nhật thuốc: {ex.Message}");
+                ModelState.AddModelError("", "Lỗi khi cập nhật thuốc. Vui lòng thử lại.");
+                return Page();
             }
-
-            return RedirectToPage("./Index");
-        }
-
-        private bool MedicineExists(Guid id)
-        {
-            return _context.Medicines.Any(e => e.Id == id);
         }
     }
 }

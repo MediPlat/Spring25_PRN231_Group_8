@@ -19,12 +19,11 @@ namespace MediPlat.Service.Services
             _mapper = mapper;
             _logger = logger;
         }
-        public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions(Guid doctorId)
+        public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions()
         {
             return _unitOfWork.DoctorSubscriptions
-                .GetAll(ds => ds.Doctor, ds => ds.Subscription)
-                .Where(ds => ds.DoctorId == doctorId)
-                .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds));
+                .GetAll(ds => ds.Doctor, ds => ds.Subscription).ToList()
+                .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds)).AsQueryable();
         }
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
         {
@@ -35,7 +34,9 @@ namespace MediPlat.Service.Services
             );
 
             if (doctorSubscription == null)
+            {
                 throw new KeyNotFoundException("Doctor subscription not found.");
+            }
 
             return _mapper.Map<DoctorSubscriptionResponse>(doctorSubscription);
         }
@@ -43,17 +44,19 @@ namespace MediPlat.Service.Services
         public async Task<DoctorSubscriptionResponse> AddDoctorSubscriptionAsync(DoctorSubscriptionRequest request, Guid doctorId)
         {
             var existingSubscription = await _unitOfWork.DoctorSubscriptions
-        .GetAsync(ds => ds.DoctorId == doctorId && ds.SubscriptionId == request.SubscriptionId);
+                .GetAsync(ds => ds.DoctorId == doctorId && ds.EndDate >= DateTime.Now);
 
             if (existingSubscription != null)
             {
-                throw new InvalidOperationException("Doctor already has an active subscription with this SubscriptionId.");
+                throw new InvalidOperationException("Doctor đã có một Subscription đang hoạt động. Không thể tạo mới.");
             }
+
             var subscription = await _unitOfWork.Subscriptions.GetAsync(s => s.Id == request.SubscriptionId);
             if (subscription == null)
             {
-                throw new KeyNotFoundException("Subscription not found.");
+                throw new KeyNotFoundException("Subscription không tồn tại.");
             }
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -79,6 +82,7 @@ namespace MediPlat.Service.Services
                 throw;
             }
         }
+
         public async Task<DoctorSubscriptionResponse> UpdateDoctorSubscriptionAsync(Guid id, DoctorSubscriptionRequest request, Guid doctorId)
         {
             var existingSubscription = await _unitOfWork.DoctorSubscriptions.GetIdAsync(id);
@@ -87,13 +91,8 @@ namespace MediPlat.Service.Services
                 throw new KeyNotFoundException($"Doctor subscription with ID {id} not found.");
             }
 
-            _logger.LogInformation("Before Update: Subscription {Id} - Current EnableSlot: {EnableSlot}, SubscriptionId: {SubscriptionId}",
-                id, existingSubscription.EnableSlot, existingSubscription.SubscriptionId);
-
             if (request.EnableSlot.HasValue && request.EnableSlot.Value != existingSubscription.EnableSlot)
             {
-                _logger.LogInformation("EnableSlot has changed from {OldEnableSlot} to {NewEnableSlot}. Updating...",
-                    existingSubscription.EnableSlot, request.EnableSlot.Value);
                 existingSubscription.EnableSlot = request.EnableSlot.Value;
             }
             else
@@ -101,7 +100,7 @@ namespace MediPlat.Service.Services
                 _logger.LogWarning("EnableSlot remains unchanged. Skipping update.");
             }
 
-            existingSubscription.UpdateDate = DateTime.UtcNow;
+            existingSubscription.UpdateDate = DateTime.Now;
 
             await _unitOfWork.DoctorSubscriptions.UpdatePartialAsync(existingSubscription,
                 ds => ds.EnableSlot,

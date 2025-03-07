@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
 {
@@ -22,65 +12,71 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
     public class IndexModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
+        public IndexModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
+            _logger = logger;
         }
 
-        public IList<DoctorSubscription> DoctorSubscription { get; set; } = new List<DoctorSubscription>();
+        public DoctorSubscriptionResponse DoctorSubscriptions { get; set; } = new DoctorSubscriptionResponse();
         public string DoctorFullName { get; set; } = "Chưa có thông tin bác sĩ";
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
-            var authCookie = HttpContext.Request.Cookies[".AspNetCore.Cookies"];
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của DoctorSubscription, chuyển hướng đến trang login...");
                 return RedirectToPage("/Auth/Login");
             }
 
-            if (token.StartsWith("Bearer "))
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
             {
-                token = token.Substring("Bearer ".Length);
-            }
+                var doctorResponse = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            using (HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:7002/odata/DoctorSubscriptions"))
-            {
-                string apiResponse = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
+                if (doctorResponse.IsSuccessStatusCode)
                 {
-                    DoctorSubscription = JsonConvert.DeserializeObject<List<DoctorSubscription>>(apiResponse);
+                    var doctorJson = await doctorResponse.Content.ReadAsStringAsync();
+                    var doctor = JsonSerializer.Deserialize<DoctorResponse>(doctorJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    if (DoctorSubscription != null && DoctorSubscription.Any())
+                    if (doctor != null)
                     {
-                        DoctorFullName = DoctorSubscription.First().Doctor.FullName;
-                    }
-                    else
-                    {
-                        Console.WriteLine("⚠️ Không có gói đăng ký nào cho bác sĩ này.");
-                        var doctorResponse = await _httpClient.GetAsync("https://localhost:7002/odata/Doctors/profile");
-                        if (doctorResponse.IsSuccessStatusCode)
-                        {
-                            var doctorJson = await doctorResponse.Content.ReadAsStringAsync();
-                            var doctor = JsonConvert.DeserializeObject<Doctor>(doctorJson);
-
-                            if (doctor != null)
-                            {
-                                DoctorFullName = doctor.FullName;
-                            }
-                        }
+                        DoctorFullName = doctor.FullName;
+                        _logger.LogInformation($"Lấy thành công thông tin bác sĩ: {DoctorFullName}");
                     }
                 }
+                else
+                {
+                    _logger.LogWarning("Không thể lấy thông tin bác sĩ.");
+                }
 
+                var subscriptionsResponse = await client.GetAsync("https://localhost:7002/odata/DoctorSubscriptions?$expand=Doctor,Subscription");
+
+                if (subscriptionsResponse.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await subscriptionsResponse.Content.ReadAsStringAsync();
+                    var odataResponse = JsonSerializer.Deserialize<ODataResponse<DoctorSubscriptionResponse>>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    DoctorSubscriptions = odataResponse?.Value?.FirstOrDefault() ?? new DoctorSubscriptionResponse();
+                }
+                else
+                {
+                    _logger.LogError($"Lỗi khi lấy danh sách gói đăng ký: {subscriptionsResponse.StatusCode}");
+                }
             }
-            ViewData["Title"] = "Gói đăng ký của bác sĩ " + (string.IsNullOrEmpty(DoctorFullName) ? "Không có tên" : DoctorFullName);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi tải dữ liệu gói đăng ký: {ex.Message}");
+                return StatusCode(500, "Lỗi máy chủ khi tải danh sách gói đăng ký.");
+            }
+
+            ViewData["Title"] = "Danh sách gói đăng ký của bác sĩ";
             return Page();
         }
     }

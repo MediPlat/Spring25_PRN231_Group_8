@@ -1,41 +1,85 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
+using MediPlat.Model.ResponseObject;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using MediPlat.Model.Model;
 
 namespace MediPlat.RazorPage.Pages.Experiences
 {
+    [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
     public class DetailsModel : PageModel
     {
-        private readonly MediPlatContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly ILogger<DetailsModel> _logger;
 
-        public DetailsModel(MediPlatContext context)
+        public DetailsModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<DetailsModel> logger)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _clientFactory = clientFactory;
+            _logger = logger;
         }
 
-        public Experience Experience { get; set; } = default!;
+        public ExperienceResponse? Experience { get; set; }
 
         public async Task<IActionResult> OnGetAsync(Guid? id)
         {
             if (id == null)
             {
-                return NotFound();
+                return NotFound("Experience ID không hợp lệ.");
             }
 
-            var experience = await _context.Experiences.FirstOrDefaultAsync(m => m.Id == id);
-            if (experience == null)
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                return RedirectToPage("/Auth/Login");
             }
-            else
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            try
             {
-                Experience = experience;
+                string apiUrl = $"https://localhost:7002/odata/Experiences/{id}?$expand=Doctor,Specialty";
+                _logger.LogInformation($"Fetching Experience details from: {apiUrl}");
+
+                var response = await client.GetAsync(apiUrl);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorResponse = await response.Content.ReadAsStringAsync();
+                    _logger.LogError($"API Error: {response.StatusCode} - {errorResponse}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return NotFound("Experience không tồn tại.");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        return RedirectToPage("/Auth/Login");
+                    }
+                    return StatusCode((int)response.StatusCode, "Lỗi khi tải chi tiết Experience.");
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                Experience = JsonSerializer.Deserialize<ExperienceResponse>(jsonResponse, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (Experience == null)
+                {
+                    _logger.LogWarning($"Experience với ID {id} không có dữ liệu hợp lệ.");
+                    return NotFound("Experience không có dữ liệu hợp lệ.");
+                }
+
+                _logger.LogInformation($"Loaded Experience: ID={Experience.Id}, Title={Experience.Title}");
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi tải Experience: {ex.Message}");
+                return StatusCode(500, "Lỗi máy chủ khi tải chi tiết Experience.");
+            }
+
             return Page();
         }
     }

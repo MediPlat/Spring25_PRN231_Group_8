@@ -2,58 +2,75 @@
 @model MediPlat.RazorPage.Pages.DoctorSubscriptions.EditModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Chỉnh sửa Gói Đăng Ký";
 }
 
-<h1>Edit</h1>
+<h1 class="text-primary text-center"><i class="bi bi-pencil-square"></i> Chỉnh sửa Gói Đăng Ký</h1>
 
-<h4>Doctor Subscription</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="container">
+    <div class="card shadow-lg border-0 rounded">
+        <div class="card-header bg-warning text-dark text-center">
+            <h2><i class="bi bi-pencil"></i> Thông tin Đăng Ký</h2>
+        </div>
+        <div class="card-body">
+            @if (Model.DoctorSubscriptionRequest != null)
+            {
+                <form method="post">
+                    <input type="hidden" asp-for="DoctorSubscriptionRequest.SubscriptionId" />
+                    <input type="hidden" asp-for="DoctorSubscriptionRequest.DoctorId" />
+                    <input type="hidden" asp-for="DoctorSubscriptionRequest.EnableSlot" />
 
-            <input type="hidden" asp-for="DoctorSubscription.Id" />
-            <input type="hidden" asp-for="DoctorSubscription.SubscriptionId" />
-            <input type="hidden" asp-for="DoctorSubscription.EnableSlot" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-            <div class="form-group">
-                <label>Current EnableSlot</label>
-                <input class="form-control" value="@Model.DoctorSubscription.EnableSlot" disabled />
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">📟 Hiện tại có:</label>
+                        <input class="form-control" value="@Model.DoctorSubscriptionRequest.EnableSlot Slots" disabled />
+                    </div>
 
-            <div class="form-group">
-                <label>Additional EnableSlot</label>
-                <input asp-for="AdditionalEnableSlot" type="number" class="form-control" min="0" max="1000" required />
-                <span asp-validation-for="AdditionalEnableSlot" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">🔼 Thêm Slots:</label>
+                        <input asp-for="AdditionalEnableSlot" type="number" class="form-control" min="0" max="1000" required />
+                        <span asp-validation-for="AdditionalEnableSlot" class="text-danger"></span>
+                    </div>
 
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+                    <div id="slotWarning" class="alert alert-danger mt-2 d-none"></div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Lưu</button>
+                        <a asp-page="./Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-danger text-center mt-3">
+                    🚨 Không tìm thấy thông tin Gói Đăng Ký.
+                </div>
+                <div class="text-center">
+                    <a asp-page="./Index" class="btn btn-secondary mt-2">
+                        ⬅ Quay lại danh sách
+                    </a>
+                </div>
+            }
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-page="./Index">Back to List</a>
 </div>
 
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const additionalSlot = document.getElementById("additionalSlot");
-            const currentSlot = parseInt(document.getElementById("CurrentEnableSlot").value);
-            const errorText = document.getElementById("slotError");
+            const additionalSlot = document.getElementById("AdditionalEnableSlot");
+            const currentSlot = @Model.DoctorSubscriptionRequest.EnableSlot;
+            const slotWarning = document.getElementById("slotWarning");
 
             additionalSlot.addEventListener("input", function () {
                 const newSlot = parseInt(additionalSlot.value) || 0;
                 if (newSlot + currentSlot > 1000) {
-                    errorText.textContent = "Total EnableSlot cannot exceed 1000.";
+                    slotWarning.textContent = "⚠️ Tổng số Slot không thể vượt quá 1000!";
+                    slotWarning.classList.remove("d-none");
                     additionalSlot.setCustomValidity("Total EnableSlot cannot exceed 1000.");
                 } else {
-                    errorText.textContent = "";
+                    slotWarning.classList.add("d-none");
                     additionalSlot.setCustomValidity("");
                 }
             });

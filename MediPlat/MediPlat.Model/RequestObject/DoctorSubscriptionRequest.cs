@@ -13,7 +13,6 @@ namespace MediPlat.Model.RequestObject
     }
     public class DoctorSubscriptionRequest
     {
-        [Required]
         public Guid SubscriptionId { get; set; }
         [Range(1, 1000, ErrorMessage = "EnableSlot must be between 1 and 1000.")]
         public short? EnableSlot { get; set; }

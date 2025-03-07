@@ -1,0 +1,342 @@
+﻿@page
+@using System.Security.Claims
+@model MediPlat.RazorPage.Pages.Patients.ProfileModel
+@{
+    ViewData["Title"] = "Profile";
+}
+@inject IConfiguration Configuration
+
+<style>
+/* Profile card styling */
+.profile-field {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adjust spacing between label and data */
+    margin-bottom: 10px; /* Add spacing between fields */
+}
+
+.profile-field label {
+    min-width: 120px; /* Adjust label width */
+    font-weight: bold;
+}
+.editable-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between input and icon */
+    width: 100%;
+}
+
+.editable-container input {
+    flex: 1;
+    min-width: 0;
+}
+
+.edit-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 8px; /* Ensure space between input and icon */
+}
+/* Save button */
+.btn-save {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save:hover {
+    background-color: #0056b3;
+}
+
+/* Profiles table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table th {
+    background: #007bff;
+    color: white;
+}
+
+/* Add Profile button */
+.btn-add-profile {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-add-profile:hover {
+    background-color: #218838;
+}
+
+</style>
+<div class="card">
+    <div class="card-body">
+        <h2>@Model.Patient.UserName's Profile</h2>
+        <form method="post">
+            <div class="profile-field">
+                <label class="form-label">Username:</label>
+                <div class="editable-container">
+                    <span class="editable" id="username">@Model.Patient.UserName</span>
+                    <input type="text" class="form-control d-none" id="usernameInput" asp-for="Patient.UserName" />
+                    <i class="fas fa-edit edit-icon" onclick="toggleEdit('username')"></i>
+                </div>
+            </div>
+
+            <div class="profile-field">
+                <label class="form-label">Email:</label>
+                <div class="editable-container">
+                    <span class="editable" id="email">@Model.Patient.Email</span>
+                    <input type="email" class="form-control d-none" id="emailInput" asp-for="Patient.Email" />
+                    <i class="fas fa-edit edit-icon" onclick="toggleEdit('email')"></i>
+                </div>
+            </div>
+
+            <div class="profile-field">
+                <label class="form-label">Balance:</label>
+                <span>@Model.Patient.Balance</span>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- Profiles Section -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h3>Profiles</h3>
+        <button class="btn btn-success mb-3" onclick="openProfileModal()">Add Profile</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Sex</th>
+                    <th>DoB</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="profilesTable">
+                <!-- Profile rows will be added dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="profileId">
+                <label>Full Name</label>
+                <input type="text" id="profileFullName" class="form-control mb-2">
+                <label>Sex</label>
+                <select class="form-control" id="profileSex" name="Sex">
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>                
+                <label>DoB</label>
+                <input type="date" id="profileDob" class="form-control mb-2">
+                <label>Address</label>
+                <input type="text" id="profileAddress" class="form-control mb-2">
+                <label>Phone</label>
+                <input type="text" id="profilePhone" class="form-control mb-2">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveProfile()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmBtn" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const API_BASE_URL = "@Configuration["ApiBaseUrl"]";
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        loadProfiles();
+    });
+
+    function toggleEdit(field) {
+        document.getElementById(field).classList.toggle("d-none");
+        document.getElementById(field + "Input").classList.toggle("d-none");
+    }
+
+    function showConfirmation(message, callback) {
+        document.getElementById("confirmMessage").innerText = message;
+        let confirmModal = new bootstrap.Modal(document.getElementById("confirmModal"));
+
+        document.getElementById("confirmBtn").onclick = function () {
+            callback();
+            confirmModal.hide();
+        };
+
+        confirmModal.show();
+    }
+
+    function loadProfiles() {
+        fetch(API_BASE_URL + "/odata/Profiles?$filter=patientId eq @HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value", {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer @Model.JWTToken"
+            }
+        })
+            .then(response => response.json()) // Convert response to JSON
+            .then(data => {
+                console.log("API Response:", data); // Log full response
+
+                // Ensure response contains a value array
+                if (!data.value || !Array.isArray(data.value)) {
+                    console.error("Error: API response is not an array.", data);
+                    return;
+                }
+
+                let table = document.getElementById("profilesTable");
+                table.innerHTML = "";
+
+                data.value.forEach(profile => {
+                    let dob = profile.Dob ? new Date(profile.Dob).toLocaleDateString() : "N/A"; // Format date safely
+                    let row = `<tr>
+                    <td>${profile.FullName}</td>
+                    <td>${profile.Sex}</td>
+                    <td>${dob}</td>
+                    <td>${profile.Address}</td>
+                    <td>${profile.PhoneNumber}</td>
+                    <td>
+                        <button class='btn btn-warning' onclick='editProfile(${JSON.stringify(profile)})'>Edit</button>
+                        <button class='btn btn-danger' onclick='deleteProfile("${profile.Id}")'>Delete</button>
+                    </td>
+                </tr>`;
+                    table.innerHTML += row;
+                });
+            })
+            .catch(error => console.error("Fetch error:", error)); // Catch fetch errors
+    }
+
+
+    function openProfileModal() {
+        document.getElementById("profileId").value = "";
+        document.getElementById("profileFullName").value = "";
+        document.getElementById("profileSex").value = "";
+        document.getElementById("profileDob").value = "";
+        document.getElementById("profileAddress").value = "";
+        document.getElementById("profilePhone").value = "";
+        new bootstrap.Modal(document.getElementById("profileModal")).show();
+    }
+
+    function editProfile(profile) {
+        document.getElementById("profileId").value = profile.Id;
+        document.getElementById("profileFullName").value = profile.FullName;
+        document.getElementById("profileSex").value = profile.Sex;
+        document.getElementById("profileDob").value = profile.Dob ? new Date(profile.Dob).toISOString().split('T')[0] : "";
+        document.getElementById("profileAddress").value = profile.Address;
+        document.getElementById("profilePhone").value = profile.PhoneNumber;
+        new bootstrap.Modal(document.getElementById("profileModal")).show();
+    }
+
+    function saveProfile() {
+    showConfirmation("Are you sure you want to save this profile?", function () {
+        let id = document.getElementById("profileId").value;
+        let profile = {
+            FullName: document.getElementById("profileFullName").value,
+            Sex: document.getElementById("profileSex").value,
+            Dob: document.getElementById("profileDob").value ? new Date(document.getElementById("profileDob").value).toISOString() : null,
+            Address: document.getElementById("profileAddress").value,
+            PhoneNumber: document.getElementById("profilePhone").value
+        };
+
+        let method = id ? "PUT" : "POST";
+        let url = API_BASE_URL + (id ? `/odata/Profiles/${id}` : "/odata/Profiles");
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                "Authorization": `Bearer @Html.Raw(Model.JWTToken)`
+            },
+            body: JSON.stringify(profile)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message || "Failed to save profile"); });
+            }
+            return response.json();
+        })
+        .then(() => {
+            loadProfiles();
+            let modal = bootstrap.Modal.getInstance(document.getElementById("profileModal"));
+            modal.hide();
+            alert("Profile saved successfully!");
+        })
+        .catch(error => {
+            alert("Error: " + error.message);
+        });
+    });
+    }
+
+
+    function deleteProfile(id) {
+    showConfirmation("Are you sure you want to delete this profile?", function () {
+        fetch(API_BASE_URL + `/odata/Profiles/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer @Html.Raw(Model.JWTToken)` }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message || "Failed to delete profile"); });
+            }
+        })
+        .then(() => {
+            loadProfiles();
+            alert("Profile deleted successfully!");
+        })
+        .catch(error => {
+            alert("Error: " + error.message);
+        });
+    });
+}
+</script>

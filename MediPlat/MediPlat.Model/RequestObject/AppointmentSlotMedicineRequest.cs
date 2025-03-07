@@ -14,8 +14,6 @@ namespace MediPlat.Model.RequestObject
         [Required]
         public Guid MedicineId { get; set; }
         [Required]
-        public Guid PatientId { get; set; }
-        [Required]
         [MinLength(5, ErrorMessage = "Dosage must have at least 5 characters.")]
         [MaxLength(255, ErrorMessage = "Dosage cannot exceed 255 characters.")]
         public string Dosage { get; set; } = null!;

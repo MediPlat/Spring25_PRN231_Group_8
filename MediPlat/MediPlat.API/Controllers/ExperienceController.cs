@@ -1,12 +1,11 @@
-﻿using MediPlat.Model.Model;
+using MediPlat.Service.IServices;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
-using MediPlat.Service.IServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using System.Security.Claims;
 
 namespace MediPlat.API.Controllers
 {
@@ -15,89 +14,95 @@ namespace MediPlat.API.Controllers
     public class ExperienceController : ODataController
     {
         private readonly IExperienceService _experienceService;
+        private readonly ILogger<ExperienceController> _logger;
 
-        public ExperienceController(IExperienceService experienceService)
+        public ExperienceController(IExperienceService experienceService, ILogger<ExperienceController> logger)
         {
             _experienceService = experienceService;
+            _logger = logger;
         }
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Roles = "Doctor,Admin,Patient")]
+        [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
         public IQueryable<ExperienceResponse> GetExperiences()
         {
-            return _experienceService.GetAllExperiences();
+            var isPatient = User.FindFirstValue(ClaimTypes.Role) == "Patient";
+            return _experienceService.GetAllExperiences(isPatient);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Policy = "DoctorOrAdminorPatientPolicy")]
         public async Task<IActionResult> GetExperience(Guid id)
         {
-            var experience = await _experienceService.GetExperienceByIdAsync(id);
-            return experience != null ? Ok(experience) : NotFound($"Experience với ID {id} không tồn tại.");
+            var isPatient = User.FindFirstValue(ClaimTypes.Role) == "Patient";
+            var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var experience = await _experienceService.GetExperienceByIdAsync(id, doctorId, isPatient);
+            var result = new
+            {
+                experience.Id,
+                experience.SpecialtyId,
+                experience.Title,
+                experience.Description,
+                experience.Certificate,
+                experience.Status,
+                experience.DoctorId,
+                Doctor = experience.Doctor != null ? new { experience.Doctor.Id, experience.Doctor.FullName } : null,
+                Specialty = experience.Specialty != null ? new { experience.Specialty.Id, experience.Specialty.Name } : null
+            };
+
+            return Ok(result);
+
         }
 
         [HttpPost]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateExperience([FromBody] ExperienceRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             request.DoctorId = doctorId;
-
             var response = await _experienceService.AddExperienceAsync(request);
             return CreatedAtAction(nameof(GetExperience), new { id = response.Id }, response);
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         public async Task<IActionResult> UpdateExperience(Guid id, [FromBody] ExperienceRequest request)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             var isAdmin = userRole == "Admin";
+            var isPatient = userRole == "Patient";
+            var doctorId = Guid.Parse(userId);
 
-            var existingExperience = await _experienceService.GetExperienceByIdAsync(id);
-            if (existingExperience == null)
-            {
-                return NotFound("Experience không tồn tại.");
-            }
+            var existingExperience = await _experienceService.GetExperienceByIdAsync(id, doctorId, isPatient);
 
             if (isAdmin)
             {
-                var response = await _experienceService.UpdateExperienceStatusAsync(id, request.Status);
-                return Ok(response);
+                var adminResponse = await _experienceService.UpdateExperienceStatusAsync(id, request.Status);
+                return Ok(adminResponse);
             }
 
-            else
+            if (existingExperience.DoctorId != doctorId)
             {
-                var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                if (existingExperience.DoctorId != doctorId)
-                {
-                    return Forbid();
-                }
-
-                var response = await _experienceService.UpdateExperienceWithoutStatusAsync(id, request);
-                return Ok(response);
+                return Forbid();
             }
+
+            var response = await _experienceService.UpdateExperienceWithoutStatusAsync(id, request, doctorId);
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Doctor")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> DeleteExperience(Guid id)
         {
             var doctorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var existingExperience = await _experienceService.GetExperienceByIdAsync(id);
+            bool isPatient = User.FindFirstValue(ClaimTypes.Role) == "Patient";
 
-            if (existingExperience == null || existingExperience.DoctorId != doctorId)
+            var existingExperience = await _experienceService.GetExperienceByIdAsync(id, doctorId, isPatient);
+
+            if (existingExperience.DoctorId != doctorId)
             {
                 return Forbid();
             }

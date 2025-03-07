@@ -23,16 +23,16 @@ namespace MediPlat.Service.Services
 
         public IQueryable<AppointmentSlotMedicineResponse> GetAllAppointmentSlotMedicines()
         {
-            return _unitOfWork.AppointmentSlotMedicines.GetAll().AsQueryable()
-                .Select(m => _mapper.Map<AppointmentSlotMedicineResponse>(m));
+            return _unitOfWork.AppointmentSlotMedicines.GetAll().ToList()
+                .Select(m => _mapper.Map<AppointmentSlotMedicineResponse>(m)).AsQueryable();
         }
 
         public async Task<AppointmentSlotMedicineResponse?> GetAppointmentSlotMedicineByIdAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)
         {
-            var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId && m.PatientId == patientId);
+            var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
             return entity != null ? _mapper.Map<AppointmentSlotMedicineResponse>(entity) : null;
         }
-        public async Task AddAppointmentSlotMedicineAsync(AppointmentSlotMedicineRequest request)
+        public async Task<AppointmentSlotMedicineResponse> AddAppointmentSlotMedicineAsync(AppointmentSlotMedicineRequest request)
         {
             var exists = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m =>
                 m.AppointmentSlotId == request.AppointmentSlotId &&
@@ -46,8 +46,9 @@ namespace MediPlat.Service.Services
             var entity = _mapper.Map<AppointmentSlotMedicine>(request);
             _unitOfWork.AppointmentSlotMedicines.Add(entity);
             await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<AppointmentSlotMedicineResponse>(entity);
         }
-        public async Task UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId, AppointmentSlotMedicineRequest request)
+        public async Task<AppointmentSlotMedicineResponse> UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId, AppointmentSlotMedicineRequest request)
         {
             var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m =>
                 m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
@@ -62,9 +63,10 @@ namespace MediPlat.Service.Services
             entity.Quantity = request.Quantity;
 
             await _unitOfWork.AppointmentSlotMedicines.UpdatePartialAsync(entity, e => e.Dosage, e => e.Instructions, e => e.Quantity);
+            return _mapper.Map<AppointmentSlotMedicineResponse>(entity);
         }
 
-        public async Task DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)
+        public async Task<AppointmentSlotMedicineResponse> DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)
         {
             var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
             if (entity != null)
@@ -72,6 +74,7 @@ namespace MediPlat.Service.Services
                 _unitOfWork.AppointmentSlotMedicines.Remove(entity);
                 await _unitOfWork.SaveChangesAsync();
             }
+            return _mapper.Map<AppointmentSlotMedicineResponse>(entity);
         }
     }
 }

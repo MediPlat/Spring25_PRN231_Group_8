@@ -1,9 +1,11 @@
 ﻿using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using System.Security.Claims;
 
@@ -15,8 +17,8 @@ namespace MediPlat.API.Controllers
     public class DoctorController : ODataController
     {
         public readonly IDoctorService _service;
-        private readonly ILogger<SubscriptionsController> _logger;
-        public DoctorController(IDoctorService service, ILogger<SubscriptionsController> logger)
+        private readonly ILogger<DoctorController> _logger;
+        public DoctorController(IDoctorService service, ILogger<DoctorController> logger)
         {
             _service = service;
             _logger = logger;
@@ -74,7 +76,7 @@ namespace MediPlat.API.Controllers
             return BadRequest();
         }
 
-        [HttpPatch("banned")]
+        [HttpPatch("banned_unbanned")]
         [Authorize(Policy = "AdminPolicy")]
 
         public async Task<IActionResult> BanDoctor(string id)
@@ -96,7 +98,7 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> CreateDoctor([FromBody] DoctorSchema doctor)
         {
-            if(doctor == null)
+            if (doctor == null)
             {
                 return BadRequest();
             }
@@ -109,17 +111,11 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpGet("all_doctor")]
+        [EnableQuery]
         [Authorize(Policy = "AdminPolicy")]
-        public async Task<IActionResult> GetAllDoctor()
+        public IQueryable<Doctor> GetAllDoctor()
         {
-            List<Doctor> doctors = new List<Doctor>();
-            doctors = await _service.GetAllDoctor();
-            if(doctors.Count > 0)
-            {
-                return Ok(doctors);
-            }
-            return BadRequest();
+            return _service.GetAllDoctor();
         }
-
     }
 }

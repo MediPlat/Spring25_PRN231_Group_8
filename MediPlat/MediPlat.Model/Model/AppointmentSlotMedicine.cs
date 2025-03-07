@@ -11,8 +11,6 @@ public partial class AppointmentSlotMedicine
 
     public Guid? MedicineId { get; set; }
 
-    public Guid? PatientId { get; set; }
-
     public string Dosage { get; set; } = null!;
 
     public string? Instructions { get; set; }
@@ -22,6 +20,4 @@ public partial class AppointmentSlotMedicine
     public virtual AppointmentSlot? AppointmentSlot { get; set; }
 
     public virtual Medicine? Medicine { get; set; }
-
-    public virtual Patient? Patient { get; set; }
 }

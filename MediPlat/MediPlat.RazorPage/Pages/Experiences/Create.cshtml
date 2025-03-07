@@ -2,51 +2,55 @@
 @model MediPlat.RazorPage.Pages.Experiences.CreateModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Thêm mới Experience";
 }
 
-<h1>Create</h1>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded">
+        <div class="card-header bg-primary text-white text-center">
+            <h2><i class="bi bi-plus-circle"></i> Thêm Experience</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-<h4>Experience</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Experience.SpecialtyId" class="control-label"></label>
-                <select asp-for="Experience.SpecialtyId" class ="form-control" asp-items="ViewBag.SpecialtyId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Experience.Title" class="control-label"></label>
-                <input asp-for="Experience.Title" class="form-control" />
-                <span asp-validation-for="Experience.Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Experience.Description" class="control-label"></label>
-                <input asp-for="Experience.Description" class="form-control" />
-                <span asp-validation-for="Experience.Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Experience.Certificate" class="control-label"></label>
-                <input asp-for="Experience.Certificate" class="form-control" />
-                <span asp-validation-for="Experience.Certificate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Experience.DoctorId" class="control-label"></label>
-                <select asp-for="Experience.DoctorId" class ="form-control" asp-items="ViewBag.DoctorId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="mb-3">
+                    <label asp-for="Experience.SpecialtyId" class="form-label"></label>
+                    <select asp-for="Experience.SpecialtyId" class="form-select" asp-items="Model.SpecialtyList">
+                        <option value="">-- Chọn Chuyên Khoa --</option>
+                    </select>
+                    <span asp-validation-for="Experience.SpecialtyId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Experience.Title" class="form-label"></label>
+                    <input asp-for="Experience.Title" class="form-control" placeholder="Nhập tiêu đề..." />
+                    <span asp-validation-for="Experience.Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Experience.Description" class="form-label"></label>
+                    <textarea asp-for="Experience.Description" class="form-control" rows="3" placeholder="Nhập mô tả..."></textarea>
+                    <span asp-validation-for="Experience.Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Experience.Certificate" class="form-label"></label>
+                    <input asp-for="Experience.Certificate" class="form-control" placeholder="Nhập chứng chỉ..." />
+                    <span asp-validation-for="Experience.Certificate" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-page="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Thêm mới</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-page="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

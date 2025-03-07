@@ -1,5 +1,4 @@
-﻿using MediPlat.Model;
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.Schema;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
@@ -24,7 +23,14 @@ namespace MediPlat.Service.Services
         public async Task<bool> Banned(Guid id)
         {
             var doctor = await _unitOfWork.Doctors.GetIdAsync(id);
-            doctor.Status = "Inactive";
+            if(doctor.Status == "Inactive")
+            {
+                doctor.Status = "Active";
+            }else if(doctor.Status == "Active")
+            {
+                doctor.Status = "Inactive";
+            }
+            
             _unitOfWork.Doctors.Update(doctor);
             return true;
         }
@@ -63,19 +69,19 @@ namespace MediPlat.Service.Services
             d.AvatarUrl = null;
             d.Status = "Active";
             _unitOfWork.Doctors.Add(d);
+            await _unitOfWork.SaveChangesAsync();
             return d;
         }
-
-        public async Task<List<Doctor>> GetAllDoctor()
+        public IQueryable<Doctor> GetAllDoctor()
         {
-            List<Doctor> d = new List<Doctor>();
-            d = (List<Doctor>)await _unitOfWork.Doctors.GetAllAsync(d => d.Experiences, d => d.Reviews);
-            return d;
+            return _unitOfWork.Doctors.GetAll();
         }
 
         public async Task<Doctor> GetByID(Guid id)
         {
-            var doctor = await _unitOfWork.Doctors.GetIdAsync(id);
+            var d = await _unitOfWork.Doctors.GetIdAsync(id);
+            Doctor doctor = new Doctor();
+            doctor = d;
             return doctor;
         }
 

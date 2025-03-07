@@ -15,5 +15,7 @@ public partial class Medicine
 
     public string? SideEffects { get; set; }
 
+    public string Status { get; set; } = null!;
+
     public virtual ICollection<AppointmentSlotMedicine> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicine>();
 }
