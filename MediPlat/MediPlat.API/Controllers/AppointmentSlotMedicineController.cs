@@ -21,23 +21,23 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        [Authorize(Policy = "DoctorOrPatientPolicy")]
+        [Authorize(Policy = "DoctorOrAdminOrPatientPolicy")]
         public IQueryable<AppointmentSlotMedicineResponse> GetAllAppointmentSlotMedicines()
         {
             return _appointmentSlotMedicineService.GetAllAppointmentSlotMedicines();
         }
 
         [HttpGet("{appointmentSlotId}/{medicineId}")]
-        [Authorize(Policy = "DoctorOrPatientPolicy")]
-        public async Task<IActionResult> GetById(Guid appointmentSlotId, Guid medicineId, Guid patientId)
+        [Authorize(Policy = "DoctorOrAdminOrPatientPolicy")]
+        public async Task<IActionResult> GetAppointmentSlotMedicinesById(Guid appointmentSlotId, Guid medicineId)
         {
-            var result = await _appointmentSlotMedicineService.GetAppointmentSlotMedicineByIdAsync(appointmentSlotId, medicineId, patientId);
-            return result != null ? Ok(result) : NotFound();
+            var result = await _appointmentSlotMedicineService.GetAppointmentSlotMedicineByIdAsync(appointmentSlotId, medicineId);
+            return result != null ? Ok(new { value = result }) : NotFound();
         }
 
         [HttpPost]
         [Authorize(Policy = "DoctorPolicy")]
-        public async Task<IActionResult> Create([FromBody] AppointmentSlotMedicineRequest request)
+        public async Task<IActionResult> CreateAppointmentSlotMedicines([FromBody] AppointmentSlotMedicineRequest request)
         {
             var result = await _appointmentSlotMedicineService.AddAppointmentSlotMedicineAsync(request);
             return Created($"odata/AppointmentSlotMedicines/{result.AppointmentSlotMedicineId}", new { result.AppointmentSlotMedicineId });
@@ -45,17 +45,17 @@ namespace MediPlat.API.Controllers
 
         [HttpPut("{appointmentSlotId}/{medicineId}")]
         [Authorize(Policy = "DoctorPolicy")]
-        public async Task<IActionResult> Update(Guid appointmentSlotId, Guid medicineId, Guid patientId, [FromBody] AppointmentSlotMedicineRequest request)
+        public async Task<IActionResult> UpdateAppointmentSlotMedicines(Guid appointmentSlotId, Guid medicineId, [FromBody] AppointmentSlotMedicineRequest request)
         {
-            var result = await _appointmentSlotMedicineService.UpdateAppointmentSlotMedicineAsync(appointmentSlotId, medicineId, patientId, request);
+            var result = await _appointmentSlotMedicineService.UpdateAppointmentSlotMedicineAsync(appointmentSlotId, medicineId, request);
             return result != null ? Ok(result) : NotFound();
         }
 
         [HttpDelete("{appointmentSlotId}/{medicineId}")]
         [Authorize(Policy = "DoctorPolicy")]
-        public async Task<IActionResult> Delete(Guid appointmentSlotId, Guid medicineId, Guid patientId)
+        public async Task<IActionResult> DeleteAppointmentSlotMedicines(Guid appointmentSlotId, Guid medicineId)
         {
-            await _appointmentSlotMedicineService.DeleteAppointmentSlotMedicineAsync(appointmentSlotId, medicineId, patientId);
+            await _appointmentSlotMedicineService.DeleteAppointmentSlotMedicineAsync(appointmentSlotId, medicineId);
             return NoContent();
         }
     }

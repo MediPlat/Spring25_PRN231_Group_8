@@ -37,7 +37,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-    options.LoginPath = "/Auth/Login";
+    options.LoginPath = "/Login";
     options.AccessDeniedPath = "/AccessDenied";
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -111,13 +111,24 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DoctorOrAdminPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
-                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role") &&
-                (c.Value == "Doctor" || c.Value == "Admin"))));
-    options.AddPolicy("DoctorOrAdminorPatientPolicy", policy =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Admin")))));
+    options.AddPolicy("AdminOrPatientPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
-                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role") &&
-                (c.Value == "Doctor" || c.Value == "Admin" || c.Value == "Patient"))));
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Admin" || c.Value == "Patient")))));
+    options.AddPolicy("DoctorOrPatientPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Patient")))));
+    options.AddPolicy("DoctorOrAdminOrPatientPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Doctor" || c.Value == "Admin" || c.Value == "Patient")))));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
 
 builder.Services.AddRazorPages();
@@ -165,6 +176,6 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapControllers();
 app.MapRazorPages();
 app.Run();

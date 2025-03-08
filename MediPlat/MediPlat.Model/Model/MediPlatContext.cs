@@ -65,7 +65,6 @@ public partial class MediPlatContext : DbContext
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
         IConfigurationRoot configuration = builder.Build();
         return configuration.GetConnectionString("DB");
     }
@@ -271,10 +270,6 @@ public partial class MediPlatContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.SlotId).HasColumnName("SlotID");
-
-            entity.HasOne(d => d.Slot).WithOne(p => p.Review)
-                .HasForeignKey<Review>(d => d.SlotId)
-                .HasConstraintName("FK__Review__SlotID__6E01572D");
         });
 
         modelBuilder.Entity<Service>(entity =>

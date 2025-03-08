@@ -52,9 +52,9 @@ namespace MediPlat.RazorPage.Pages.Experiences
                 }
 
                 var specialtyJson = await specialtyResponse.Content.ReadAsStringAsync();
-                var specialties = JsonSerializer.Deserialize<ODataResponse<SpecialtyResponse>>(specialtyJson, new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
+                var specialties = JsonSerializer.Deserialize<ODataResponse<SpecialtyResponse>>(specialtyJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                SpecialtyList = specialties?.Value?.Select(s => new SelectListItem
+                SpecialtyList = specialties?.Value?.ToList()?.Select(s => new SelectListItem
                 {
                     Value = s.Id.ToString(),
                     Text = s.Name

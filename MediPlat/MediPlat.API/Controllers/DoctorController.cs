@@ -98,7 +98,7 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> CreateDoctor([FromBody] DoctorSchema doctor)
         {
-            if(doctor == null)
+            if (doctor == null)
             {
                 return BadRequest();
             }

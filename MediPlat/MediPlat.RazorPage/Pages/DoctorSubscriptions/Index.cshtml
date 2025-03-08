@@ -1,65 +1,52 @@
-﻿@* @page
+﻿@page
 @model MediPlat.RazorPage.Pages.DoctorSubscriptions.IndexModel
 
 @{
     ViewData["Title"] = "Danh sách Gói Đăng Ký";
 }
 
-<h1 class="text-primary text-center"><i class="bi bi-list-check"></i> Danh sách Gói Đăng Ký</h1>
+<h1 class="text-primary text-center my-4"><i class="bi bi-list-check"></i> Gói Đăng Ký</h1>
 
-<p class="text-center">
-    <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
-</p>
+<div class="container d-flex justify-content-center align-items-center">
+    <div class="row w-100 justify-content-center">
+        @if (!Model.DoctorSubscriptions.Any())
+        {
+            <p class="text-center">
+                <a asp-page="Create" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
+            </p>
+        }
 
-@if (Model.DoctorSubscriptions != null && Model.DoctorSubscriptions.Any())
-{
-    <div class="table-responsive">
-        <table class="table table-hover shadow-lg border rounded">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>📌 Slot</th>
-                    <th>📅 Bắt đầu</th>
-                    <th>📅 Kết thúc</th>
-                    <th>🕒 Cập nhật</th>
-                    <th>⚠️ Trạng thái</th>
-                    <th>👨‍⚕️ Bác sĩ</th>
-                    <th>🏥 Gói đăng ký</th>
-                    <th>⚙️ Hành động</th>
-                </tr>
-            </thead>
-            <tbody class="text-center">
-                @foreach (var item in Model.DoctorSubscriptions)
-                {
-                    <tr class="align-middle">
-                        <td>@Html.DisplayFor(modelItem => item.EnableSlot)</td>
-                        <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
-                        <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
-                        <td>@Html.DisplayFor(modelItem => item.UpdateDate)</td>
-                        <td>
-                            <span class="badge @(item.Status == "Active" ? "bg-success" : "bg-danger")">
-                                @item.Status
-                            </span>
-                        </td>
-                        <td>@(item.Doctor?.FullName ?? "N/A")</td>
-                        <td>@(item.Subscription?.Name ?? "N/A")</td>
-                        <td>
+        @foreach (var item in Model.DoctorSubscriptions)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-lg border-0 rounded-lg p-3">
+                    <div class="card-body">
+                        <p><strong>📌 Slot:</strong> @item.EnableSlot</p>
+                        <p><strong>📅 Bắt đầu:</strong> @item.StartDate.ToShortDateString()</p>
+                        <p><strong>📅 Kết thúc:</strong> @item.EndDate.ToShortDateString()</p>
+                        <p><strong>🕒 Cập nhật:</strong> @(item.UpdateDate?.ToShortDateString() ?? "N/A")</p>
+                        <p><strong>⚠️ Trạng thái:</strong> <span class="badge @(item.Status == "Active" ? "bg-success" : "bg-danger")">@item.Status</span></p>
+                        <p><strong>👨‍⚕️ Bác sĩ:</strong> @(item.Doctor?.FullName ?? "N/A")</p>
+                        <p><strong>🏥 Gói đăng ký:</strong> @(item.Subscription?.Name ?? "N/A")</p>
+
+                        <div class="d-flex justify-content-between mt-3">
                             <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
                                 <i class="bi bi-pencil-square"></i> Sửa
                             </a>
                             <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
                                 <i class="bi bi-eye"></i> Xem
                             </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!Model.DoctorSubscriptions.Any())
+        {
+            <div class="alert alert-warning text-center w-100">
+                <i class="bi bi-exclamation-triangle"></i> Hiện tại không có Gói Đăng Ký nào.
+            </div>
+        }
     </div>
-}
-else
-{
-    <div class="alert alert-warning text-center">
-        <i class="bi bi-exclamation-triangle"></i> Hiện tại không có Gói Đăng Ký nào.
-    </div>
-}
- *@
+</div>

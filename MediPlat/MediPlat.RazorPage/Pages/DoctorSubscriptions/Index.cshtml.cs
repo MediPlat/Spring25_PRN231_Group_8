@@ -14,6 +14,10 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<IndexModel> _logger;
+        public class ODataSingleResponse<T>
+        {
+            public T? Value { get; set; }
+        }
 
         public IndexModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
@@ -22,7 +26,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
             _logger = logger;
         }
 
-        public DoctorSubscriptionResponse DoctorSubscriptions { get; set; } = new DoctorSubscriptionResponse();
+        public List<DoctorSubscriptionResponse> DoctorSubscriptions { get; set; } = new List<DoctorSubscriptionResponse>();
         public string DoctorFullName { get; set; } = "Chưa có thông tin bác sĩ";
 
         public async Task<IActionResult> OnGetAsync()
@@ -48,7 +52,6 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                     if (doctor != null)
                     {
                         DoctorFullName = doctor.FullName;
-                        _logger.LogInformation($"Lấy thành công thông tin bác sĩ: {DoctorFullName}");
                     }
                 }
                 else
@@ -63,7 +66,7 @@ namespace MediPlat.RazorPage.Pages.DoctorSubscriptions
                     var jsonResponse = await subscriptionsResponse.Content.ReadAsStringAsync();
                     var odataResponse = JsonSerializer.Deserialize<ODataResponse<DoctorSubscriptionResponse>>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    DoctorSubscriptions = odataResponse?.Value?.FirstOrDefault() ?? new DoctorSubscriptionResponse();
+                    DoctorSubscriptions = odataResponse?.Value ?? new List<DoctorSubscriptionResponse>();
                 }
                 else
                 {

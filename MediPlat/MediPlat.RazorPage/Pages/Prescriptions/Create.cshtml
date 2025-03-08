@@ -1,0 +1,51 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Prescriptions.CreateModel
+@{
+    ViewData["Title"] = "Tạo Đơn Thuốc";
+}
+
+<h2>Tạo Đơn Thuốc</h2>
+
+<form method="post">
+    <div>
+        <label>Chọn Slot:</label>
+        <select asp-for="AppointmentSlot.SlotId" class="form-control">
+            @foreach (var slot in Model.Slots)
+            {
+                <option value="@slot.Id">@slot.Title - @slot.Date.ToShortDateString()</option>
+            }
+        </select>
+    </div>
+
+    @* <div> *@
+    @*     <label>Chọn Bệnh Nhân:</label> *@
+    @*     <select asp-for="AppointmentSlot.ProfileId" class="form-control"> *@
+    @*         @foreach (var profile in Model.Profiles) *@
+    @*         { *@
+    @*             <option value="@profile.Id">@profile.FullName</option> *@
+    @*         } *@
+    @*     </select> *@
+    @* </div> *@
+
+    <div>
+        <label>Ghi Chú:</label>
+        <textarea asp-for="AppointmentSlot.Notes" class="form-control"></textarea>
+    </div>
+
+    <h4>Chọn Thuốc</h4>
+    <div id="medicines">
+        <div class="medicine-entry">
+            <select name="AppointmentSlot.Medicines[0].MedicineId" class="form-control">
+                @foreach (var medicine in Model.Medicines)
+                {
+                    <option value="@medicine.Id">@medicine.Name</option>
+                }
+            </select>
+            <input type="text" name="AppointmentSlot.Medicines[0].Dosage" placeholder="Liều lượng" class="form-control" />
+            <input type="text" name="AppointmentSlot.Medicines[0].Instructions" placeholder="Hướng dẫn sử dụng" class="form-control" />
+            <input type="number" name="AppointmentSlot.Medicines[0].Quantity" placeholder="Số lượng" class="form-control" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Tạo Đơn Thuốc</button>
+</form>

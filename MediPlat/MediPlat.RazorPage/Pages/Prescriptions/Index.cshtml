@@ -1,0 +1,48 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Prescriptions.IndexModel
+@{
+    ViewData["Title"] = "Danh sách đơn thuốc";
+}
+
+<h2>Danh sách đơn thuốc</h2>
+@if (User.IsInRole("Doctor"))
+{
+    <a asp-page="./Create" class="btn btn-success mb-3">Tạo mới</a>
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ngày tạo</th>
+            <th>Bác sĩ</th>
+            <th>Bệnh nhân</th>
+            <th>Ghi chú</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var slot in Model.Prescriptions)
+        {
+            <tr>
+                <td>@slot.CreatedDate?.ToString("dd/MM/yyyy")</td>
+                <td>@slot.Doctor?.FullName</td>
+                <td>@slot.Profile?.FullName</td>
+                <td>@slot.Notes</td>
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="appointmentSlotId" value="@slot.Id" />
+                        <select name="status" class="form-control">
+                            <option value="Pending" selected="@(slot.Status == "Pending")">Pending</option>
+                            <option value="Confirmed" selected="@(slot.Status == "Confirmed")">Confirmed</option>
+                            <option value="Cancelled" selected="@(slot.Status == "Cancelled")">Cancelled</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary mt-1">Cập nhật</button>
+                    </form>
+                </td>
+                <td>
+                    <a asp-page="./Details" asp-route-id="@slot.Id" class="btn btn-info">Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

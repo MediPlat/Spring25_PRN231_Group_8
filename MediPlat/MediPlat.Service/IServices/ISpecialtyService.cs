@@ -1,8 +1,5 @@
 ﻿using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MediPlat.Service.IServices
 {

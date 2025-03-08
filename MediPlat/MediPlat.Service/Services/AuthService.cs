@@ -49,15 +49,27 @@ namespace MediPlat.Service.Services
                     Console.WriteLine("Invalid admin password.");
                 }
             }
-                var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
-                
+
+            var patient = _unitOfWork.Patients.Get(c => c.Email == loginModel.Email);
+
             if (patient != null && patient.Status.Equals("Active"))
             {
                 Console.WriteLine($"Patient found: {patient.Email}");
                 if (patient.Password == loginModel.Password)
                 {
                     Console.WriteLine("Patient password is correct.");
-                    var token = GenerateJwtToken(patient.Id, "Patient");
+
+                    var profile = _unitOfWork.Profiles.Get(p => p.PatientId == patient.Id);
+
+                    if (profile == null)
+                    {
+                        Console.WriteLine("⚠ No profile found for patient.");
+                        return result;
+                    }
+
+                    Console.WriteLine($"✅ Using ProfileId: {profile.Id} instead of PatientId.");
+
+                    var token = GenerateJwtToken(profile.Id, "Patient");
                     result = new AuthResult
                     {
                         Token = "Bearer " + token,

@@ -76,7 +76,7 @@ namespace MediPlat.Service.Services
         }
         public IQueryable<Doctor> GetAllDoctor()
         {
-            return _unitOfWork.Doctors.GetAll().AsQueryable();
+            return _unitOfWork.Doctors.GetAll(d => d.Experiences, d => d.DoctorSubscriptions).AsQueryable();
         }
 
         public async Task<Doctor> GetByID(Guid id)

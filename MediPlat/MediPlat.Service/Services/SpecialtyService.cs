@@ -4,9 +4,6 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 public class SpecialtyService : ISpecialtyService
 {
@@ -18,6 +15,7 @@ public class SpecialtyService : ISpecialtyService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
+
     public IQueryable<SpecialtyResponse> GetAllSpecialties()
     {
         var specialties = _unitOfWork.Specialties.GetAll().ToList();
@@ -52,7 +50,7 @@ public class SpecialtyService : ISpecialtyService
         specialty.Id = Guid.NewGuid(); // Tạo mới Id
 
         // Thêm vào database
-        _unitOfWork.Specialties.Add(specialty);
+        await _unitOfWork.Specialties.AddAsync(specialty);
         await _unitOfWork.SaveChangesAsync();
 
         // Trả về response

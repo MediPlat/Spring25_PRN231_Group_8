@@ -21,6 +21,7 @@ namespace MediPlat.Service.Services
             _mapper = mapper;
             _logger = logger;
         }
+
         public IQueryable<ExperienceResponse> GetAllExperiences(bool isPatient)
         {
             var experiences = _unitOfWork.Experiences.GetAll(e => e.Doctor, e => e.Specialty);

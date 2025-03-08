@@ -13,7 +13,6 @@ namespace MediPlat.Repository.Repositories
     {
         private readonly MediPlatContext _mediPlatDBContext;
         protected readonly DbSet<T> _dbSet;
-
         public GenericRepository(MediPlatContext mediPlatDBContext)
         {
             _mediPlatDBContext = mediPlatDBContext;
@@ -23,6 +22,10 @@ namespace MediPlat.Repository.Repositories
         public void Add(T model) => _dbSet.Add(model);
 
         public void AddRange(IEnumerable<T> model) => _dbSet.AddRange(model);
+        public async Task AddAsync(T model)
+        {
+            await _dbSet.AddAsync(model);
+        }
 
         public T? GetId(Guid id) => _dbSet.Find(id);
 

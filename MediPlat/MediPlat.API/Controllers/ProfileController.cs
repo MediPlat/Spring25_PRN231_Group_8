@@ -19,16 +19,16 @@ namespace MediPlat.API.Controllers
             _ProfileService = ProfileService;
         }
 
-        [Authorize(Roles = "Admin, Patient")]
+        
         [EnableQuery]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         [HttpGet]
         public async Task<IQueryable<ProfileResponse>> GetAll()
         {
             return (await _ProfileService.GetAll(HttpContext.User)).AsQueryable();
         }
 
-        [Authorize(Roles = "Admin, Patient")]
-        [EnableQuery]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -36,14 +36,14 @@ namespace MediPlat.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Patient")]
+        [Authorize(Policy = "PatientPolicy")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProfileRequest ProfileModel)
         {
             return Ok(await _ProfileService.Create(ProfileModel, HttpContext.User));
         }
 
-        [Authorize(Roles = "Patient")]
+        [Authorize(Policy = "PatientPolicy")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] ProfileRequest ProfileModel)
         {
@@ -51,7 +51,7 @@ namespace MediPlat.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin, Patient")]
+        [Authorize(Policy = "AdminOrPatientPolicy")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

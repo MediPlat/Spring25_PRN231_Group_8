@@ -13,6 +13,8 @@ namespace MediPlat.Repository.IRepositories
         IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
         IGenericRepository<Service> Services { get; }
         IGenericRepository<Medicine> Medicines { get; }
+        IGenericRepository<AppointmentSlot> AppointmentsSlots { get; }
+        IGenericRepository<Slot> Slots { get; }
         IGenericRepository<Specialty> Specialties { get; }
         IGenericRepository<Profile> Profiles { get; }
         Task<int> SaveChangesAsync();

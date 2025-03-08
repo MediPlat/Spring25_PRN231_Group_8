@@ -17,7 +17,7 @@ public class MedicineService : IMedicineService
     }
     public IQueryable<MedicineResponse> GetAllMedicines()
     {
-        return _unitOfWork.Medicines.GetAll()
+        return _unitOfWork.Medicines.GetAll().ToList()
             .Where(m => m.Status == "Active")
             .Select(m => new MedicineResponse
             {
@@ -30,7 +30,7 @@ public class MedicineService : IMedicineService
             }).AsQueryable();
     }
 
-    public async Task<MedicineResponse?> GetMedicineByIdAsync(Guid id)
+    public async Task<MedicineResponse> GetMedicineByIdAsync(Guid id)
     {
         var entity = await _unitOfWork.Medicines.GetAsync(m => m.Id == id);
         return entity != null ? _mapper.Map<MedicineResponse>(entity) : null;
