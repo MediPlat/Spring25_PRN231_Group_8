@@ -58,7 +58,6 @@ public partial class MediPlatContext : DbContext
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
-
     private string GetConnectionString()
     {
         var path = Directory.GetCurrentDirectory();

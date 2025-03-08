@@ -1,4 +1,4 @@
-﻿using MediPlat.Model.RequestObject;
+using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;

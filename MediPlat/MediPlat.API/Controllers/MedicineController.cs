@@ -1,4 +1,4 @@
-﻿using MediPlat.Model.Model;
+using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
