@@ -52,20 +52,21 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in CreateAppointmentSlot");
             }
         }
-        //[HttpPut]
-        //public async Task<IActionResult> UpdateAppointmentSlot([FromBody] AppointmentSlotRequest appointmentSlotRequest)
-        //{
-        //    try
-        //    {
-        //        _appointmentSlotService.UpdateAppointmentSlot(appointmentSlotRequest);
-        //        return Ok();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error in UpdateAppointmentSlot");
-        //        return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateAppointmentSlot");
-        //    }
-        //}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAppointmentSlot(Guid id, [FromBody] AppointmentSlotRequest appointmentSlotRequest)
+        {
+            try
+            {
+                _appointmentSlotService.UpdateAppointmentSlot(id, appointmentSlotRequest);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in UpdateAppointmentSlot");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateAppointmentSlot");
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAppointmentSlot(Guid id)
         {
