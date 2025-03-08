@@ -20,12 +20,12 @@ namespace MediPlat.RazorPage.Pages.AppointmentSlotMedicines
 
         public IList<AppointmentSlotMedicine> AppointmentSlotMedicine { get;set; } = default!;
 
-        public async Task OnGetAsync()
-        {
-            AppointmentSlotMedicine = await _context.AppointmentSlotMedicines
-                .Include(a => a.AppointmentSlot)
-                .Include(a => a.Medicine)
-                .Include(a => a.Patient).ToListAsync();
-        }
+        //public async Task OnGetAsync()
+        //{
+        //    AppointmentSlotMedicine = await _context.AppointmentSlotMedicines
+        //        .Include(a => a.AppointmentSlot)
+        //        .Include(a => a.Medicine)
+        //        .Include(a => a.Patient).ToListAsync();
+        //}
     }
 }

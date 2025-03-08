@@ -5,7 +5,7 @@ namespace MediPlat.Service.IServices
 {
     public interface ISpecialtyService
     {
-        List<SpecialtyResponse> GetAllSpecialties();
+        IQueryable<SpecialtyResponse> GetAllSpecialties();
         Task<SpecialtyResponse?> GetSpecialtyByIdAsync(Guid id);
         Task<SpecialtyResponse> AddSpecialtyAsync(SpecialtyRequest request);
         Task<SpecialtyResponse> UpdateSpecialtyAsync(Guid id, SpecialtyRequest request);

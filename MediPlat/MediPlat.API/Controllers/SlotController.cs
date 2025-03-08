@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("odata/[controller]/[action]")]
     [ApiController]
     public class SlotController : ODataController
     {
