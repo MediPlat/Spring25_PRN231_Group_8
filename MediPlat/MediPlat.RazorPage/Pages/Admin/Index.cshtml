@@ -1,0 +1,112 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Admin.IndexModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="list-group shadow-lg rounded-4">
+                <a href="/Admin/Index" class="list-group-item list-group-item-action active">Dashboard</a>
+                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">Manage Doctors</a>
+                <a href="/Medicines/Index" class="list-group-item list-group-item-action">Manage Medicines</a>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2>Admin Dashboard</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h5 class="card-title">Statistics</h5>
+                                    <canvas id="statisticsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h5 class="card-title">Growth Percentage</h5>
+                                    <canvas id="growthChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title">Patient Growth</h5>
+                                    <canvas id="lineChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctxBar = document.getElementById('statisticsChart').getContext('2d');
+        var myBarChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Doctors', 'Medicines', 'Patients'],
+                datasets: [{
+                    label: 'System Data',
+                    data: [12, 19, 30],
+                    backgroundColor: ['#007bff', '#28a745', '#17a2b8'],
+                    borderColor: ['#0056b3', '#218838', '#117a8b'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        var ctxLine = document.getElementById('lineChart').getContext('2d');
+        var myLineChart = new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May'],
+                datasets: [{
+                    label: 'Patient Growth',
+                    data: [3, 5, 8, 13, 20],
+                    backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                    borderColor: '#17a2b8',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        var ctxGrowth = document.getElementById('growthChart').getContext('2d');
+        var myGrowthChart = new Chart(ctxGrowth, {
+            type: 'pie',
+            data: {
+                labels: ['Doctors', 'Medicines', 'Patients'],
+                datasets: [{
+                    label: 'Growth Percentage',
+                    data: [20, 30, 50],
+                    backgroundColor: ['#007bff', '#28a745', '#17a2b8']
+                }]
+            }
+        });
+    </script>
+}
+

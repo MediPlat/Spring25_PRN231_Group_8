@@ -4,7 +4,6 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -17,14 +16,12 @@ namespace MediPlat.Service.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<MediPlatService> _logger;
-        private readonly MediPlatContext _context;
 
-        public MediPlatService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MediPlatService> logger, MediPlatContext context)
+        public MediPlatService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MediPlatService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
-            _context = context;
         }
 
         public async Task<ServiceResponse> AddServiceAsync(ServiceRequest request)
@@ -38,7 +35,7 @@ namespace MediPlat.Service.Services
                 service.Id = Guid.NewGuid(); // Tạo mới Id
 
                 // Thêm vào database
-                _unitOfWork.Services.Add(service);
+                await _unitOfWork.Services.AddAsync(service);
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation($"Service added successfully with ID: {service.Id}");
@@ -77,21 +74,13 @@ namespace MediPlat.Service.Services
             }
         }
 
-        public IQueryable<ServiceResponse> GetAllServices()
+        public List<ServiceResponse> GetAllServices()
         {
             try
             {
-                return _context.Services
-                    .Include(x => x.Specialty)
-                    .Select(s => new ServiceResponse
-                    {
-                        Id = s.Id,
-                        Title = s.Title,
-                        Description = s.Description,
-                        SpecialtyId = s.SpecialtyId,
-                        SpecialtyName = s.Specialty.Name,
-                    })
-                    .AsQueryable();
+                _logger.LogInformation("Retrieving all services");
+                var results = _unitOfWork.Services.GetAll()?.ToList();
+                return _mapper.Map<List<ServiceResponse>>(results);
             }
             catch (Exception ex)
             {

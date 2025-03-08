@@ -58,13 +58,13 @@ public partial class MediPlatContext : DbContext
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
+
     private string GetConnectionString()
     {
         // Build the configuration to read from appsettings.json
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
         IConfigurationRoot configuration = builder.Build();
         return configuration.GetConnectionString("DB");
     }

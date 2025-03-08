@@ -1,4 +1,5 @@
 ﻿using MediPlat.Model.Model;
+using MediPlat.Model.RequestObject;
 using MediPlat.Model.Schema;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Repository.Repositories;
@@ -74,7 +75,7 @@ namespace MediPlat.Service.Services
         }
         public IQueryable<Doctor> GetAllDoctor()
         {
-            return _unitOfWork.Doctors.GetAll();
+            return _unitOfWork.Doctors.GetAll().AsQueryable();
         }
 
         public async Task<Doctor> GetByID(Guid id)
@@ -99,6 +100,7 @@ namespace MediPlat.Service.Services
             profile.PhoneNumber = doctor.PhoneNumber;
 
             _unitOfWork.Doctors.Update(profile);
+            _unitOfWork.SaveChangesAsync();
             return profile;
         }
     }
