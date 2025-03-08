@@ -124,6 +124,34 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity.IsAuthenticated)
+    {
+        var roleClaim = context.User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+        if (roleClaim != null)
+        {
+            var role = roleClaim.Value;
+
+            if (role == "Doctor" && !context.Request.Path.StartsWithSegments("/Doctors/Profile"))
+            {
+                context.Response.Redirect("/Doctors/Profile");
+                return;
+            }
+            else if (role == "Admin" && !context.Request.Path.StartsWithSegments("/Admin/Index"))
+            {
+                context.Response.Redirect("/Admin/Index");
+                return;
+            }
+            else if (role == "Patient" && !context.Request.Path.StartsWithSegments("/Index"))
+            {
+                context.Response.Redirect("/Index");
+                return;
+            }
+        }
+    }
+    await next();
+});
 
 if (!app.Environment.IsDevelopment())
 {
