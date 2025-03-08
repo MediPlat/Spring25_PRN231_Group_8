@@ -12,9 +12,12 @@ namespace MediPlat.Service.IServices
     public interface IAppointmentSlotService
     {
         IQueryable<AppointmentSlotResponse> GetAppointmentSlot();
-        Task<AppointmentSlotResponse?> GetAppointmentSlotByID(Guid appointmentSlotId);
-        Task CreateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest);
-        Task UpdateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest);
+        Task<List<AppointmentSlotResponse>> GetAppointmentSlotsForDoctorAsync(Guid doctorId);
+        Task<List<AppointmentSlotResponse>> GetAppointmentSlotsForPatientAsync(Guid profileId);
+        Task<AppointmentSlotResponse> GetAppointmentSlotByIdForDoctorAsync(Guid doctorId, Guid appointmentSlotId);
+        Task<AppointmentSlotResponse> GetAppointmentSlotByIdForPatientAsync(Guid profileId, Guid appointmentSlotId);
+        Task<AppointmentSlotResponse?> CreateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest);
+        Task<AppointmentSlotResponse> UpdateAppointmentSlot(Guid id, AppointmentSlotRequest appointmentSlotRequest);
         Task DeleteAppointmentSlot(Guid slotId);
         Task <IEnumerable<AppointmentSlotResponse?>> GetAppointmentSlotBySlotID(Guid slotId);
         Task<IEnumerable<AppointmentSlotResponse?>> GetAppointmentSlotByProfileID(Guid profileId);

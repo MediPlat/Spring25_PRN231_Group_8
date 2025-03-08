@@ -122,7 +122,7 @@ CREATE TABLE "AppointmentSlot" (
   "ID" UNIQUEIDENTIFIER PRIMARY KEY,
   "SlotID" UNIQUEIDENTIFIER,
   "ProfileID" UNIQUEIDENTIFIER,
-  "Status" NVARCHAR(50) NOT NULL CHECK ("Status" IN (N'Pending', N'Confirmed', N'Completed', N'Cancelled', N'Pending Confirmation')),
+  "Status" NVARCHAR(50) NOT NULL CHECK ("Status" IN (N'Pending', N'Confirmed', N'Cancelled')),
   "CreatedDate" DATETIME DEFAULT GETDATE(),
   "Notes" NVARCHAR(MAX)
 );
@@ -252,3 +252,4 @@ VALUES
     
     -- Cấp cứu - Hồi sức
     (NEWID(), N'Cấp cứu - Hồi sức', N'Cấp cứu bệnh nhân nguy kịch.');
+

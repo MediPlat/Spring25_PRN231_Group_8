@@ -19,12 +19,14 @@ namespace MediPlat.Service.Services
             _mapper = mapper;
             _logger = logger;
         }
+
         public IQueryable<DoctorSubscriptionResponse> GetAllDoctorSubscriptions()
         {
             return _unitOfWork.DoctorSubscriptions
                 .GetAll(ds => ds.Doctor, ds => ds.Subscription)
                 .Select(ds => _mapper.Map<DoctorSubscriptionResponse>(ds)).AsQueryable();
         }
+
         public async Task<DoctorSubscriptionResponse> GetDoctorSubscriptionByIdAsync(Guid id, Guid doctorId)
         {
             var doctorSubscription = await _unitOfWork.DoctorSubscriptions.GetAsync(

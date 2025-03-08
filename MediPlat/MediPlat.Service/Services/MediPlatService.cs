@@ -74,13 +74,11 @@ namespace MediPlat.Service.Services
             }
         }
 
-        public List<ServiceResponse> GetAllServices()
+        public IQueryable<ServiceResponse> GetAllServices()
         {
             try
             {
-                _logger.LogInformation("Retrieving all services");
-                var results = _unitOfWork.Services.GetAll()?.ToList();
-                return _mapper.Map<List<ServiceResponse>>(results);
+                return _unitOfWork.Services.GetAll().Select(se => _mapper.Map<ServiceResponse>(se)).AsQueryable();
             }
             catch (Exception ex)
             {
