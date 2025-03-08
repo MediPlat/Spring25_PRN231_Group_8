@@ -5,21 +5,18 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http.Headers;
 using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
-using MediPlat.Model.ResponseObject;
+using MediPlat.Model.Schema;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
-    [Authorize(Policy = "DoctorOrAdminPolicy")]
+    [Authorize(Policy = "AdminPolicy")]
     public class DoctorModel : PageModel
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _clientFactory;
         private readonly ILogger<IndexModel> _logger;
-        public class ODataSingleResponse<T>
-        {
-            public T? Value { get; set; }
-        }
 
+    
         public DoctorModel(IHttpContextAccessor httpContextAccessor, IHttpClientFactory clientFactory, ILogger<IndexModel> logger)
         {
             _clientFactory = clientFactory;
@@ -27,10 +24,12 @@ namespace MediPlat.RazorPage.Pages.Doctors
             _logger = logger;
         }
 
-        public IList<DoctorResponse> DoctorList { get; set; } = new List<DoctorResponse>();
+
+        public IList<Doctor> DoctorList { get; set; } = new List<Doctor>();
         public int PageSize { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalItems { get; set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
@@ -50,9 +49,11 @@ namespace MediPlat.RazorPage.Pages.Doctors
                 if (response.IsSuccessStatusCode)
                 {
                     var apiResponse = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation($"📥 JSON API Response: {apiResponse}");
 
-                    DoctorList = JsonSerializer.Deserialize<List<DoctorResponse>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                                 ?? new List<DoctorResponse>();
+                    DoctorList = JsonSerializer.Deserialize<List<Doctor>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Doctor>();
+
+
                 }
                 else
                 {
@@ -67,9 +68,43 @@ namespace MediPlat.RazorPage.Pages.Doctors
             return Page();
         }
 
+        
+
         public async Task<IActionResult> OnPostToggleStatusAsync(Guid id, string status)
         {
-            return Page();
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var apiUrl = $"https://localhost:7002/odata/Doctors/banned_unbanned?id={id}";
+
+            var request = new HttpRequestMessage(HttpMethod.Patch, apiUrl);
+
+            try
+            {
+                var response = await client.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation($"Doctor ID {id} status updated successfully.");
+                }
+                else
+                {
+                    _logger.LogError($"Failed to update doctor status. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception while calling API: {ex.Message}");
+            }
+
+            return RedirectToPage();
         }
+
     }
 }

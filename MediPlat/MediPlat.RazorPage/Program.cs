@@ -10,6 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Đăng ký AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
+
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 // Cấu hình HttpClient cho API Backend
@@ -17,6 +23,7 @@ builder.Services.AddHttpClient("UntrustedClient", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7002/");
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+    client.Timeout = TimeSpan.FromMinutes(5);
 });
 
 // Đăng ký DbContext
@@ -128,6 +135,34 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity.IsAuthenticated)
+    {
+        var roleClaim = context.User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+        if (roleClaim != null)
+        {
+            var role = roleClaim.Value;
+
+            if (role == "Doctor" && !context.Request.Path.StartsWithSegments("/Doctors/Profile"))
+            {
+                context.Response.Redirect("/Doctors/Profile");
+                return;
+            }
+            else if (role == "Admin" && !context.Request.Path.StartsWithSegments("/Admin/Index"))
+            {
+                context.Response.Redirect("/Admin/Index");
+                return;
+            }
+            else if (role == "Patient" && !context.Request.Path.StartsWithSegments("/Index"))
+            {
+                context.Response.Redirect("/Index");
+                return;
+            }
+        }
+    }
+    await next();
+});
 
 if (!app.Environment.IsDevelopment())
 {

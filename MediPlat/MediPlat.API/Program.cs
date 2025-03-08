@@ -59,7 +59,7 @@ builder.Services.AddControllers()
     });
 
 // Add DbContext 
-builder.Services.AddDbContext<MediPlatContext>(options =>
+builder.Services.AddDbContext<MediPlatContext>(/*options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DB");
 
@@ -69,7 +69,7 @@ builder.Services.AddDbContext<MediPlatContext>(options =>
     }
 
     options.UseSqlServer(connectionString);
-});
+}*/);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -75,6 +75,7 @@ namespace MediPlat.RazorPage.Pages.Doctors
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
+            
             if (string.IsNullOrEmpty(doctorRequest.Password))
             {
                 ModelState.Remove("doctorRequest.Password");

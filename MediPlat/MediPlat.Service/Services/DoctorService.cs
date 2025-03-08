@@ -33,6 +33,7 @@ namespace MediPlat.Service.Services
             }
             
             _unitOfWork.Doctors.Update(doctor);
+            _unitOfWork.SaveChangesAsync();
             return true;
         }
 

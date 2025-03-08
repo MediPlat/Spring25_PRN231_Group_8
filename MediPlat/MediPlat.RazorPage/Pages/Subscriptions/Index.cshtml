@@ -5,62 +5,176 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].EnableSlot)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].CreatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Subscription[0].UpdateDate)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Subscription) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EnableSlot)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdateDate)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["SuccessMessage"]
+    </div>
 }
-    </tbody>
-</table>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger text-center">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+        <script>
+            setTimeout(function () {
+                window.location.href = "/Auth/Login";
+            }, 3000);
+        </script>
+    </div>
+}
+<form id="deleteForm" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="subscriptionId" />
+</form>
+
+
+<div class="modal fade" id="createSubscriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="createSubscriptionContent"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="list-group shadow-lg rounded-4">
+                <a href="/Admin/Index" class="list-group-item list-group-item-action">🏠 Dashboard</a>
+                <a href="/Doctors/ManageDoctor" class="list-group-item list-group-item-action">👨‍⚕️ Manage Doctors</a>
+                <a href="/Medicines/Index" class="list-group-item list-group-item-action">💊 Manage Medicines</a>
+                <a href="/Subscriptions/Index" class="list-group-item list-group-item-action active bg-primary text-white fw-bold">📄 Manage Subscriptions</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header bg-primary text-white text-center rounded-top-4">
+                    <h2 class="mb-0">Danh sách Subscription</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <input type="text" id="searchInput" class="form-control w-50 rounded-pill shadow-sm" placeholder="🔍 Tìm kiếm Subscription...">
+                        <button id="btnAddSubscription" class="btn btn-success rounded-pill">
+                            <i class="bi bi-plus-circle"></i> Tạo Subscription
+                        </button>
+                    </div>
+
+                    <div class="row g-4" id="subscriptionList">
+                        @foreach (var subscription in Model.Subscription)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card shadow-lg border-0 rounded-4 hover-zoom">
+                                    <div class="card-header bg-gradient text-white text-center rounded-top-4" style="background: linear-gradient(135deg, #6D5BBA, #8D58BF);">
+                                        <h5>@subscription.Name</h5>
+                                        <small>@subscription.Description</small>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <p><strong>Price:</strong> @subscription.Price VND</p>
+                                        <p><strong>Slot:</strong> @subscription.EnableSlot</p>
+                                        <p><strong>Ngày tạo:</strong> @subscription.CreatedDate?.ToString("dd/MM/yyyy")</p>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between">
+                                        <a asp-page="/Subscriptions/Edit" asp-route-id="@subscription.Id" class="btn btn-outline-primary btn-sm rounded-pill">
+                                            ✏️ Sửa
+                                        </a>
+                                        <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="deleteSubscription('@subscription.Id')">
+                                            🗑️ Xóa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">Trước</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link rounded-pill" href="#">Sau</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = new bootstrap.Modal(document.getElementById("createSubscriptionModal"));
+
+        document.querySelector("#btnAddSubscription").addEventListener("click", function () {
+            const contentDiv = document.getElementById("createSubscriptionContent");
+            contentDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+            fetch("/Subscriptions/Create?handler=CreateModal", {
+                headers: {
+                    "Accept": "text/html",
+                    "Cache-Control": "no-cache"
+                }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    contentDiv.innerHTML = html;
+                    modal.show();
+                })
+                .catch(() => {
+                    contentDiv.innerHTML = '<div class="text-danger text-center">Không thể tải nội dung!</div>';
+                });
+        });
+    });
+
+    document.getElementById("searchInput").addEventListener("input", function () {
+        let keyword = this.value.toLowerCase();
+        let cards = document.querySelectorAll("#subscriptionList .card");
+
+        cards.forEach(card => {
+            let name = card.querySelector("h5").innerText.toLowerCase();
+            card.style.display = name.includes(keyword) ? "block" : "none";
+        });
+    });
+
+    async function deleteSubscription(id) {
+        if (confirm("Bạn có chắc muốn xóa Subscription này không?")) {
+            const form = document.getElementById("deleteForm");
+            document.getElementById("subscriptionId").value = id;
+            form.action = `/Subscriptions/Index?handler=Delete&id=${id}`;
+            form.submit();
+        }
+    }
+</script>
+
+<style>
+    .hover-zoom {
+        transition: transform 0.3s ease-in-out;
+    }
+
+        .hover-zoom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+    .pagination .page-link {
+        transition: background 0.3s;
+    }
+
+        .pagination .page-link:hover {
+            background: #6D5BBA;
+            color: white;
+        }
+</style>

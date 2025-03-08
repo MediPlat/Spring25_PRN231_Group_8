@@ -4,6 +4,9 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Numerics;
+using Microsoft.IdentityModel.Tokens;
 
 namespace MediPlat.Service.Services
 {
@@ -65,14 +68,11 @@ namespace MediPlat.Service.Services
 
             _mapper.Map(request, subscription);
             subscription.UpdateDate = DateTime.Now;
-
-            _unitOfWork.Subscriptions.UpdatePartial(subscription,
-                s => s.Name,
-                s => s.Price,
-                s => s.Description,
-                s => s.CreatedDate,
-                s => s.UpdateDate);
-
+            if (!request.Name.IsNullOrEmpty()) { subscription.Name = request.Name; }
+            if (!request.Description.IsNullOrEmpty()) { subscription.Description = request.Description; }
+            if (request.Price.HasValue) { subscription.Price = request.Price; }
+            if (request.Price.HasValue) { subscription.EnableSlot = request.EnableSlot; }
+            _unitOfWork.Subscriptions.Update(subscription);
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<SubscriptionResponse>(subscription);
         }
