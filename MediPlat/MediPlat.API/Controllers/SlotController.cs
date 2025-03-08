@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace MediPlat.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
-    public class SlotController : ControllerBase
+    public class SlotController : ODataController
     {
         private readonly ISlotService _slotService;
         private readonly ILogger<SlotController> _logger;
@@ -18,6 +19,7 @@ namespace MediPlat.API.Controllers
             _slotService = slotService;
             _logger = logger;
         }
+
         [HttpGet]
         [EnableQuery]
         public IActionResult Get() {
@@ -32,11 +34,14 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in GetSlot");
             }
         }
+
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Patient")]
         public async Task<IActionResult> GetSlotById(Guid id) {
             var result = await _slotService.GetSlotByID(id);
             return result != null ? Ok(result) : NotFound();
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateSlot([FromBody] SlotRequest slotRequest)
         {
@@ -51,6 +56,7 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in CreateSlot");
             }
         }
+
         [HttpPut]
         public async Task<IActionResult> UpdateSlot([FromBody] SlotRequest slotRequest)
         {
@@ -65,6 +71,7 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateSlot");
             }
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSlot(Guid id)
         {
@@ -78,6 +85,13 @@ namespace MediPlat.API.Controllers
                 _logger.LogError(ex, "Error in DeleteSlot");
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in DeleteSlot");
             }
+        }
+
+        [HttpGet("{doctorId}")]
+        public async Task<IActionResult> GetSlotByDoctorID(Guid doctorId)
+        {
+            var result = await _slotService.GetSlotByDoctorID(doctorId);
+            return result != null ? Ok(result) : NotFound();
         }
     }
 }

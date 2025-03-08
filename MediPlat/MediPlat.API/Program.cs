@@ -13,6 +13,7 @@ using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
 using MediPlat.Model.ResponseObject;
 using Microsoft.EntityFrameworkCore;
+using MediPlat.Model.ResponseObject.Patient;
 
 var builder = WebApplication.CreateBuilder(args);
 

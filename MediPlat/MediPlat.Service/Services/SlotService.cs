@@ -4,11 +4,7 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace MediPlat.Service.Services
 {
@@ -27,6 +23,7 @@ namespace MediPlat.Service.Services
             try
             {
                 var slot = _mapper.Map<Slot>(slotRequest);
+                slot.Id = Guid.NewGuid();
                 _unitOfWork.Slots.Add(slot);
                 return _unitOfWork.SaveChangesAsync();
             }
@@ -68,6 +65,24 @@ namespace MediPlat.Service.Services
                 throw ex;
             }
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<SlotResponse?>> GetSlotByDoctorID(Guid doctorId)
+        {
+            try
+            {
+                var slot = await _unitOfWork.Slots.GetListAsync(s => s.DoctorId == doctorId);
+                if (slot == null)
+                {
+                    return null;
+                }
+                var slotResponse = _mapper.Map<IEnumerable<SlotResponse?>>(slot);
+                return slotResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public async Task<SlotResponse?> GetSlotByID(Guid slotId)

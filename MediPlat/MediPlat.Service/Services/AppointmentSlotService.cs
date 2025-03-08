@@ -1,14 +1,9 @@
 ﻿using AutoMapper;
-using MediPlat.Model;
+using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediPlat.Service.Services
 {

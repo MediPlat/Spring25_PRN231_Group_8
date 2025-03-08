@@ -16,6 +16,6 @@ namespace MediPlat.Service.IServices
         Task CreateSlot(SlotRequest slotRequest);
         Task UpdateSlot(SlotRequest slotRequest);
         Task DeleteSlot(Guid slotId);
-
+        Task<IEnumerable<SlotResponse?>> GetSlotByDoctorID(Guid doctorId);
     }
 }
