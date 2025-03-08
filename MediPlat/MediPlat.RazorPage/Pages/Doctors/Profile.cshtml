@@ -5,7 +5,7 @@
     ViewData["Title"] = "Doctor Profile";
 }
 
-@* @if (!ViewData.ModelState.IsValid)
+@if (!ViewData.ModelState.IsValid)
 {
     <div class="alert alert-danger text-center">
         @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
@@ -18,20 +18,37 @@
             }, 3000);
         </script>
     </div>
-} *@
+}
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="/Doctors/Profile">Doctor Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/Doctors/Profile">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="/DoctorSubscriptions/Subscription">Your Subscription</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Histories/Subscription">History</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Deposit">Wallet</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow-lg rounded-4">
-                <div class="card-header bg-primary text-white text-center">
-                    <div class="d-flex justify-content-center">
-                        <img src="@Model.doctor.AvatarUrl" alt="Avatar" class="rounded-circle mb-3" style="width: 150px; height: 150px; border: 3px solid #ffffff;">
-                    </div>
-                    <h2>@Model.doctor.FullName</h2>
-                    <p>@Model.doctor.AcademicTitle</p>
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <img src="@Model.doctor.AvatarUrl" alt="Avatar" class="rounded-circle shadow-lg mb-3" style="width: 120px; height: 120px; border: 4px solid #fff;">
+                    <h2 class="fw-bold mb-0">@Model.doctor.FullName</h2>
+                    <p class="mb-1">@Model.doctor.AcademicTitle</p>
+                    <span class="badge @(Model.doctor.Status == "Active" ? "bg-success" : "bg-danger") fs-6">@Model.doctor.Status</span>
                 </div>
-                <div class="card-body">
+                <div class="card-body px-4 py-4">
                     <div class="row">
                         <div class="col-md-6">
                             <ul class="list-group list-group-flush">
@@ -44,23 +61,12 @@
                         <div class="col-md-6">
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item"><strong>Join Date:</strong> @Model.doctor.JoinDate</li>
-                                <li class="list-group-item">
-                                    <strong>Status:</strong>
-                                    @if (Model.doctor.Status == "Active")
-                                    {
-                                        <span class="badge bg-success">Active</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">Inactive</span>
-                                    }
-                                </li>
-                                <li class="list-group-item"><strong>Fee Per Hour:</strong> $@Model.doctor.FeePerHour</li>
+                                <li class="list-group-item"><strong>Fee Per Hour:</strong> @Model.doctor.FeePerHour VND</li>
                             </ul>
                         </div>
                     </div>
                     <div class="text-center mt-4">
-                        <a asp-page="Edit" asp-route-id="@Model.doctor.Id" class="btn btn-outline-primary me-3 px-4 py-2 rounded-pill">Edit Profile</a>
+                        <a asp-page="Edit" asp-route-id="@Model.doctor.Id" class="btn btn-primary px-4 py-2 rounded-pill me-3">Edit Profile</a>
                         <a asp-page="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">Back to List</a>
                     </div>
                 </div>
