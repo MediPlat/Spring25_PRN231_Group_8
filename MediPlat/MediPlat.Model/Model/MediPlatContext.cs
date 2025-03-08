@@ -61,6 +61,8 @@ public partial class MediPlatContext : DbContext
 
     private string GetConnectionString()
     {
+        var path = Directory.GetCurrentDirectory();
+
         // Build the configuration to read from appsettings.json
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
