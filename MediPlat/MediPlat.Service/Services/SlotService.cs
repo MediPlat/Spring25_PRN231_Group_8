@@ -52,7 +52,7 @@ namespace MediPlat.Service.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public IQueryable<SlotResponse> GetSlot()
+        public IQueryable<SlotResponse> GetAllSlot()
         {
             try
             {
@@ -102,6 +102,24 @@ namespace MediPlat.Service.Services
                 throw ex;
             }
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<SlotResponse?>> GetSlotByServiceID(Guid serviceId)
+        {
+            try
+            {
+                var slot = await _unitOfWork.Slots.GetListAsync(s => s.ServiceId == serviceId);
+                if (slot == null)
+                {
+                    return null;
+                }
+                var slotResponse = _mapper.Map<IEnumerable<SlotResponse?>>(slot);
+                return slotResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public Task UpdateSlot(SlotRequest slotRequest)

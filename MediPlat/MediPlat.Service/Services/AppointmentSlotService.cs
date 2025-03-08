@@ -77,6 +77,43 @@ namespace MediPlat.Service.Services
             }
             throw new NotImplementedException();
         }
+
+        public async Task<IEnumerable<AppointmentSlotResponse?>> GetAppointmentSlotByProfileID(Guid profileId)
+        {
+            try
+            {
+                var appointmentSlot = await _unitOfWork.AppointmentsSlots.GetListAsync(s => s.ProfileId == profileId);
+                if (appointmentSlot == null)
+                {
+                    return null;
+                }
+                var appointmentSlotResponse = _mapper.Map<IEnumerable<AppointmentSlotResponse?>>(appointmentSlot);
+                return appointmentSlotResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<IEnumerable<AppointmentSlotResponse?>> GetAppointmentSlotBySlotID(Guid slotId)
+        {
+            try
+            {
+                var appointmentSlot = await _unitOfWork.AppointmentsSlots.GetListAsync(s => s.SlotId == slotId);
+                if (appointmentSlot == null)
+                {
+                    return null;
+                }
+                var appointmentSlotResponse = _mapper.Map<IEnumerable<AppointmentSlotResponse?>>(appointmentSlot);
+                return appointmentSlotResponse;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public Task UpdateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest)
         {
             try

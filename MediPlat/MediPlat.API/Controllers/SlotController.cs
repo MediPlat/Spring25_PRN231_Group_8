@@ -22,21 +22,21 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        public IActionResult Get() {
+        public IActionResult GetAll() {
             try
             {
-                var result = _slotService.GetSlot();
+                var result = _slotService.GetAllSlot();
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in GetSlot");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error in GetSlot");
+                _logger.LogError(ex, "Error in GetAllSlot");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error in GetAllSlot");
             }
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Patient")]
+        //[Authorize(Roles = "Admin, Patient")]
         public async Task<IActionResult> GetSlotById(Guid id) {
             var result = await _slotService.GetSlotByID(id);
             return result != null ? Ok(result) : NotFound();
@@ -89,6 +89,12 @@ namespace MediPlat.API.Controllers
 
         [HttpGet("{doctorId}")]
         public async Task<IActionResult> GetSlotByDoctorID(Guid doctorId)
+        {
+            var result = await _slotService.GetSlotByDoctorID(doctorId);
+            return result != null ? Ok(result) : NotFound();
+        }
+        [HttpGet("{serviceId}")]
+        public async Task<IActionResult> GetSlotByServiceID(Guid doctorId)
         {
             var result = await _slotService.GetSlotByDoctorID(doctorId);
             return result != null ? Ok(result) : NotFound();

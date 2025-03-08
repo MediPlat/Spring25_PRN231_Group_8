@@ -30,6 +30,7 @@ builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<ISlotService, SlotService>();
+builder.Services.AddScoped<IAppointmentSlotService, AppointmentSlotService>();
 builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IMediPlatService, MediPlatService>();
@@ -217,7 +218,8 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<ProfileResponse>("Profiles");
     builder.EntitySet<PatientResponse>("Patients");
     builder.EntitySet<ServiceResponse>("Services");
-
+    builder.EntitySet<SlotResponse>("Slots");
+    builder.EntitySet<AppointmentSlotResponse>("AppointmentSlots");
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()

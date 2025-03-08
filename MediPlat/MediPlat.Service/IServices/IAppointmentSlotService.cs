@@ -16,5 +16,7 @@ namespace MediPlat.Service.IServices
         Task CreateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest);
         Task UpdateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest);
         Task DeleteAppointmentSlot(Guid slotId);
+        Task <IEnumerable<AppointmentSlotResponse?>> GetAppointmentSlotBySlotID(Guid slotId);
+        Task<IEnumerable<AppointmentSlotResponse?>> GetAppointmentSlotByProfileID(Guid profileId);
     }
 }

@@ -11,6 +11,7 @@ namespace MediPlat.Repository.IRepositories
         IGenericRepository<Doctor> Doctors { get; }
         IGenericRepository<Experience> Experiences { get; }
         IGenericRepository<AppointmentSlotMedicine> AppointmentSlotMedicines { get; }
+        IGenericRepository<Service> Services { get; }
         IGenericRepository<Medicine> Medicines { get; }
         IGenericRepository<AppointmentSlot> AppointmentsSlots { get; }
         IGenericRepository<Slot> Slots { get; }
