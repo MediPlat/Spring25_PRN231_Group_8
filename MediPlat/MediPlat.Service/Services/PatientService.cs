@@ -173,7 +173,7 @@ namespace MediPlat.Service.Services
         }
         public IQueryable<PatientResponse> GetAllAsQueryable(ClaimsPrincipal claims)
         {
-            var patients = _unitOfWork.Patients.GetAll().ToList();
+            var patients = _unitOfWork.Patients.GetAll(p => p.Profiles).ToList();
             return _mapper.Map<List<PatientResponse>>(patients).AsQueryable();
         }
     }

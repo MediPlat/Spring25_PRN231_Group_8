@@ -68,6 +68,21 @@
     </dl>
 </div>
 <div>
-    <a asp-page="./Edit" asp-route-id="@Model.Slot.Id">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
+    <form method="post">
+        <input type="hidden" name="id" value="@Model.Slot.Id" />
+
+        <div class="mb-3">
+            <label for="ProfileId" class="form-label">Select Profile</label>
+            <select name="ProfileId" class="form-control" required>
+                <option value="">-- Choose a Profile --</option>
+                @foreach (var profile in Model.Profiles)
+                {
+                    <option value="@profile.Id">@profile.FullName</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm mx-1">Confirm</button>
+        <a asp-page="./Index" class="btn btn-sm btn-secondary mx-1">Return</a>
+    </form>
 </div>

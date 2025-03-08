@@ -43,7 +43,7 @@ namespace MediPlat.API.Controllers
         {
             try
             {
-                _appointmentSlotService.CreateAppointmentSlot(appointmentSlotRequest);
+                await _appointmentSlotService.CreateAppointmentSlot(appointmentSlotRequest);
                 return Ok();
             }
             catch (Exception ex)

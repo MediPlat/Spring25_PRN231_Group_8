@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 
@@ -31,6 +32,10 @@ namespace MediPlat.RazorPage.Pages.Patients
         public string? JWTToken { get { return _httpClient.DefaultRequestHeaders.Authorization?.Parameter; } }
         public async Task OnGetAsync()
         {
+            if (!HttpContext.User.FindFirst(ClaimTypes.Role).Value.Equals("Patient"))
+            {
+                RedirectToPage("Index");
+            }
             var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
 
             if (token.IsNullOrEmpty())
@@ -51,6 +56,9 @@ namespace MediPlat.RazorPage.Pages.Patients
                 if (response.IsSuccessStatusCode)
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
+                    var jsonObject = JObject.Parse(apiResponse); // Parse JSON response
+                    var patientsArray = jsonObject["value"]?.ToString(); // Extract "value" array
+
                     Patient = JsonConvert.DeserializeObject<Patient>(apiResponse);
                 }
             }

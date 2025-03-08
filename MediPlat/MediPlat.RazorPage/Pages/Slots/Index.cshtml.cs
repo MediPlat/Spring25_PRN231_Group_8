@@ -6,25 +6,57 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using MediPlat.Model.Model;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace MediPlat.RazorPage.Pages.Slots
 {
     public class IndexModel : PageModel
     {
-        private readonly MediPlat.Model.Model.MediPlatContext _context;
 
-        public IndexModel(MediPlat.Model.Model.MediPlatContext context)
+        private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string? _apiBaseUrl;
+
+        public IndexModel(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, IConfiguration configuration)
         {
-            _context = context;
+            _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
+            _apiBaseUrl = configuration["ApiBaseUrl"];
         }
 
         public IList<Slot> Slot { get;set; } = default!;
 
         public async Task OnGetAsync()
         {
-            Slot = await _context.Slots
-                .Include(s => s.Doctor)
-                .Include(s => s.Service).ToListAsync();
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AuthToken"];
+
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của Slot, chuyển hướng đến trang login...");
+                RedirectToPage("/Auth/Login");
+            }
+            if (token.StartsWith("Bearer "))
+            {
+                token = token.Substring("Bearer ".Length);
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Slot/GetAll"))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+
+                    if (!string.IsNullOrEmpty(apiResponse))
+                    {
+                        Slot = JsonConvert.DeserializeObject<List<Slot>>(apiResponse);
+                    }
+                }
+
+            }
         }
     }
 }

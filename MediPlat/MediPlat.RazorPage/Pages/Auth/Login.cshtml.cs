@@ -61,7 +61,7 @@ public class LoginModel : PageModel
                     /*"Doctor" => RedirectToPage("/Doctors/Profile"),*/
                     "Doctor" => RedirectToPage("/Experiences/Index"),
                     "Admin" => RedirectToPage("/Medicines/Index"),
-                    "Patient" => RedirectToPage("/PatientPages/Index"),
+                    "Patient" => RedirectToPage("/Patients/Index"),
                     _ => RedirectToPage("/Index")
                 };
             }

@@ -11,8 +11,6 @@ namespace MediPlat.Model.ResponseObject
 
         public Guid SlotId { get; set; }
 
-        public Guid PatientId { get; set; }
-
         public string Status { get; set; } = null!;
 
         public DateTime? CreatedDate { get; set; }
@@ -26,7 +24,5 @@ namespace MediPlat.Model.ResponseObject
         public virtual List<TransactionResponse> Transactions { get; set; } = new List<TransactionResponse>();
 
         public virtual SlotResponse? Slot { get; set; }
-
-        public virtual PatientResponse? Patient { get; set; }
     }
 }

@@ -36,7 +36,7 @@ namespace MediPlat.API.Controllers
             return Ok(login);
         }
 
-        /* [HttpPost("register")]
+         [HttpPost("register")]
          public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
          {
              await _authService.RegisterAsync(_mapper.Map<RegisterModel>(registerRequest));
@@ -45,6 +45,6 @@ namespace MediPlat.API.Controllers
                  StatusCode = 201,
                  Message = "Register successful!"
              });
-         }*/
+         }
     }
 }

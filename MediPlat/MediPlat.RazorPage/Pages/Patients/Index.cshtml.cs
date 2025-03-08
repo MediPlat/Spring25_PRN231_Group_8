@@ -28,7 +28,7 @@ namespace MediPlat.RazorPage.Pages.Patients
 
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của DoctorSubscription, chuyển hướng đến trang login...");
+                Console.WriteLine("⚠️ Không tìm thấy token ở Index.cshtml.cs của Patient, chuyển hướng đến trang login...");
                 RedirectToPage("/Auth/Login");
             }
             if (token.StartsWith("Bearer "))

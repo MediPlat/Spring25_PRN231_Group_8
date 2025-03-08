@@ -1,4 +1,5 @@
 ﻿@page
+@using System.Security.Claims
 @model MediPlat.RazorPage.Pages.Slots.IndexModel
 
 @{
@@ -7,9 +8,13 @@
 
 <h1>Index</h1>
 
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
+@if (!HttpContext.User.FindFirst(ClaimTypes.Role).Value.Equals("Patient"))
+{
+    <p>
+        <a asp-page="Create" class="btn btn-sm btn-primary mx-1">Create New</a>
+    </p>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -74,9 +79,12 @@
                 @Html.DisplayFor(modelItem => item.Service.Id)
             </td>
             <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Book</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary mx-1">Book</a>
+                    @if (!HttpContext.User.FindFirst(ClaimTypes.Role).Value.Equals("Patient"))
+                {
+                    <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning mx-1">Edit </a>
+                    <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger mx-1">Delete</a> 
+                }    
             </td>
         </tr>
 }

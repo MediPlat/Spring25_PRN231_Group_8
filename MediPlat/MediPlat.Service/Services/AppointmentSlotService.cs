@@ -17,19 +17,19 @@ namespace MediPlat.Service.Services
             _mapper = mapper;
         }
 
-        public Task CreateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest)
+        public async Task CreateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest)
         {
             try
             {
                 var appointmentSlot = _mapper.Map<AppointmentSlot>(appointmentSlotRequest);
+                appointmentSlot.Id = Guid.NewGuid();
                 _unitOfWork.AppointmentsSlots.Add(appointmentSlot);
-                return _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-            throw new NotImplementedException();
         }
 
         public async Task DeleteAppointmentSlot(Guid appointmentSlotId)

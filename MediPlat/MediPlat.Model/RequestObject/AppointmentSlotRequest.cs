@@ -9,7 +9,9 @@ namespace MediPlat.Model.RequestObject
                 public Guid SlotId { get; set; }
 
                 //[Required]
-                public Guid PatientId { get; set; }
+                //public Guid PatientId { get; set; }
+
+                public Guid? ProfileId { get; set; }
 
                 [Required]
                 [MaxLength(50, ErrorMessage = "Status cannot exceed 50 characters.")]

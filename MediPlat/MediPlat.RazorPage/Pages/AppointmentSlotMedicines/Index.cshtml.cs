@@ -25,7 +25,7 @@ namespace MediPlat.RazorPage.Pages.AppointmentSlotMedicines
             AppointmentSlotMedicine = await _context.AppointmentSlotMedicines
                 .Include(a => a.AppointmentSlot)
                 .Include(a => a.Medicine)
-                .Include(a => a.Patient).ToListAsync();
+                .ToListAsync();
         }
     }
 }
