@@ -114,19 +114,25 @@ namespace MediPlat.Service.Services
             }
         }
 
-        public Task UpdateAppointmentSlot(AppointmentSlotRequest appointmentSlotRequest)
+        public async Task UpdateAppointmentSlot(Guid id, AppointmentSlotRequest appointmentSlotRequest)
         {
             try
             {
-                var slot = _mapper.Map<AppointmentSlot>(appointmentSlotRequest);
-                _unitOfWork.AppointmentsSlots.Update(slot);
-                return _unitOfWork.SaveChangesAsync();
+                var entity = _unitOfWork.AppointmentsSlots.Get(am => am.Id == id);
+                if (entity == null)
+                {
+                    throw new InvalidOperationException("Slot không tồn tại.");
+                }
+                var appointmentSlot = _mapper.Map<AppointmentSlot>(appointmentSlotRequest);
+                _unitOfWork.AppointmentsSlots.Update(appointmentSlot);
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-            throw new NotImplementedException();
         }
+
+
     }
 }

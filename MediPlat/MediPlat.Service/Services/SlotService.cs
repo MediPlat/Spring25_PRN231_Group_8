@@ -136,5 +136,25 @@ namespace MediPlat.Service.Services
             }
             throw new NotImplementedException();
         }
+
+        public async Task UpdateSlot(Guid slotId, SlotRequest slotRequest)
+        {
+            try
+            {
+                var entity = await _unitOfWork.Slots.GetAsync(s => s.Id == slotId);
+                if (entity == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy Slot.");
+                }
+                var slot = _mapper.Map<Slot>(slotRequest);
+                slot.Id = slotId;
+                _unitOfWork.Slots.Update(slot);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

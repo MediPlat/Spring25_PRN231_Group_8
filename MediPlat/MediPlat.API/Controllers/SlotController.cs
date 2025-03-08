@@ -56,13 +56,12 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in CreateSlot");
             }
         }
-
-        [HttpPut]
-        public async Task<IActionResult> UpdateSlot([FromBody] SlotRequest slotRequest)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSlot(Guid id, [FromBody] SlotRequest slotRequest)
         {
             try
             {
-                _slotService.UpdateSlot(slotRequest);
+                _slotService.UpdateSlot(id, slotRequest);
                 return Ok();
             }
             catch (Exception ex)
@@ -71,7 +70,6 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateSlot");
             }
         }
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSlot(Guid id)
         {

@@ -138,5 +138,10 @@ namespace MediPlat.Service.Services
                 throw;
             }
         }
+
+        List<ServiceResponse> IMediPlatService.GetAllServices()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -24,9 +24,9 @@ namespace MediPlat.Repository.Repositories
         public IGenericRepository<Service> Services { get; }
         public IGenericRepository<Medicine> Medicines { get; }
         public IGenericRepository<Slot> Slots { get; }
-        public IGenericRepository<AppointmentSlot> AppointmentsSlots { get; }
         public IGenericRepository<Specialty> Specialties { get; }
         public IGenericRepository<Profile> Profiles { get; }
+        public IGenericRepository<AppointmentSlot> AppointmentsSlots { get; }
         public UnitOfWork(MediPlatContext context, ILogger<UnitOfWork> logger)
         {
             _context = context;

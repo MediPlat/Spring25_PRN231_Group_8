@@ -30,7 +30,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-    options.LoginPath = "/Auth/Login";
+    options.LoginPath = "/Login";
     options.AccessDeniedPath = "/AccessDenied";
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;

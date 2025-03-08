@@ -32,12 +32,12 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in GetAppointmentSlot");
             }
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAppointmentSlotById(Guid id)
-        {
-            var result = await _appointmentSlotService.GetAppointmentSlotByID(id);
-            return result != null ? Ok(result) : NotFound();
-        }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetAppointmentSlotById(Guid id)
+        //{
+        //    var result = await _appointmentSlotService.GetAppointmentSlotByID(id);
+        //    return result != null ? Ok(result) : NotFound();
+        //}
         [HttpPost]
         public async Task<IActionResult> CreateAppointmentSlot([FromBody] AppointmentSlotRequest appointmentSlotRequest)
         {
@@ -52,20 +52,20 @@ namespace MediPlat.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error in CreateAppointmentSlot");
             }
         }
-        [HttpPut]
-        public async Task<IActionResult> UpdateAppointmentSlot([FromBody] AppointmentSlotRequest appointmentSlotRequest)
-        {
-            try
-            {
-                _appointmentSlotService.UpdateAppointmentSlot(appointmentSlotRequest);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in UpdateAppointmentSlot");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateAppointmentSlot");
-            }
-        }
+        //[HttpPut]
+        //public async Task<IActionResult> UpdateAppointmentSlot([FromBody] AppointmentSlotRequest appointmentSlotRequest)
+        //{
+        //    try
+        //    {
+        //        _appointmentSlotService.UpdateAppointmentSlot(appointmentSlotRequest);
+        //        return Ok();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error in UpdateAppointmentSlot");
+        //        return StatusCode(StatusCodes.Status500InternalServerError, "Error in UpdateAppointmentSlot");
+        //    }
+        //}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAppointmentSlot(Guid id)
         {
