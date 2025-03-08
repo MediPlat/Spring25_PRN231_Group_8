@@ -9,7 +9,6 @@ namespace MediPlat.Model.RequestObject
 {
     public class AppointmentSlotMedicineRequest
     {
-        [Required]
         public Guid AppointmentSlotId { get; set; }
         [Required]
         public Guid MedicineId { get; set; }

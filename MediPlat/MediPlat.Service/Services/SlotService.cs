@@ -4,6 +4,7 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +17,12 @@ namespace MediPlat.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public SlotService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ILogger<SlotService> _logger;
+        public SlotService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SlotService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public Task CreateSlot(SlotRequest slotRequest)
@@ -45,7 +48,7 @@ namespace MediPlat.Service.Services
                 throw new KeyNotFoundException("Không tìm thấy Slot.");
             }
 
-            var isBeingUsed = await _unitOfWork.AppointmentsSlots.GetAsync(am => am.SlotId == slotId);
+            var isBeingUsed = await _unitOfWork.AppointmentSlots.GetAsync(am => am.SlotId == slotId);
             if (isBeingUsed != null)
             {
                 throw new InvalidOperationException("Slot đã được kích hoạt, không thể xóa.");
@@ -57,17 +60,8 @@ namespace MediPlat.Service.Services
 
         public IQueryable<SlotResponse> GetSlot()
         {
-            try
-            {
-                var slots = _unitOfWork.Slots.GetAll().AsQueryable()
-                    .Select(s => _mapper.Map<SlotResponse>(s));
-                return slots;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            throw new NotImplementedException();
+            return _unitOfWork.Slots.GetAll(s => s.Doctor, s => s.Service).ToList()
+            .Select(s => _mapper.Map<SlotResponse>(s)).AsQueryable();
         }
 
         public async Task<SlotResponse?> GetSlotByID(Guid slotId)

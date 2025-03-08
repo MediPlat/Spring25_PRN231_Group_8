@@ -32,8 +32,5 @@ namespace MediPlat.Model.ResponseObject
 
         [JsonIgnore]
         public virtual List<AppointmentSlotResponse> AppointmentSlots { get; set; } = new List<AppointmentSlotResponse>();
-
-        [JsonIgnore]
-        public virtual List<ReviewResponse> Reviews { get; set; } = new List<ReviewResponse>();
     }
 }

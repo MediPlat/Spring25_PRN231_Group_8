@@ -27,7 +27,7 @@ namespace MediPlat.Service.Services
                 .Select(m => _mapper.Map<AppointmentSlotMedicineResponse>(m)).AsQueryable();
         }
 
-        public async Task<AppointmentSlotMedicineResponse?> GetAppointmentSlotMedicineByIdAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)
+        public async Task<AppointmentSlotMedicineResponse> GetAppointmentSlotMedicineByIdAsync(Guid appointmentSlotId, Guid medicineId)
         {
             var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
             return entity != null ? _mapper.Map<AppointmentSlotMedicineResponse>(entity) : null;
@@ -48,7 +48,7 @@ namespace MediPlat.Service.Services
             await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<AppointmentSlotMedicineResponse>(entity);
         }
-        public async Task<AppointmentSlotMedicineResponse> UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId, AppointmentSlotMedicineRequest request)
+        public async Task<AppointmentSlotMedicineResponse> UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, AppointmentSlotMedicineRequest request)
         {
             var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m =>
                 m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
@@ -66,7 +66,7 @@ namespace MediPlat.Service.Services
             return _mapper.Map<AppointmentSlotMedicineResponse>(entity);
         }
 
-        public async Task<AppointmentSlotMedicineResponse> DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, Guid patientId)
+        public async Task<AppointmentSlotMedicineResponse> DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId)
         {
             var entity = await _unitOfWork.AppointmentSlotMedicines.GetAsync(m => m.AppointmentSlotId == appointmentSlotId && m.MedicineId == medicineId);
             if (entity != null)

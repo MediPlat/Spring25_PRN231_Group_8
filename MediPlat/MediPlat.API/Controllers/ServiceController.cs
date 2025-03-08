@@ -25,28 +25,28 @@ namespace MediPlat.API.Controllers
 
         [HttpGet]
         [EnableQuery]
-        //[Authorize(Policy = "DoctorOrAdminPolicy")]
-        public List<ServiceResponse> GetServices()
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
+        public IQueryable<ServiceResponse> GetServices()
         {
             return _mediPlatService.GetAllServices();
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Policy = "DoctorOrAdminPolicy")]
+        [Authorize(Policy = "DoctorOrAdminPolicy")]
         public async Task<IActionResult> GetServiceById(Guid id)
         {
             return Ok(await _mediPlatService.GetServiceByIdAsync(id));
         }
 
         [HttpPost]
-        //[Authorize(Policy = "DoctorPolicy")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> CreateService([FromBody] ServiceRequest request)
         {
             return Ok(await _mediPlatService.AddServiceAsync(request));
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Policy = "DoctorPolicy")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> UpdateService(Guid id, [FromBody] ServiceRequest request)
         {
             var result = await _mediPlatService.UpdateServiceAsync(id, request);
@@ -55,7 +55,7 @@ namespace MediPlat.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Policy = "DoctorPolicy")]
+        [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> DeleteService(Guid id)
         {
             try

@@ -13,6 +13,7 @@ using Microsoft.OData.ModelBuilder;
 using MediPlat.API.Middleware;
 using MediPlat.Model.ResponseObject;
 using Microsoft.EntityFrameworkCore;
+using MediPlat.Model.ResponseObject.Patient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,10 +28,12 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
+builder.Services.AddScoped<IAppointmentSlotService, AppointmentSlotService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<ISlotService, SlotService>();
 builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IMediPlatService, MediPlatService>();
 
 // Đăng ký Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -50,6 +53,7 @@ builder.Services.AddControllers()
     })
     .AddOData(options =>
     {
+        options.EnableQueryFeatures();
         options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(100);
         options.AddRouteComponents("odata", GetEdmModel());
     });
@@ -71,6 +75,7 @@ builder.Services.AddDbContext<MediPlatContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    // Cấu hình Security Definition
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
@@ -81,6 +86,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
+    // Cấu hình Security Requirement
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -95,7 +101,11 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    // Giải quyết các hành động trùng lặp
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 });
+
 
 // Configure Authentication and Authorization
 builder.Services.AddAuthentication(options =>
@@ -148,17 +158,21 @@ builder.Services.AddAuthorization(options =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin")))));
-    options.AddPolicy("DoctorOrpatientPolicy", policy =>
+    options.AddPolicy("AdminOrPatientPolicy", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c =>
+                (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
+                (c.Value == "Admin" || c.Value == "Patient")))));
+    options.AddPolicy("DoctorOrPatientPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Patient")))));
-    options.AddPolicy("DoctorOrAdminorPatientPolicy", policy =>
+    options.AddPolicy("DoctorOrAdminOrPatientPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.HasClaim(c =>
                 (c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" &&
                 (c.Value == "Doctor" || c.Value == "Admin" || c.Value == "Patient")))));
-    options.AddPolicy("PatientPolicy", policy => policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Patient"));
 });
 
 builder.Services.AddCors(options =>
@@ -172,10 +186,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSwaggerGen(options =>
-{
-    options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
-});
 builder.Services.AddLogging();
 // Build the app
 var app = builder.Build();
@@ -214,6 +224,8 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<SubscriptionResponse>("Subscriptions");
     builder.EntitySet<ProfileResponse>("Profiles");
     builder.EntitySet<PatientResponse>("Patients");
+    builder.EntitySet<SlotResponse>("Slots");
+    builder.EntitySet<ServiceResponse>("Services");
 
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");

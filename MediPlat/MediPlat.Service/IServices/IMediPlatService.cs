@@ -6,7 +6,7 @@ namespace MediPlat.Service.IServices
 {
     public interface IMediPlatService
     {
-        List<ServiceResponse> GetAllServices();
+        IQueryable<ServiceResponse> GetAllServices();
         Task<ServiceResponse> GetServiceByIdAsync(Guid id);
         Task<ServiceResponse> AddServiceAsync(ServiceRequest request);
         Task<ServiceResponse> UpdateServiceAsync(Guid id, ServiceRequest request);

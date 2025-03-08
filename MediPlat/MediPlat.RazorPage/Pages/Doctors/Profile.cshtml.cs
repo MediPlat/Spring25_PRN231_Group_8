@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net.Http.Headers;
 using System.Numerics;
 using MediPlat.Model.ResponseObject;
+using System.Security.Claims;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
@@ -23,7 +24,10 @@ namespace MediPlat.RazorPage.Pages.Doctors
             _logger = logger;
         }
 
-        public Doctor doctor { get; set; }
+        [BindProperty]
+        public DoctorResponse doctor { get; set; }
+        public bool IsAdmin { get; private set; } = false;
+        public bool IsDoctor { get; private set; } = false;
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -36,13 +40,16 @@ namespace MediPlat.RazorPage.Pages.Doctors
 
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            IsAdmin = userRole == "Admin";
+            IsDoctor = userRole == "Doctor";
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var response = await client.GetAsync("https://localhost:7002/odata/Doctors/profile");
 
             if (response.IsSuccessStatusCode)
             {
                 string apiResponse = await response.Content.ReadAsStringAsync();
-                doctor = JsonConvert.DeserializeObject<Doctor>(apiResponse);
+                doctor = JsonConvert.DeserializeObject<DoctorResponse>(apiResponse);
                 if (doctor != null)
                 {
                     var doctorFullName = doctor.FullName;

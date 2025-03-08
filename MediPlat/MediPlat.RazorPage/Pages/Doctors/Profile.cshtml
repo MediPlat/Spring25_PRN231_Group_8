@@ -61,7 +61,10 @@
                     </div>
                     <div class="text-center mt-4">
                         <a asp-page="Edit" asp-route-id="@Model.doctor.Id" class="btn btn-outline-primary me-3 px-4 py-2 rounded-pill">Edit Profile</a>
-                        <a asp-page="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">Back to List</a>
+                        @if (Model.IsAdmin)
+                        {
+                            <a asp-page="Index" class="btn btn-outline-secondary px-4 py-2 rounded-pill">Back to List</a>
+                        }
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http.Headers;
 using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
+using MediPlat.Model.ResponseObject;
 
 namespace MediPlat.RazorPage.Pages.Doctors
 {
@@ -26,7 +27,7 @@ namespace MediPlat.RazorPage.Pages.Doctors
             _logger = logger;
         }
 
-        public IList<Doctor> DoctorList { get; set; } = new List<Doctor>();
+        public IList<DoctorResponse> DoctorList { get; set; } = new List<DoctorResponse>();
         public int PageSize { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalItems { get; set; }
@@ -49,12 +50,9 @@ namespace MediPlat.RazorPage.Pages.Doctors
                 if (response.IsSuccessStatusCode)
                 {
                     var apiResponse = await response.Content.ReadAsStringAsync();
-                    _logger.LogInformation($"📥 JSON API Response: {apiResponse}");
 
-                    var odataResponse = JsonSerializer.Deserialize<ODataResponse<Doctor>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-                    DoctorList = odataResponse?.Value ?? new List<Doctor>();
-
+                    DoctorList = JsonSerializer.Deserialize<List<DoctorResponse>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                                 ?? new List<DoctorResponse>();
                 }
                 else
                 {
