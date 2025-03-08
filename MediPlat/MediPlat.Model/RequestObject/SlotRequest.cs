@@ -8,8 +8,8 @@ namespace MediPlat.Model.RequestObject
         [Required]
         public Guid DoctorId { get; set; }
 
-        [Required]
-        public Guid ServiceId { get; set; }
+        //[Required]
+        public Guid? ServiceId { get; set; }
 
         [Required]
         [MaxLength(255, ErrorMessage = "Title cannot exceed 255 characters.")]

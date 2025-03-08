@@ -1,0 +1,38 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Services.DeleteModel
+
+@{
+    ViewData["Title"] = "Xóa Dịch Vụ";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded">
+        <div class="card-header bg-danger text-white text-center">
+            <h2><i class="bi bi-trash"></i> Xóa Dịch Vụ</h2>
+        </div>
+        <div class="card-body">
+            <h5 class="text-center text-danger">Bạn có chắc chắn muốn xóa dịch vụ này không?</h5>
+            <hr />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">📝 Tiêu đề:</dt>
+                        <dd class="col-sm-8">@Model.Service?.Title</dd>
+
+                        <dt class="col-sm-4">📖 Mô tả:</dt>
+                        <dd class="col-sm-8">@Model.Service?.Description</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <form method="post">
+                <input type="hidden" asp-for="Service.Id" />
+                <div class="d-flex justify-content-center mt-3">
+                    <a asp-page="./Index" class="btn btn-secondary me-2"><i class="bi bi-arrow-left"></i> Quay lại</a>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

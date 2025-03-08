@@ -31,6 +31,7 @@ builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedic
 builder.Services.AddScoped<IAppointmentSlotService, AppointmentSlotService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 builder.Services.AddScoped<ISlotService, SlotService>();
+builder.Services.AddScoped<IAppointmentSlotService, AppointmentSlotService>();
 builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IMediPlatService, MediPlatService>();
@@ -71,6 +72,7 @@ builder.Services.AddDbContext<MediPlatContext>(/*options =>
     options.UseSqlServer(connectionString);
 }*/);
 
+builder.Services.AddDbContext<MediPlatContext>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -226,7 +228,6 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<PatientResponse>("Patients");
     builder.EntitySet<SlotResponse>("Slots");
     builder.EntitySet<ServiceResponse>("Services");
-
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()

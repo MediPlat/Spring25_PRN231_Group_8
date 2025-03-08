@@ -37,7 +37,7 @@ namespace MediPlat.API.Controllers
         {
             return _patientService.GetAllAsQueryable(HttpContext.User);
         }
-        [Authorize(Roles = "Admin, Patient")]
+        [Authorize(Roles = "Admin, Patient, Doctor")]
         [EnableQuery]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
@@ -61,11 +61,11 @@ namespace MediPlat.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        [Authorize(Roles = "Patient")]
+        [HttpDelete("delete-account")]
+        public async Task<IActionResult> Delete()
         {
-            var result = await _patientService.DeleteById(id, HttpContext.User);
+            var result = await _patientService.DeleteById(Guid.NewGuid().ToString(), HttpContext.User);
             return Ok(result);
         }
 
@@ -74,6 +74,14 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordRequest changePasswordRequest)
         {
             var result = await _patientService.ChangePassword(HttpContext.User, changePasswordRequest);
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("ban-patient/{id}")]
+        public async Task<IActionResult> BanPatient(string id)
+        {
+            var result = await _patientService.DeleteById(id, HttpContext.User);
             return Ok(result);
         }
     }
