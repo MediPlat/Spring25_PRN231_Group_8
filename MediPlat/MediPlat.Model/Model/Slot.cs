@@ -29,5 +29,7 @@ public partial class Slot
 
     public virtual Doctor? Doctor { get; set; }
 
+    public virtual Review? Review { get; set; }
+
     public virtual Service? Service { get; set; }
 }

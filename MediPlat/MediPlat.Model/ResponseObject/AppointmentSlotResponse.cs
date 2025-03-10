@@ -7,13 +7,12 @@ public class AppointmentSlotResponse
     public Guid SlotId { get; set; }
     public Guid ProfileId { get; set; }
     public string Status { get; set; } = null!;
-    public DateTime? CreatedDate { get; set; }
+    public DateTime CreatedDate { get; set; }
     public string? Notes { get; set; }
-
-    public virtual List<AppointmentSlotMedicineResponse> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicineResponse>();
+    public virtual ICollection<AppointmentSlotMedicineResponse> AppointmentSlotMedicines { get; set; } = new List<AppointmentSlotMedicineResponse>();
 
     [JsonIgnore]
-    public virtual List<TransactionResponse> Transactions { get; set; } = new List<TransactionResponse>();
+    public virtual ICollection<TransactionResponse> Transactions { get; set; } = new List<TransactionResponse>();
 
     public virtual SlotResponse? Slot { get; set; }
     public virtual ProfileResponse? Profile { get; set; }

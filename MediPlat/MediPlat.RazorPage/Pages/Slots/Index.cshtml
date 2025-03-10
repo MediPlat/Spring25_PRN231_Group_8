@@ -14,37 +14,38 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Title)
+                @Html.DisplayNameFor(model => model.Slots[0].Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Description)
+                @Html.DisplayNameFor(model => model.Slots[0].Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].StartTime)
+                @Html.DisplayNameFor(model => model.Slots[0].StartTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].EndTime)
+                @Html.DisplayNameFor(model => model.Slots[0].EndTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Date)
+                @Html.DisplayNameFor(model => model.Slots[0].Date)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].SessionFee)
+                @Html.DisplayNameFor(model => model.Slots[0].SessionFee)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Status)
+                @Html.DisplayNameFor(model => model.Slots[0].Status)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Doctor)
+                @Html.DisplayNameFor(model => model.Slots[0].Doctor)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Service)
+                @Html.DisplayNameFor(model => model.Slots[0].Service)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Slot) {
+        @foreach (var item in Model.Slots)
+        {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)

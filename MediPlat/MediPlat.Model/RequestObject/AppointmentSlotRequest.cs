@@ -5,9 +5,9 @@ namespace MediPlat.Model.RequestObject
 {
     public class AppointmentSlotRequest
     {
-        public Guid SlotId { get; set; }
+        public Guid? SlotId { get; set; }
 
-        public Guid ProfileId { get; set; }
+        public Guid? ProfileId { get; set; }
 
         [Required]
         [MaxLength(50, ErrorMessage = "Status cannot exceed 50 characters.")]
@@ -17,6 +17,6 @@ namespace MediPlat.Model.RequestObject
 
         [MaxLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters.")]
         public string? Notes { get; set; }
-        public List<AppointmentSlotMedicineRequest> Medicines { get; set; } = new List<AppointmentSlotMedicineRequest>();
+        public ICollection<AppointmentSlotMedicineRequest> Medicines { get; set; } = new List<AppointmentSlotMedicineRequest>();
     }
 }

@@ -9,6 +9,7 @@ using MediPlat.Model.Model;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using MediPlat.Model.ResponseObject;
+using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.Subscriptions
 {
@@ -23,10 +24,6 @@ namespace MediPlat.RazorPage.Pages.Subscriptions
             _clientFactory = clientFactory;
             _httpContextAccessor = httpContextAccessor;
             _logger = logger;
-        }
-        public class ODataResponse<T>
-        {
-            public List<T>? Value { get; set; }
         }
 
         public IList<SubscriptionResponse> Subscription { get;set; } = new List<SubscriptionResponse>();

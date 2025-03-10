@@ -4,30 +4,27 @@ using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Repository.IRepositories;
 using MediPlat.Service.IServices;
+using MediPlat.Service.Services;
+using Microsoft.Extensions.Logging;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 public class MedicineService : IMedicineService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ILogger<MedicineService> _logger;
 
-    public MedicineService(IUnitOfWork unitOfWork, IMapper mapper)
+    public MedicineService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MedicineService> logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _logger = logger;
     }
     public IQueryable<MedicineResponse> GetAllMedicines()
     {
         return _unitOfWork.Medicines.GetAll().ToList()
             .Where(m => m.Status == "Active")
-            .Select(m => new MedicineResponse
-            {
-                Id = m.Id,
-                Name = m.Name,
-                DosageForm = m.DosageForm,
-                Strength = m.Strength,
-                SideEffects = m.SideEffects,
-                Status = m.Status
-            }).AsQueryable();
+            .Select(m => _mapper.Map<MedicineResponse>(m)).AsQueryable();
     }
 
     public async Task<MedicineResponse> GetMedicineByIdAsync(Guid id)

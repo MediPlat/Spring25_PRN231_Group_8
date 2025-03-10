@@ -111,7 +111,7 @@ namespace MediPlat.Service.Services
 
             if (response.Doctor != null) response.Doctor.Experiences = null;
             if (response.Specialty != null) response.Specialty.Experiences = null;
-
+            await _unitOfWork.SaveChangesAsync();
             return response;
         }
 

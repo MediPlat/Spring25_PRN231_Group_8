@@ -182,9 +182,17 @@ ALTER TABLE "AppointmentSlotMedicine" ADD FOREIGN KEY ("MedicineID") REFERENCES 
 INSERT INTO Doctor(ID, UserName, FullName, Email, "Password", AvatarUrl, Balance, FeePerHour, Degree, AcademicTitle, JoinDate, PhoneNumber, Status)
 VALUES
 	(NEWID(), N'tuanntase140515', N'Nguyễn Thanh Anh Tuấn', 'tuanntase140515@gmail.com', N'12345', CONCAT('https://api.dicebear.com/7.x/pixel-art/png?seed=', CAST(NEWID() AS NVARCHAR(50))), 10000.00, 10000.00, N'Bác sĩ Đa Khoa', N'Giáo Sư', GETDATE(), '0705543619', 'Active');
-INSERT INTO Patient(ID, UserName, FullName, Email, "Password", PhoneNumber, Balance, JoinDate, Sex, "Address", "Status")
+
+INSERT INTO Patient(ID, UserName, Email, "Password", Balance, "Status")
 VALUES
-	(NewID(), N'TuanNTA', N'Tuan Nguyen', N'tuannguyen123@gmail.com', N'12345', '0705543618', 10000, GETDATE(), 'Male', N'123 Lý Trự Trọng', N'Active');
+	(NewID(), N'TuanNTA', N'tuannguyen123@gmail.com', N'123', 10000, N'Active');
+
+INSERT INTO "Profile"(ID, PatientID, FullName, Sex, DOB, Address, JoinDate, PhoneNumber)
+VALUES
+    (NEWID(), '6E5BD584-140D-4294-9165-44E7D3CCD27B', N'Nguyễn Văn An', N'Nam', '1990-05-15', N'123 Đường Lê Lợi, Hà Nội', GETDATE(), '0912345678'),
+    (NEWID(), '6E5BD584-140D-4294-9165-44E7D3CCD27B', N'Trần Thị Bích', N'Nữ', '1995-08-22', N'456 Đường Trần Hưng Đạo, TP. Hồ Chí Minh', GETDATE(), '0987654321'),
+    (NewID(), '6E5BD584-140D-4294-9165-44E7D3CCD27B', N'Lê Anh Nuôi', N'Male', '2000-04-24', N'123 Trần Phú', GetDate(), N'0903383891')
+
 INSERT INTO Subscription(ID, "Name", Price, EnableSlot, "Description", CreatedDate, UpdateDate)
 VALUES
 	(NEWID(), N'Gói cơ bản', 1500000, 50, N'Gói cơ bản có 50 slots khám bệnh', GETDATE(), null),
@@ -253,3 +261,67 @@ VALUES
     -- Cấp cứu - Hồi sức
     (NEWID(), N'Cấp cứu - Hồi sức', N'Cấp cứu bệnh nhân nguy kịch.');
 
+INSERT INTO "Medicine" (ID, Name, DosageForm, Strength, SideEffects, Status)
+VALUES
+    (NEWID(), N'Paracetamol', N'Viên nén', N'500mg', N'Buồn nôn, chóng mặt, phát ban', N'Active'),
+    (NEWID(), N'Amoxicillin', N'Viên nang', N'500mg', N'Tiêu chảy, buồn nôn, dị ứng', N'Active'),
+    (NEWID(), N'Ibuprofen', N'Viên nén', N'400mg', N'Đau dạ dày, nhức đầu, buồn ngủ', N'Active'),
+    (NEWID(), N'Cetirizine', N'Viên nén', N'10mg', N'Buồn ngủ, khô miệng, đau đầu', N'Active'),
+    (NEWID(), N'Metformin', N'Viên nén', N'850mg', N'Buồn nôn, tiêu chảy, đau bụng', N'Active'),
+    (NEWID(), N'Omeprazole', N'Viên nang', N'20mg', N'Buồn nôn, tiêu chảy, táo bón', N'Active'),
+    (NEWID(), N'Diclofenac', N'Viên nén', N'50mg', N'Buồn nôn, tiêu chảy, đau đầu', N'Active'),
+    (NEWID(), N'Aspirin', N'Viên nén', N'81mg', N'Đau dạ dày, chảy máu, phát ban', N'Active'),
+    (NEWID(), N'Atorvastatin', N'Viên nén', N'20mg', N'Đau cơ, tiêu chảy, mệt mỏi', N'Active'),
+    (NEWID(), N'Losartan', N'Viên nén', N'50mg', N'Chóng mặt, đau đầu, mệt mỏi', N'Active');
+
+INSERT INTO [MediPlat].[dbo].[Specialty] (ID, Name, Description)
+VALUES
+    (NEWID(), N'Chứng chỉ Nội khoa', N'Chứng chỉ chuyên sâu về chẩn đoán và điều trị bệnh nội khoa.'),
+    (NEWID(), N'Chứng chỉ Ngoại khoa', N'Chứng chỉ chuyên về phẫu thuật và điều trị bệnh ngoại khoa.'),
+    (NEWID(), N'Chứng chỉ Nhi khoa', N'Chứng chỉ chuyên chăm sóc và điều trị bệnh nhi.'),
+    (NEWID(), N'Chứng chỉ Da liễu', N'Chứng chỉ chuyên khoa về chẩn đoán và điều trị bệnh da liễu.'),
+    (NEWID(), N'Chứng chỉ Sản phụ khoa', N'Chứng chỉ chuyên về chăm sóc sức khỏe sinh sản và phụ nữ mang thai.'),
+    (NEWID(), N'Chứng chỉ Tim mạch', N'Chứng chỉ chuyên khoa tim mạch về điều trị và quản lý bệnh tim.'),
+    (NEWID(), N'Chứng chỉ Thần kinh', N'Chứng chỉ chuyên về chẩn đoán và điều trị bệnh thần kinh.'),
+    (NEWID(), N'Chứng chỉ Chấn thương chỉnh hình', N'Chứng chỉ chuyên về điều trị chấn thương xương khớp và phục hồi chức năng.'),
+    (NEWID(), N'Chứng chỉ Tai Mũi Họng', N'Chứng chỉ chuyên khoa về chẩn đoán và điều trị bệnh tai, mũi, họng.'),
+    (NEWID(), N'Chứng chỉ Nhãn khoa', N'Chứng chỉ chuyên về chẩn đoán và điều trị bệnh về mắt.');
+
+INSERT INTO "Services" (ID, SpecialtyID, Title, Description)
+VALUES
+    (NEWID(), 'ECB0BA3D-02D5-4525-8ED6-41C22B6E0D8B', N'Phẫu thuật chỉnh hình', N'Dịch vụ phẫu thuật và điều trị chấn thương chỉnh hình.'),
+    (NEWID(), 'BE1C514B-FA69-465B-992B-6DD3029CC758', N'Tư vấn nội khoa', N'Tư vấn sức khỏe và điều trị các bệnh nội khoa.'),
+    (NEWID(), '9B50DBE2-8F7A-4C4E-8F05-88332AD31E54', N'Tầm soát bệnh tim mạch', N'Kiểm tra, tư vấn và điều trị các bệnh về tim mạch.'),
+    (NEWID(), '44090894-FA02-49F2-B7E4-C196FAC05026', N'Khám nhi tổng quát', N'Kiểm tra và chăm sóc sức khỏe tổng quát cho trẻ em.'),
+    (NEWID(), '361F16D5-4683-4FA5-B9C3-C861485ED137', N'Phẫu thuật ngoại khoa', N'Điều trị các bệnh cần can thiệp phẫu thuật.'),
+    (NEWID(), '8F37658C-05BD-4A27-830C-CB963D09E036', N'Kiểm tra thị lực', N'Kiểm tra mắt và tư vấn điều trị bệnh về mắt.'),
+    (NEWID(), '449A99C4-2DBE-4C9E-9631-E0C69F461168', N'Tư vấn sức khỏe sinh sản', N'Kiểm tra và tư vấn sức khỏe sinh sản cho phụ nữ.'),
+    (NEWID(), '384C4F3D-E897-4ADD-8EBD-E3B9425EFF84', N'Điều trị bệnh về tai mũi họng', N'Chẩn đoán và điều trị các bệnh liên quan đến tai mũi họng.'),
+    (NEWID(), '4AA97269-0FD3-41F1-9B2D-F159C9512324', N'Tư vấn da liễu', N'Tư vấn và điều trị các bệnh về da, dị ứng, mụn.'),
+    (NEWID(), 'A5C1984E-6A2B-4DDE-B032-F8DFC036E2C2', N'Khám và điều trị bệnh thần kinh', N'Tư vấn, chẩn đoán và điều trị các bệnh về thần kinh.');
+
+INSERT INTO "Slot" (ID, DoctorID, ServiceID, Title, Description, StartTime, EndTime, Date, SessionFee, Status)
+VALUES
+    (NEWID(), 'CD94D1AB-6815-4879-8311-EF161C9E4CD7', 'A00A5A7E-D9A3-49D1-8E1E-35FF4CCD55B6', 
+        N'Tư vấn tim mạch', N'Tư vấn và kiểm tra các vấn đề về tim mạch', 
+        '2025-03-10 08:00:00', '2025-03-10 09:00:00', '2025-03-10', 500000, N'Available'),
+
+    (NEWID(), 'CD94D1AB-6815-4879-8311-EF161C9E4CD7', 'E28AB4E8-912B-46AA-940A-4894A933821D', 
+        N'Khám Tai Mũi Họng', N'Chẩn đoán và điều trị các bệnh liên quan đến tai, mũi, họng', 
+        '2025-03-11 10:00:00', '2025-03-11 11:00:00', '2025-03-11', 350000, N'Available');
+
+INSERT INTO "AppointmentSlot" (ID, SlotID, ProfileID, Status, CreatedDate, Notes)
+VALUES
+    (NEWID(), 'D7E27EC6-1063-4E04-9EF2-2FE787E354C8', '15DC99A4-A17F-4AEF-B3AB-AFADBB5EFF69', 
+     N'Confirmed', GETDATE(), N'Bệnh nhân cần kiểm tra tim mạch định kỳ.');
+
+INSERT INTO "AppointmentSlotMedicine" (AppointmentSlotMedicineID, AppointmentSlotID, MedicineID, Dosage, Instructions, Quantity)
+VALUES
+    (NEWID(), 'F645B680-101F-4F55-8262-DC44EFBC280A',
+     '8421D78C-0FA1-4F6A-904E-2CC08E81DB2F', N'1 viên/lần', N'Uống sau khi ăn', 10),
+
+    (NEWID(), 'F645B680-101F-4F55-8262-DC44EFBC280A',
+     'C374F11E-4D14-4459-900E-85C455BAF3CE', N'2 viên/ngày', N'Uống trước khi ăn sáng', 20),
+
+    (NEWID(), 'F645B680-101F-4F55-8262-DC44EFBC280A',
+     '716BA809-369B-44C4-A8BF-93B5633507FA', N'1 gói/ngày', N'Hòa với 100ml nước, uống sau bữa trưa', 15);

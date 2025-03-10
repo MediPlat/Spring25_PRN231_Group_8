@@ -13,9 +13,9 @@ namespace MediPlat.Model.ResponseObject
         public string? Description { get; set; }
 
         [JsonIgnore]
-        public virtual List<ExperienceResponse> Experiences { get; set; } = new List<ExperienceResponse>();
+        public virtual ICollection<ExperienceResponse> Experiences { get; set; } = new List<ExperienceResponse>();
 
         [JsonIgnore]
-        public virtual List<ServiceResponse> Services { get; set; } = new List<ServiceResponse>();
+        public virtual ICollection<ServiceResponse> Services { get; set; } = new List<ServiceResponse>();
     }
 }

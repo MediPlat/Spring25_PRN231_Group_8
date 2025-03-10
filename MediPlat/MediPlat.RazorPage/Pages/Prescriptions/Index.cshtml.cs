@@ -81,17 +81,69 @@ namespace MediPlat.RazorPage.Pages.Prescriptions
 
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            var getResponse = await client.GetAsync($"https://localhost:7002/odata/AppointmentSlots/doctor/{doctorId}/slot/{appointmentSlotId}");
+            if (!getResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError($"⚠ Không tìm thấy đơn thuốc với ID: {appointmentSlotId}");
+                return Page();
+            }
+
+            var apiResponse = await getResponse.Content.ReadAsStringAsync();
+            var existingPrescription = JsonSerializer.Deserialize<AppointmentSlotResponse>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (existingPrescription == null)
+            {
+                _logger.LogError($"⚠ Không tìm thấy đơn thuốc với ID: {appointmentSlotId}");
+                return Page();
+            }
+
+            if (existingPrescription.Status == "Confirmed")
+            {
+                _logger.LogWarning($"⛔ Không thể cập nhật trạng thái vì đơn thuốc đã được xác nhận.");
+                return Page();
+            }
 
             var updateData = new { Status = status };
             var jsonContent = new StringContent(JsonSerializer.Serialize(updateData), Encoding.UTF8, "application/json");
 
-            var response = await client.PutAsync($"https://localhost:7002/odata/AppointmentSlots/{appointmentSlotId}", jsonContent);
+            var response = await client.PutAsync($"https://localhost:7002/odata/AppointmentSlots/{appointmentSlotId}/status", jsonContent);
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError($"⚠ Lỗi cập nhật trạng thái: {await response.Content.ReadAsStringAsync()}");
             }
 
-            return RedirectToPage("/Prescriptions/Index");
+            await OnGetAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                _logger.LogError("❌ Không tìm thấy đơn thuốc vì ID rỗng.");
+                return Page();
+            }
+
+            var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToPage("/Auth/Login");
+            }
+
+            var client = _clientFactory.CreateClient("UntrustedClient");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await client.DeleteAsync($"https://localhost:7002/odata/AppointmentSlots/{id}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError($"❌ Lỗi khi xóa đơn thuốc ID {id}: {await response.Content.ReadAsStringAsync()}");
+                return Page();
+            }
+
+            return RedirectToPage();
         }
     }
 }

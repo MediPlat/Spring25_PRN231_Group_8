@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MediPlat.Model.Model;
@@ -26,15 +27,18 @@ namespace MediPlat.RazorPage.Pages.Medicines
             _clientFactory = clientFactory;
             _logger = logger;
         }
-
+        [BindProperty]
+        public string? ReturnUrl { get; set; }
         public MedicineResponse Medicine { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(Guid? id)
+        public bool IsAdmin { get; private set; } = false;
+        public async Task<IActionResult> OnGetAsync(Guid? id, string? returnUrl)
         {
             if (id == null)
             {
                 return NotFound("Medicine ID is required.");
             }
+
+            ReturnUrl = returnUrl;
 
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
@@ -44,7 +48,8 @@ namespace MediPlat.RazorPage.Pages.Medicines
 
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            IsAdmin = userRole == "Admin";
             try
             {
                 var response = await client.GetAsync($"https://localhost:7002/odata/Medicines/{id}");

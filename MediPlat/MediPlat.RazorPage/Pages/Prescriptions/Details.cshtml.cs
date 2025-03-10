@@ -38,7 +38,7 @@ namespace MediPlat.RazorPage.Pages.Prescriptions
             if (User.IsInRole("Doctor"))
             {
                 var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-                apiUrl = $"https://localhost:7002/odata/AppointmentSlots/doctor/{doctorId}/slot/{id}";
+                apiUrl = $"https://localhost:7002/odata/AppointmentSlots/doctor/{doctorId}/slot/{id}?$expand=AppointmentSlotMedicine($expand=Medicine)";
             }
             else if (User.IsInRole("Patient"))
             {

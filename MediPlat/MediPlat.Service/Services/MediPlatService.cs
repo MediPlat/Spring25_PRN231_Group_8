@@ -78,7 +78,7 @@ namespace MediPlat.Service.Services
         {
             try
             {
-                return _unitOfWork.Services.GetAll().Select(se => _mapper.Map<ServiceResponse>(se)).AsQueryable();
+                return _unitOfWork.Services.GetAll(s => s.Specialty).ToList().Select(se => _mapper.Map<ServiceResponse>(se)).AsQueryable();
             }
             catch (Exception ex)
             {

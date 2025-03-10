@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,13 @@ namespace MediPlat.RazorPage.Pages.Experiences
 
         public class ODataResponse<T>
         {
+            [JsonPropertyName("@odata.context")]
+            public string? ODataContext { get; set; }
+
+            [JsonPropertyName("value")]
             public List<T>? Value { get; set; }
+
+            [JsonPropertyName("count")]
             public int? Count { get; set; }
         }
 

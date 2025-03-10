@@ -23,18 +23,19 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 // Đăng ký các service
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IDoctorSubscriptionService, DoctorSubscriptionService>();
-builder.Services.AddScoped<IExperienceService, ExperienceService>();
-builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();
+builder.Services.AddScoped<IMediPlatService,MediPlatService>();
+builder.Services.AddScoped<ISlotService, SlotService>();
+/*builder.Services.AddScoped<ITransactionService, TransactionService>();*/
+/*builder.Services.AddScoped<IReviewService, ReviewService>();*/
 builder.Services.AddScoped<IAppointmentSlotService, AppointmentSlotService>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
-builder.Services.AddScoped<ISlotService, SlotService>();
-builder.Services.AddScoped<IAppointmentSlotService, AppointmentSlotService>();
-builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
-builder.Services.AddScoped<IProfileService, ProfileService>();
-builder.Services.AddScoped<IMediPlatService, MediPlatService>();
+/*builder.Services.AddScoped<IAppointmentSlotMedicineService, AppointmentSlotMedicineService>();*/
 
 // Đăng ký Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -60,7 +61,7 @@ builder.Services.AddControllers()
     });
 
 // Add DbContext 
-builder.Services.AddDbContext<MediPlatContext>(/*options =>
+builder.Services.AddDbContext<MediPlatContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DB");
 
@@ -70,7 +71,8 @@ builder.Services.AddDbContext<MediPlatContext>(/*options =>
     }
 
     options.UseSqlServer(connectionString);
-}*/);
+    }
+);
 
 builder.Services.AddDbContext<MediPlatContext>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -187,11 +189,18 @@ builder.Services.AddCors(options =>
                .AllowCredentials();
     });
 });
-
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+Console.OutputEncoding = Encoding.UTF8;
 builder.Services.AddLogging();
 // Build the app
 var app = builder.Build();
+var supportedCultures = new[] { "vi-VN", "en-US" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture("vi-VN")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
 
+app.UseRequestLocalization(localizationOptions);
 // Middleware
 app.UseRouting();
 app.UseCors("AllowAllOrigins");
@@ -222,12 +231,13 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<DoctorSubscriptionResponse>("DoctorSubscriptions");
     builder.EntitySet<ExperienceResponse>("Experiences");
     builder.EntitySet<DoctorResponse>("Doctors");
+    builder.EntitySet<ServiceResponse>("Services");
     builder.EntitySet<SpecialtyResponse>("Specialties");
     builder.EntitySet<SubscriptionResponse>("Subscriptions");
     builder.EntitySet<ProfileResponse>("Profiles");
     builder.EntitySet<PatientResponse>("Patients");
     builder.EntitySet<SlotResponse>("Slots");
-    builder.EntitySet<ServiceResponse>("Services");
+    
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
     builder.EntityType<Patient>()
@@ -236,8 +246,12 @@ static IEdmModel GetEdmModel()
     return builder.GetEdmModel();
 }
 
+var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+var logger = loggerFactory.CreateLogger("ODataMiddleware");
+
 app.Use(async (context, next) =>
 {
     Console.WriteLine($"Request Protocol: {context.Request.Protocol}");
+    context.Response.Headers["Content-Type"] = "application/json; charset=utf-8";
     await next();
 });

@@ -1,4 +1,4 @@
-using MediPlat.Model.Model;
+﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
@@ -6,16 +6,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 [ApiController]
 [Route("odata/Medicines")]
 public class MedicineController : ODataController
 {
     private readonly IMedicineService _medicineService;
+    private readonly ILogger<MedicineController> _logger;
 
-    public MedicineController(IMedicineService medicineService)
+    public MedicineController(IMedicineService medicineService, ILogger<MedicineController> logger)
     {
         _medicineService = medicineService;
+        _logger = logger;
     }
 
     [HttpGet]

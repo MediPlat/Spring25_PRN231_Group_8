@@ -3,49 +3,85 @@
 @{
     ViewData["Title"] = "Tạo Đơn Thuốc";
 }
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="fas fa-file-medical"></i> Tạo Đơn Thuốc</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-calendar-alt"></i> Chọn Slot:</label>
+                    <select asp-for="AppointmentSlot.SlotId" class="form-select">
+                        @foreach (var slot in Model.Slots)
+                        {
+                            <option value="@slot.Id">
+                                @slot.Title - @slot.StartTime
+                            </option>
+                        }
+                    </select>
+                </div>
 
-<h2>Tạo Đơn Thuốc</h2>
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-user"></i> Chọn Bệnh Nhân:</label>
+                    <input type="text" id="searchPatient" class="form-control mb-2" placeholder="Nhập tên bệnh nhân...">
+                    <div id="patientList" class="list-group position-absolute w-100" style="display: none; max-height: 200px; overflow-y: auto;">
+                        @foreach (var profile in Model.Profiles)
+                        {
+                            <button type="button" class="list-group-item list-group-item-action patient-item"
+                                    data-id="@profile.Id" data-name="@profile.FullName">
+                                @profile.FullName
+                            </button>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="AppointmentSlot.ProfileId" id="selectedPatientId">
+                </div>
 
-<form method="post">
-    <div>
-        <label>Chọn Slot:</label>
-        <select asp-for="AppointmentSlot.SlotId" class="form-control">
-            @foreach (var slot in Model.Slots)
-            {
-                <option value="@slot.Id">@slot.Title - @slot.Date.ToShortDateString()</option>
-            }
-        </select>
-    </div>
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-sticky-note"></i> Ghi Chú:</label>
+                    <textarea asp-for="AppointmentSlot.Notes" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                </div>
 
-    <div>
-        <label>Chọn Bệnh Nhân:</label>
-        <select asp-for="AppointmentSlot.ProfileId" class="form-control">
-            @foreach (var profile in Model.Profiles)
-            {
-                <option value="@profile.Id">@profile.FullName</option>
-            }
-        </select>
-    </div>
+                <h4 class="text-primary mt-4"><i class="fas fa-pills"></i> Chọn Thuốc</h4>
+                <div id="medicines">
+                    <div class="medicine-entry d-flex gap-2 align-items-center">
+                        <select name="AppointmentSlot.Medicines[0].MedicineId" class="form-select">
+                            @foreach (var medicine in Model.Medicines)
+                            {
+                                <option value="@medicine.Id">@medicine.Name</option>
+                            }
+                        </select>
+                        <input type="text" name="AppointmentSlot.Medicines[0].Dosage" placeholder="Liều lượng" class="form-control" required />
+                        <input type="text" name="AppointmentSlot.Medicines[0].Instructions" placeholder="Hướng dẫn sử dụng" class="form-control" />
+                        <input type="number" name="AppointmentSlot.Medicines[0].Quantity" placeholder="Số lượng" class="form-control" min="1" required />
+                        <button type="button" class="btn btn-danger remove-medicine"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
 
-    <div>
-        <label>Ghi Chú:</label>
-        <textarea asp-for="AppointmentSlot.Notes" class="form-control"></textarea>
-    </div>
+                <button type="button" id="add-medicine" class="btn btn-outline-success mt-3">
+                    <i class="fas fa-plus"></i> Thêm Thuốc
+                </button>
 
-    <h4>Chọn Thuốc</h4>
-    <div id="medicines">
-        <div class="medicine-entry">
-            <select name="AppointmentSlot.Medicines[0].MedicineId" class="form-control">
-                @foreach (var medicine in Model.Medicines)
-                {
-                    <option value="@medicine.Id">@medicine.Name</option>
-                }
-            </select>
-            <input type="text" name="AppointmentSlot.Medicines[0].Dosage" placeholder="Liều lượng" class="form-control" />
-            <input type="text" name="AppointmentSlot.Medicines[0].Instructions" placeholder="Hướng dẫn sử dụng" class="form-control" />
-            <input type="number" name="AppointmentSlot.Medicines[0].Quantity" placeholder="Số lượng" class="form-control" />
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Tạo Đơn Thuốc</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-primary">Tạo Đơn Thuốc</button>
-</form>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="~/js/addMedicine.js"></script>
+    <script src="~/js/searchPatient.js"></script>
+
+    <script>
+        window.medicines = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Medicines));
+    </script>
+}
+
+
+

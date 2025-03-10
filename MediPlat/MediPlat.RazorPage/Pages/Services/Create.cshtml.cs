@@ -78,7 +78,7 @@ namespace MediPlat.RazorPage.Pages.Services
             var response = await client.PostAsync("https://localhost:7002/odata/Services", jsonContent);
 
             if (response.IsSuccessStatusCode)
-                return RedirectToPage("Index");
+                return RedirectToPage("./Index");
 
             ModelState.AddModelError("", "Lỗi khi thêm dịch vụ.");
             return Page();

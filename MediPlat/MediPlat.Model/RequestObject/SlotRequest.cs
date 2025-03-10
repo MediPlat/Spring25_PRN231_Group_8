@@ -8,7 +8,7 @@ namespace MediPlat.Model.RequestObject
         [Required]
         public Guid DoctorId { get; set; }
 
-        //[Required]
+        [Required]
         public Guid? ServiceId { get; set; }
 
         [Required]

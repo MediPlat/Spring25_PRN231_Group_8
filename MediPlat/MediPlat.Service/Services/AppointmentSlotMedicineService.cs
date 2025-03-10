@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MediPlat.Model.Model;
@@ -77,4 +77,4 @@ namespace MediPlat.Service.Services
             return _mapper.Map<AppointmentSlotMedicineResponse>(entity);
         }
     }
-}
+}*/

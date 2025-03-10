@@ -1,4 +1,4 @@
-﻿using MediPlat.Model.RequestObject;
+﻿/*using MediPlat.Model.RequestObject;
 using MediPlat.Model.ResponseObject;
 using System;
 using System.Collections.Generic;
@@ -16,4 +16,4 @@ namespace MediPlat.Service.IServices
         Task<AppointmentSlotMedicineResponse> UpdateAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId, AppointmentSlotMedicineRequest request);
         Task<AppointmentSlotMedicineResponse> DeleteAppointmentSlotMedicineAsync(Guid appointmentSlotId, Guid medicineId);
     }
-}
+}*/

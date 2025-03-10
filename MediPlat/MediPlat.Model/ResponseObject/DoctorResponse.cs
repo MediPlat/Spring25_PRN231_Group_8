@@ -31,12 +31,12 @@ namespace MediPlat.Model.ResponseObject
         public string? Status { get; set; }
 
         [JsonIgnore]
-        public virtual List<DoctorSubscriptionResponse> DoctorSubscriptions { get; set; } = new List<DoctorSubscriptionResponse>();
+        public virtual ICollection<DoctorSubscriptionResponse> DoctorSubscriptions { get; set; } = new List<DoctorSubscriptionResponse>();
 
         [JsonIgnore]
-        public virtual List<ExperienceResponse> Experiences { get; set; } = new List<ExperienceResponse>();
+        public virtual ICollection<ExperienceResponse> Experiences { get; set; } = new List<ExperienceResponse>();
 
         [JsonIgnore]
-        public virtual List<SlotResponse> Slots { get; set; } = new List<SlotResponse>();
+        public virtual ICollection<SlotResponse> Slots { get; set; } = new List<SlotResponse>();
     }
 }

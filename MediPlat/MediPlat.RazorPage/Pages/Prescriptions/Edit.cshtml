@@ -1,0 +1,68 @@
+﻿@page
+@model MediPlat.RazorPage.Pages.Prescriptions.EditModel
+@{
+    ViewData["Title"] = "Chỉnh Sửa Đơn Thuốc";
+}
+
+<h2>Chỉnh Sửa Đơn Thuốc</h2>
+
+<form method="post">
+    <div>
+        <label>Ghi Chú:</label>
+        <textarea asp-for="AppointmentSlot.Notes" class="form-control"></textarea>
+    </div>
+
+    <h4>Chọn Thuốc</h4>
+    <div id="medicines">
+        @for (int i = 0; i < Model.AppointmentSlot.Medicines.ToList().Count; i++)
+        {
+            <div class="medicine-entry d-flex gap-2 align-items-center">
+                <select name="AppointmentSlot.Medicines[@i].MedicineId" class="form-control">
+                    @foreach (var medicine in Model.Medicines)
+                    {
+                        <option value="@medicine.Id" selected="@(medicine.Id == Model.AppointmentSlot.Medicines.ToList()[i].MedicineId)">
+                            @medicine.Name
+                        </option>
+                    }
+                </select>
+                <input type="text" name="AppointmentSlot.Medicines[@i].Dosage" value="@Model.AppointmentSlot.Medicines.ToList()[i].Dosage" placeholder="Liều lượng" class="form-control" required />
+                <input type="text" name="AppointmentSlot.Medicines[@i].Instructions" value="@Model.AppointmentSlot.Medicines.ToList()[i].Instructions" placeholder="Hướng dẫn sử dụng" class="form-control" />
+                <input type="number" name="AppointmentSlot.Medicines[@i].Quantity" value="@Model.AppointmentSlot.Medicines.ToList()[i].Quantity" placeholder="Số lượng" class="form-control" min="1" required />
+            </div>
+        }
+    </div>
+
+    <button type="button" id="add-medicine" class="btn btn-success mt-2">Thêm Thuốc</button>
+    <button type="submit" class="btn btn-primary mt-3">Lưu Cập Nhật</button>
+</form>
+<a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+
+@section Scripts {
+    <script>
+        let medicineIndex = @Model.AppointmentSlot.Medicines.Count;
+
+        document.getElementById("add-medicine").addEventListener("click", function () {
+            const medicineEntry = document.createElement("div");
+            medicineEntry.classList.add("medicine-entry", "d-flex", "gap-2", "align-items-center");
+            medicineEntry.innerHTML = `
+                        <select name="AppointmentSlot.Medicines[\${medicineIndex}].MedicineId" class="form-control">
+        @foreach (var medicine in Model.Medicines)
+        {
+                                    <option value="@medicine.Id">@medicine.Name</option>
+        }
+                        </select>
+                        <input type="text" name="AppointmentSlot.Medicines[\${medicineIndex}].Dosage" placeholder="Liều lượng" class="form-control" required />
+                        <input type="text" name="AppointmentSlot.Medicines[\${medicineIndex}].Instructions" placeholder="Hướng dẫn sử dụng" class="form-control" />
+                        <input type="number" name="AppointmentSlot.Medicines[\${medicineIndex}].Quantity" placeholder="Số lượng" class="form-control" min="1" required />
+
+                        <button type="button" class="btn btn-danger remove-medicine">Xóa</button>
+                    `;
+            document.getElementById("medicines").appendChild(medicineEntry);
+            medicineIndex++;
+
+            medicineEntry.querySelector(".remove-medicine").addEventListener("click", function () {
+                medicineEntry.remove();
+            });
+        });
+    </script>
+}

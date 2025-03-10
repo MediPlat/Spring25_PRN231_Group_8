@@ -2,10 +2,8 @@
 using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
-using System.Text.Json;
 
 namespace MediPlat.API.Controllers
 {
@@ -24,9 +22,9 @@ namespace MediPlat.API.Controllers
         [HttpGet]
         [EnableQuery]
         [Authorize(Policy = "DoctorOrPatientPolicy")]
-        public IQueryable<SlotResponse> Get()
+        public IQueryable<SlotResponse> GetAllSlots()
         {
-            return _slotService.GetSlot();;
+            return _slotService.GetSlot();
         }
 
         [Authorize(Policy = "DoctorOrPatientPolicy")]

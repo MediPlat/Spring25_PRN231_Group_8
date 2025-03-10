@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MediPlat.Model.ResponseObject
@@ -24,7 +25,7 @@ namespace MediPlat.Model.ResponseObject
         public DateTime? JoinDate { get; set; }
 
         public string? PhoneNumber { get; set; }
-
+        [JsonIgnore]
         public virtual ICollection<AppointmentSlotResponse> AppointmentSlots { get; set; } = new List<AppointmentSlotResponse>();
 
     }

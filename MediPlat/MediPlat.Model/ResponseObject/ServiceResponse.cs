@@ -18,6 +18,6 @@ namespace MediPlat.Model.ResponseObject
         public virtual SpecialtyResponse? Specialty { get; set; }
 
         [JsonIgnore]
-        public virtual List<SlotResponse> Slots { get; set; } = new List<SlotResponse>();
+        public virtual ICollection<SlotResponse> Slots { get; set; } = new List<SlotResponse>();
     }
 }

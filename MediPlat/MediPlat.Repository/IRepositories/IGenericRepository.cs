@@ -27,6 +27,7 @@ namespace MediPlat.Repository.IRepositories
         void UpdatePartial(T objModel, params Expression<Func<T, object>>[] updatedProperties);
         Task UpdatePartialAsync(T objModel, params Expression<Func<T, object>>[] updatedProperties);
         void Remove(T objModel);
+        void RemoveRange(IEnumerable<T> entities);
         void Dispose();
     }
 }

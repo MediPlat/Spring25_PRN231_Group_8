@@ -11,13 +11,13 @@ using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
 namespace MediPlat.RazorPage.Pages.Prescriptions
 {
     [Authorize(Policy = "DoctorPolicy")]
-    public class CreateModel : PageModel
+    public class EditModel : PageModel
     {
         private readonly IHttpClientFactory _clientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ILogger<CreateModel> _logger;
+        private readonly ILogger<EditModel> _logger;
 
-        public CreateModel(IHttpClientFactory clientFactory, IHttpContextAccessor httpContextAccessor, ILogger<CreateModel> logger)
+        public EditModel(IHttpClientFactory clientFactory, IHttpContextAccessor httpContextAccessor, ILogger<EditModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _clientFactory = clientFactory;
@@ -27,11 +27,9 @@ namespace MediPlat.RazorPage.Pages.Prescriptions
         [BindProperty]
         public AppointmentSlotRequest AppointmentSlot { get; set; } = new AppointmentSlotRequest();
 
-        public List<SlotResponse> Slots { get; set; } = new List<SlotResponse>();
-        public List<ProfileResponse> Profiles { get; set; } = new List<ProfileResponse>();
         public List<MedicineResponse> Medicines { get; set; } = new List<MedicineResponse>();
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(Guid id)
         {
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             if (string.IsNullOrEmpty(token))
@@ -42,27 +40,57 @@ namespace MediPlat.RazorPage.Pages.Prescriptions
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            Slots = await FetchData<SlotResponse>(client, "https://localhost:7002/odata/Slots", isOData: false);
-            Profiles = await FetchData<ProfileResponse>(client, "https://localhost:7002/odata/Profiles", isOData: true);
-            Medicines = await FetchData<MedicineResponse>(client, "https://localhost:7002/odata/Medicines", isOData: true);
+            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            if (doctorId == null)
+            {
+                return Unauthorized();
+            }
+
+            // Gọi API để lấy thông tin đơn thuốc
+            var response = await client.GetAsync($"https://localhost:7002/odata/AppointmentSlots/doctor/{doctorId}/slot/{id}");
+            if (!response.IsSuccessStatusCode)
+            {
+                return NotFound();
+            }
+
+            var apiResponse = await response.Content.ReadAsStringAsync();
+            var prescription = JsonSerializer.Deserialize<AppointmentSlotResponse>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (prescription == null)
+            {
+                return NotFound();
+            }
+
+            // Map dữ liệu từ Response sang Request Model
+            AppointmentSlot = new AppointmentSlotRequest
+            {
+                SlotId = prescription.SlotId,
+                ProfileId = prescription.ProfileId,
+                Notes = prescription.Notes,
+                Medicines = prescription.AppointmentSlotMedicines.Select(m => new AppointmentSlotMedicineRequest
+                {
+                    MedicineId = m.MedicineId,
+                    Dosage = m.Dosage,
+                    Instructions = m.Instructions,
+                    Quantity = m.Quantity
+                }).ToList()
+            };
+
+            // Lấy danh sách thuốc
+            Medicines = await FetchData<MedicineResponse>(client, "https://localhost:7002/odata/Medicines");
 
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
-            _logger.LogInformation($"Received {AppointmentSlot.Medicines.Count} medicines.");
             var token = TokenHelper.GetCleanToken(_httpContextAccessor.HttpContext);
             var client = _clientFactory.CreateClient("UntrustedClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+            // Gửi dữ liệu cập nhật lên API
             var jsonContent = new StringContent(JsonSerializer.Serialize(AppointmentSlot), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("https://localhost:7002/odata/AppointmentSlots", jsonContent);
+            var response = await client.PutAsync($"https://localhost:7002/odata/AppointmentSlots/{id}", jsonContent);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -72,7 +100,7 @@ namespace MediPlat.RazorPage.Pages.Prescriptions
             return RedirectToPage("/Prescriptions/Index");
         }
 
-        private async Task<List<T>> FetchData<T>(HttpClient client, string url, bool isOData = true)
+        private async Task<List<T>> FetchData<T>(HttpClient client, string url)
         {
             var response = await client.GetAsync(url);
 
@@ -86,14 +114,7 @@ namespace MediPlat.RazorPage.Pages.Prescriptions
 
             try
             {
-                if (isOData)
-                {
-                    return JsonSerializer.Deserialize<ODataResponse<T>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Value ?? new List<T>();
-                }
-                else
-                {
-                    return JsonSerializer.Deserialize<List<T>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<T>();
-                }
+                return JsonSerializer.Deserialize<ODataResponse<T>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })?.Value ?? new List<T>();
             }
             catch (Exception ex)
             {

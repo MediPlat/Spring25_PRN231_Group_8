@@ -5,6 +5,8 @@ using MediPlat.Model.ResponseObject;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using static MediPlat.RazorPage.Pages.Experiences.IndexModel;
+using static MediPlat.RazorPage.Pages.Subscriptions.IndexModel;
 
 namespace MediPlat.RazorPage.Pages.Medicines
 {
@@ -22,7 +24,7 @@ namespace MediPlat.RazorPage.Pages.Medicines
             _logger = logger;
         }
 
-        public IList<MedicineResponse> Medicines { get; set; } = new List<MedicineResponse>();
+        public List<MedicineResponse> Medicines { get; set; } = new List<MedicineResponse>();
         public int PageSize { get; set; } = 10;
         public int CurrentPage { get; set; } = 1;
         public int TotalItems { get; set; }
@@ -40,25 +42,15 @@ namespace MediPlat.RazorPage.Pages.Medicines
 
             try
             {
-                string apiUrl = $"https://localhost:7002/odata/Medicines?$top={PageSize}&$skip={(page - 1) * PageSize}";
+                string apiUrl = $"https://localhost:7002/odata/Medicines?$count=true&$top={PageSize}&$skip={(page - 1) * PageSize}";
                 var response = await client.GetAsync(apiUrl);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var apiResponse = await response.Content.ReadAsStringAsync();
-
-                    var jsonDocument = JsonNode.Parse(apiResponse);
-                    var medicinesArray = jsonDocument?["value"]?.AsArray();
-
-                    if (medicinesArray != null)
-                    {
-                        Medicines = medicinesArray.Deserialize<List<MedicineResponse>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<MedicineResponse>();
-                        TotalItems = Medicines.Count;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("⚠️ API không trả về danh sách thuốc.");
-                    }
+                    var medicineData = JsonSerializer.Deserialize<ODataResponse<MedicineResponse>>(apiResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    Medicines = medicineData?.Value ?? new List<MedicineResponse>();
+                    TotalItems = medicineData?.Count ?? Medicines.Count;
                 }
                 else
                 {

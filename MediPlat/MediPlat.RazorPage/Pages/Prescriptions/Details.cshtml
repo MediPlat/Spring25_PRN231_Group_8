@@ -4,35 +4,78 @@
     ViewData["Title"] = "Chi tiết đơn thuốc";
 }
 
-<h2>Chi tiết đơn thuốc</h2>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+            <i class="fas fa-file-medical fa-lg me-2"></i>
+            <h4 class="mb-0">Chi Tiết Đơn Thuốc</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-user-md"></i> Bác sĩ:</strong> Dr. @Model.Prescription.Doctor.FullName</p>
+                    <p><strong><i class="fas fa-calendar-alt"></i> Ngày tạo:</strong> @Model.Prescription.CreatedDate.ToString("dd/MM/yyyy")</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong><i class="fas fa-user"></i> Bệnh nhân:</strong> @Model.Prescription.Profile.FullName</p>
+                    <p><strong><i class="fas fa-notes-medical"></i> Ghi chú:</strong> @(string.IsNullOrWhiteSpace(Model.Prescription.Notes) ? "Không có ghi chú" : Model.Prescription.Notes)</p>
+                </div>
+            </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Tên thuốc</th>
-            <th>Liều lượng</th>
-            <th>Hướng dẫn</th>
-            <th>Số lượng</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Prescription.AppointmentSlotMedicines != null && Model.Prescription.AppointmentSlotMedicines.Any())
-        {
-            @foreach (var medicine in Model.Prescription.AppointmentSlotMedicines)
-            {
-                <tr>
-                    <td>@medicine.Medicine?.Name</td>
-                    <td>@medicine.Dosage</td>
-                    <td>@medicine.Instructions</td>
-                    <td>@medicine.Quantity</td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr><td colspan="4">Không có thuốc nào trong đơn.</td></tr>
-        }
-    </tbody>
-</table>
+            <h5 class="text-primary"><i class="fas fa-pills"></i> Danh sách thuốc</h5>
+            <div class="table-responsive">
+                <table class="table table-hover shadow-sm">
+                    <thead class="bg-light">
+                        <tr class="text-center">
+                            <th><i class="fas fa-capsules"></i> Tên thuốc</th>
+                            <th><i class="fas fa-prescription"></i> Liều lượng</th>
+                            <th><i class="fas fa-notes-medical"></i> Hướng dẫn</th>
+                            <th><i class="fas fa-sort-numeric-up-alt"></i> Số lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Prescription.AppointmentSlotMedicines != null && Model.Prescription.AppointmentSlotMedicines.Any())
+                        {
+                            @foreach (var medicine in Model.Prescription.AppointmentSlotMedicines)
+                            {
+                                <tr class="text-center">
+                                    <td>
+                                        <a asp-page="/Medicines/Details" asp-route-id="@medicine.Medicine?.Id" asp-route-returnUrl="@HttpContext.Request.Path" class="text-decoration-none text-primary fw-bold">
+                                            <i class="fas fa-pills me-1"></i>@medicine.Medicine?.Name
+                                        </a>
+                                    </td>
+                                    <td>@medicine.Dosage</td>
+                                    <td>@medicine.Instructions</td>
+                                    <td>@medicine.Quantity</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Không có thuốc nào trong đơn.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-<a asp-page="Index" class="btn btn-secondary">Quay lại</a>
+            <div class="d-flex justify-content-end mt-3">
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("table tbody tr").forEach(row => {
+                row.addEventListener("mouseover", () => row.classList.add("table-info"));
+                row.addEventListener("mouseout", () => row.classList.remove("table-info"));
+            });
+        });
+    </script>
+}

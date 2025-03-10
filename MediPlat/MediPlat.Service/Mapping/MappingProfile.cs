@@ -31,28 +31,28 @@ namespace MediPlat.Service.Mapping
 
             CreateMap<DoctorRequest, Doctor>();
 
-            CreateMap<Doctor, DoctorResponse>()
-                .ForMember(dest => dest.Experiences, opt => opt.MapFrom(src => src.Experiences))
-                .ForMember(dest => dest.DoctorSubscriptions, opt => opt.MapFrom(src => src.DoctorSubscriptions));
+            CreateMap<Doctor, DoctorResponse>();
 
             CreateMap<SpecialtyRequest, Specialty>();
 
             CreateMap<Specialty, SpecialtyResponse>();
 
-            CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>()
-                .ForMember(dest => dest.AppointmentSlot, opt => opt.Ignore())
-                .ForMember(dest => dest.Medicine, opt => opt.Ignore());
+            CreateMap<AppointmentSlotMedicineRequest, AppointmentSlotMedicine>();
 
             CreateMap<AppointmentSlotMedicine, AppointmentSlotMedicineResponse>()
-                .ForMember(dest => dest.Medicine, opt => opt.MapFrom(src => src.Medicine));
+                .ForMember(dest => dest.Medicine, opt => opt.MapFrom(src => src.Medicine ?? new Medicine()));
 
-            CreateMap<AppointmentSlotRequest, AppointmentSlot>();
+            CreateMap<AppointmentSlotRequest, AppointmentSlot>()
+                .ForMember(dest => dest.Profile, opt => opt.Ignore())
+                .ForMember(dest => dest.Slot, opt => opt.Ignore())
+                .ForMember(dest => dest.SlotId, opt => opt.MapFrom(src => src.SlotId))
+                .ForMember(dest => dest.ProfileId, opt => opt.MapFrom(src => src.ProfileId));
 
             CreateMap<AppointmentSlot, AppointmentSlotResponse>()
                 .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Slot.Doctor))
                 .ForMember(dest => dest.Profile, opt => opt.MapFrom(src => src.Profile))
                 .ForMember(dest => dest.Slot, opt => opt.MapFrom(src => src.Slot))
-                .ForMember(dest => dest.AppointmentSlotMedicines, opt => opt.MapFrom(src => src.AppointmentSlotMedicines)); 
+                .ForMember(dest => dest.AppointmentSlotMedicines, opt => opt.MapFrom(src => src.AppointmentSlotMedicines));
 
             CreateMap<MedicineRequest, Medicine>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? "Active"));

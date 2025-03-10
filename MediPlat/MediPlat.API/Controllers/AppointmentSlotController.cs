@@ -1,5 +1,6 @@
 ﻿using MediPlat.Model.Model;
 using MediPlat.Model.RequestObject;
+using MediPlat.Model.ResponseObject;
 using MediPlat.Service.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,8 +61,15 @@ namespace MediPlat.API.Controllers
         public async Task<IActionResult> GetAppointmentSlotByIdForDoctor(Guid doctorId, Guid appointmentSlotId)
         {
             var result = await _appointmentSlotService.GetAppointmentSlotByIdForDoctorAsync(doctorId, appointmentSlotId);
+
+            if (result != null && result.AppointmentSlotMedicines == null)
+            {
+                result.AppointmentSlotMedicines = new List<AppointmentSlotMedicineResponse>();
+            }
+
             return result != null ? Ok(result) : NotFound();
         }
+
 
         [HttpGet("patient/{profileId}/slot/{appointmentSlotId}")]
         [Authorize(Policy = "PatientPolicy")]
@@ -83,16 +91,60 @@ namespace MediPlat.API.Controllers
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> Update(Guid id, [FromBody] AppointmentSlotRequest request)
         {
+            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            if (doctorId == null)
+            {
+                return Unauthorized("Không có quyền cập nhật đơn thuốc.");
+            }
+
+            var existingSlot = await _appointmentSlotService.GetAppointmentSlotByIdForDoctorAsync(Guid.Parse(doctorId), id);
+            if (existingSlot == null)
+            {
+                return NotFound();
+            }
+
+            if (existingSlot.Status == "Confirmed")
+            {
+                return BadRequest("Không thể cập nhật trạng thái vì đơn thuốc đã được xác nhận.");
+            }
+
             var result = await _appointmentSlotService.UpdateAppointmentSlot(id, request);
             return result != null ? Ok(result) : NotFound();
         }
+
+        [HttpPut("{id}/status")]
+        [Authorize(Policy = "DoctorPolicy")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] AppointmentSlotRequest request)
+        {
+            var doctorId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            if (doctorId == null)
+            {
+                return Unauthorized("Không có quyền cập nhật trạng thái.");
+            }
+
+            var success = await _appointmentSlotService.UpdateAppointmentSlotStatus(id, request.Status);
+            if (!success)
+            {
+                return BadRequest("Không thể cập nhật trạng thái hoặc đơn thuốc không tồn tại.");
+            }
+
+            return NoContent();
+        }
+
 
         [HttpDelete("{id}")]
         [Authorize(Policy = "DoctorPolicy")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _appointmentSlotService.DeleteAppointmentSlot(id);
-            return NoContent();
+            if (id == Guid.Empty)
+            {
+                _logger.LogError("❌ API nhận ID rỗng.");
+                return BadRequest("ID không hợp lệ.");
+            }
+
+            var result = await _appointmentSlotService.DeleteAppointmentSlot(id);
+
+            return result ? NoContent() : NotFound("Không tìm thấy đơn thuốc.");
         }
     }
 }

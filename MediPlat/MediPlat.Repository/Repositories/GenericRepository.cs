@@ -151,7 +151,10 @@ namespace MediPlat.Repository.Repositories
         }
 
         public void Remove(T objModel) => _dbSet.Remove(objModel);
-
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+        }
         public void Dispose() => _mediPlatDBContext.Dispose();
     }
 }
