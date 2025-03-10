@@ -43,19 +43,20 @@ namespace MediPlat.RazorPage.Pages.Slots
             }
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Slot/GetAll"))
+            //https://localhost:7002/odata/Slots?$expand=Doctor,Service($expand=Specialty) (use expand to include property in response obj)
+            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/odata/Slots?$expand=Doctor,Service($expand=Specialty)"))
             {
                 if (response.IsSuccessStatusCode)
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
+                    var jsonObject = JObject.Parse(apiResponse); // Parse JSON response
+                    var slotsArray = jsonObject["value"]?.ToString(); // Extract "value" array
 
-                    if (!string.IsNullOrEmpty(apiResponse))
+                    if (!string.IsNullOrEmpty(slotsArray))
                     {
-                        Slot = JsonConvert.DeserializeObject<List<Slot>>(apiResponse);
+                        Slot = JsonConvert.DeserializeObject<List<Slot>>(slotsArray);
                     }
                 }
-
             }
         }
     }

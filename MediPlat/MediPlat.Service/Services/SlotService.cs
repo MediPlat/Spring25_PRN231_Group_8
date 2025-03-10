@@ -56,7 +56,7 @@ namespace MediPlat.Service.Services
         {
             try
             {
-                var slots = _unitOfWork.Slots.GetAll().AsQueryable()
+                var slots = _unitOfWork.Slots.GetAll(s => s.Doctor, s => s.Service.Specialty).AsQueryable()
                     .Select(s => _mapper.Map<SlotResponse>(s));
                 return slots;
             }

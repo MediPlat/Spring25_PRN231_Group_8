@@ -26,9 +26,9 @@ namespace MediPlat.Model.ResponseObject
 
         public string Status { get; set; }
 
-        public virtual DoctorResponse? Doctor { get; set; }
+        public DoctorResponse? Doctor { get; set; }
 
-        public virtual ServiceResponse? Service { get; set; }
+        public ServiceResponse? Service { get; set; }
 
         [JsonIgnore]
         public virtual List<AppointmentSlotResponse> AppointmentSlots { get; set; } = new List<AppointmentSlotResponse>();

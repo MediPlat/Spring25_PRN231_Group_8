@@ -223,8 +223,17 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<AppointmentSlotResponse>("AppointmentSlots");
     // Định nghĩa các mối quan hệ nếu cần thiết
     // builder.EntitySet<EntityName>("EntitySetName");
-    builder.EntityType<Patient>()
+    builder.EntityType<PatientResponse>()
+        .HasMany(p => p.Profiles);
+    builder.EntityType<PatientResponse>()
         .HasMany(p => p.Transactions);
+
+    builder.EntityType<SlotResponse>()
+        .HasRequired(s => s.Service);
+    builder.EntityType<SlotResponse>()
+        .HasRequired(s => s.Doctor);
+    builder.EntityType<ServiceResponse>()
+        .HasRequired(s => s.Specialty);
 
     return builder.GetEdmModel();
 }

@@ -49,7 +49,7 @@ namespace MediPlat.RazorPage.Pages.Slots
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Slot/GetSlotById/{id}"))
+            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/odata/Slots/{id}"))
             {
                 if (response.IsSuccessStatusCode)
                 {
@@ -99,7 +99,7 @@ namespace MediPlat.RazorPage.Pages.Slots
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Slot/GetSlotById/{id}"))
+            using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/odata/Slots/{id}"))
             {
                 if (response.IsSuccessStatusCode)
                 {

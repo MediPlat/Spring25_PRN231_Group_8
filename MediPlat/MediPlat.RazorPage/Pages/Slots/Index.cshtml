@@ -73,10 +73,10 @@
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Doctor.Id)
+                @Html.DisplayFor(modelItem => item.Doctor.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Service.Id)
+                @Html.DisplayFor(modelItem => item.Service.Title)
             </td>
             <td>
                 <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary mx-1">Book</a>
