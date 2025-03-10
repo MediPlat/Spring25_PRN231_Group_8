@@ -35,7 +35,7 @@ namespace MediPlat.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("GetSlotById/{id}")]
         //[Authorize(Roles = "Admin, Patient")]
         public async Task<IActionResult> GetSlotById(Guid id) {
             var result = await _slotService.GetSlotByID(id);
@@ -47,7 +47,7 @@ namespace MediPlat.API.Controllers
         {
             try
             {
-                _slotService.CreateSlot(slotRequest);
+                await _slotService.CreateSlot(slotRequest);
                 return Ok();
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace MediPlat.API.Controllers
         {
             try
             {
-                _slotService.UpdateSlot(slotRequest);
+                await _slotService.UpdateSlot(slotRequest);
                 return Ok();
             }
             catch (Exception ex)
@@ -77,7 +77,7 @@ namespace MediPlat.API.Controllers
         {
             try
             {
-                _slotService.DeleteSlot(id);
+                await _slotService.DeleteSlot(id);
                 return Ok();
             }
             catch (Exception ex)
@@ -87,13 +87,13 @@ namespace MediPlat.API.Controllers
             }
         }
 
-        [HttpGet("{doctorId}")]
+        [HttpGet("GetSlotByDoctorID/{doctorId}")]
         public async Task<IActionResult> GetSlotByDoctorID(Guid doctorId)
         {
             var result = await _slotService.GetSlotByDoctorID(doctorId);
             return result != null ? Ok(result) : NotFound();
         }
-        [HttpGet("{serviceId}")]
+        [HttpGet("GetSlotByServiceID/{serviceId}")]
         public async Task<IActionResult> GetSlotByServiceID(Guid doctorId)
         {
             var result = await _slotService.GetSlotByDoctorID(doctorId);

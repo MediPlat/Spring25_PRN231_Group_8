@@ -89,7 +89,7 @@ namespace MediPlat.Service.Services
         {
             try
             {
-                var slot = await _unitOfWork.Slots.GetAsync(s => s.Id == slotId);
+                var slot = await _unitOfWork.Slots.GetAsync(s => s.Id == slotId, s => s.Doctor, s => s.Service.Specialty);
                 if (slot == null)
                 {
                     return null;

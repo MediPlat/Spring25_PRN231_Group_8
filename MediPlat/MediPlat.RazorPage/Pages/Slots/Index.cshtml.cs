@@ -46,6 +46,7 @@ namespace MediPlat.RazorPage.Pages.Slots
             //https://localhost:7002/odata/Slots?$expand=Doctor,Service($expand=Specialty) (use expand to include property in response obj)
             using (HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/odata/Slots?$expand=Doctor,Service($expand=Specialty)"))
             {
+                
                 if (response.IsSuccessStatusCode)
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
@@ -55,6 +56,10 @@ namespace MediPlat.RazorPage.Pages.Slots
                     if (!string.IsNullOrEmpty(slotsArray))
                     {
                         Slot = JsonConvert.DeserializeObject<List<Slot>>(slotsArray);
+                        //foreach(var item in Slot)
+                        //{
+                        //    item.StartTime = item.StartTime.Value.;
+                        //}
                     }
                 }
             }

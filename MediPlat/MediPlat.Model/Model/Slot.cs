@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace MediPlat.Model.Model;
+﻿namespace MediPlat.Model.Model;
 
 public partial class Slot
 {

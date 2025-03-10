@@ -19,10 +19,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Slot[0].Description)
+                Slot
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Slot[0].StartTime)
@@ -45,6 +42,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Slot[0].Service)
             </th>
+            <th>Specialty</th>
             <th></th>
         </tr>
     </thead>
@@ -55,16 +53,13 @@
                 @Html.DisplayFor(modelItem => item.Title)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Description)
+                @item.StartTime.Value.ToString("hh:mm:ss tt")
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.StartTime)
+                @item.EndTime.Value.ToString("hh:mm:ss tt")
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.EndTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Date)
+                @item.Date.Value.ToString("MM/dd/yyyy")
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SessionFee)
@@ -78,6 +73,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Service.Title)
             </td>
+            <td>@item.Service.Specialty.Name</td>
             <td>
                 <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary mx-1">Book</a>
                     @if (!HttpContext.User.FindFirst(ClaimTypes.Role).Value.Equals("Patient"))
